@@ -13,6 +13,9 @@ test('only explicit production-test campaigns get a bounded GA4 run property', (
   const base =
     'https://site.test/?utm_source=playwright-ci&utm_medium=testing&utm_campaign=production-checks&utm_content=';
   assert.equal(analyticsRunId(base + 'gha-12345-1'), 'gha-12345-1');
+  for (const marker of ['gha-12345-1-d', 'gha-12345-1-m'])
+    assert.equal(analyticsRunId(base + marker), marker);
+  assert.equal(analyticsRunId(base + 'gha-12345-1-x'), undefined);
   assert.equal(
     analyticsRunId(base + 'local-proof-20261026-03'),
     'local-proof-20261026-03',

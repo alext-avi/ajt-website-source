@@ -9,33 +9,80 @@ import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 
-const names = [
-  'customUser:ci_run_id',
-  'streamId',
-  'eventName',
-  'deviceCategory',
-  'unifiedScreenName',
-];
+export class Ga4IngestionPending extends Error {
+  constructor(evidence) {
+    super('GA4 ingestion was not confirmed before the deadline.');
+    this.name = 'Ga4IngestionPending';
+    this.evidence = evidence;
+  }
+}
+
+export function isReportingDelay(error) {
+  return (
+    error instanceof Ga4IngestionPending &&
+    error.evidence?.lastHttpStatus === 200 &&
+    !error.evidence.transportError &&
+    !error.evidence.rows?.some(
+      (row) => row.event === 'screen_view' && row.eventCount > 0,
+    )
+  );
+}
+
+const names = ['customUser:ci_run_id', 'streamId', 'unifiedScreenName'];
 
 export function realtimeRequest(runId, streamId) {
   return {
     dimensions: names.map((name) => ({ name })),
+    metrics: [{ name: 'screenPageViews' }],
+    dimensionFilter: {
+      andGroup: {
+        expressions: [
+          {
+            filter: {
+              fieldName: 'customUser:ci_run_id',
+              inListFilter: {
+                values: [runId + '-d', runId + '-m'],
+                caseSensitive: true,
+              },
+            },
+          },
+          ...[['streamId', streamId]].map(([fieldName, value]) => ({
+            filter: {
+              fieldName,
+              stringFilter: { matchType: 'EXACT', value, caseSensitive: true },
+            },
+          })),
+        ],
+      },
+    },
+    limit: '100',
+  };
+}
+
+export function realtimeEventRequest(runId, streamId) {
+  const request = realtimeRequest(runId, streamId);
+  return {
+    ...request,
+    dimensions: ['customUser:ci_run_id', 'streamId', 'eventName'].map(
+      (name) => ({ name }),
+    ),
     metrics: [{ name: 'eventCount' }],
     dimensionFilter: {
       andGroup: {
         expressions: [
-          ['customUser:ci_run_id', runId],
-          ['streamId', streamId],
-          ['eventName', 'page_view'],
-        ].map(([fieldName, value]) => ({
-          filter: {
-            fieldName,
-            stringFilter: { matchType: 'EXACT', value, caseSensitive: true },
+          ...request.dimensionFilter.andGroup.expressions,
+          {
+            filter: {
+              fieldName: 'eventName',
+              inListFilter: {
+                values: ['page_view', 'screen_view'],
+                caseSensitive: true,
+              },
+            },
           },
-        })),
+        ],
       },
     },
-    limit: '100',
   };
 }
 
@@ -62,7 +109,10 @@ export async function loadExpectedViews(
     ['live-mobile-safari', 'mobile'],
   ]) {
     const matches = evidence.filter(
-      (item) => item.project === project && item.runId === runId,
+      (item) =>
+        item.project === project &&
+        item.workflowRunId === runId &&
+        item.runId === runId + (device === 'desktop' ? '-d' : '-m'),
     );
     if (
       matches.length !== 1 ||
@@ -85,7 +135,12 @@ export async function loadExpectedViews(
         new URL(view.path, target).origin !== target
       )
         throw new Error('Invalid expected page view in live journey evidence.');
-      expected.push({ device, path: view.path, title: view.title });
+      expected.push({
+        device,
+        runId: matches[0].runId,
+        path: view.path,
+        title: view.title,
+      });
     }
   }
   return expected;
@@ -97,7 +152,7 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   if (
     data.kind !== 'analyticsData#runRealtimeReport' ||
     !names.every((name) => dimensions?.includes(name)) ||
-    !metrics?.includes('eventCount') ||
+    !metrics?.includes('screenPageViews') ||
     (data.rows !== undefined && !Array.isArray(data.rows))
   )
     throw new Error('Unexpected GA4 Realtime API response schema.');
@@ -105,21 +160,20 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   for (const row of data.rows || []) {
     const value = (name) =>
       row.dimensionValues?.[dimensions.indexOf(name)]?.value;
-    const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
+    const count = row.metricValues?.[metrics.indexOf('screenPageViews')]?.value;
+    const browserRunId = value('customUser:ci_run_id');
     if (
-      value('customUser:ci_run_id') !== runId ||
-      value('streamId') !== streamId ||
-      value('eventName') !== 'page_view'
+      ![runId + '-d', runId + '-m'].includes(browserRunId) ||
+      value('streamId') !== streamId
     )
-      throw new Error(
-        'GA4 returned rows outside the requested run, stream, or event.',
-      );
+      throw new Error('GA4 returned rows outside the requested run or stream.');
     if (!/^[0-9]+$/.test(count) || !Number.isSafeInteger(Number(count)))
-      throw new Error('GA4 returned an invalid event count.');
+      throw new Error('GA4 returned an invalid page-view count.');
     rows.push({
-      device: value('deviceCategory'),
+      runId: browserRunId,
+      device: browserRunId === runId + '-d' ? 'desktop' : 'mobile',
       title: value('unifiedScreenName'),
-      eventCount: Number(count),
+      pageViews: Number(count),
     });
   }
   const missing = expectedViews.filter(
@@ -127,11 +181,97 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
       !rows.some(
         (row) =>
           row.device === view.device &&
+          row.runId === view.runId &&
           row.title === view.title &&
-          row.eventCount > 0,
+          row.pageViews > 0,
       ),
   );
   return { verified: missing.length === 0, rows, missing };
+}
+
+export function evaluateEventReport(
+  data,
+  { runId, streamId, expectedViews, pageRows },
+) {
+  const dimensions = data.dimensionHeaders?.map((header) => header.name);
+  const metrics = data.metricHeaders?.map((header) => header.name);
+  if (
+    data.rowCount !== undefined &&
+    (!Number.isSafeInteger(data.rowCount) ||
+      data.rowCount < 0 ||
+      data.rowCount > (data.rows || []).length)
+  )
+    throw new Error(
+      'Incomplete GA4 event report; refusing to infer absent event types.',
+    );
+  if (
+    data.kind !== 'analyticsData#runRealtimeReport' ||
+    !['customUser:ci_run_id', 'streamId', 'eventName'].every((name) =>
+      dimensions?.includes(name),
+    ) ||
+    !metrics?.includes('eventCount') ||
+    (data.rows !== undefined && !Array.isArray(data.rows))
+  )
+    throw new Error('Unexpected GA4 event report schema.');
+  const rows = (data.rows || []).map((row) => {
+    const value = (name) =>
+      row.dimensionValues?.[dimensions.indexOf(name)]?.value;
+    const browserRunId = value('customUser:ci_run_id');
+    const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
+    if (
+      ![runId + '-d', runId + '-m'].includes(browserRunId) ||
+      value('streamId') !== streamId
+    )
+      throw new Error(
+        'GA4 returned event rows outside the requested run or stream.',
+      );
+    if (
+      typeof value('eventName') !== 'string' ||
+      !/^[0-9]+$/.test(count) ||
+      !Number.isSafeInteger(Number(count))
+    )
+      throw new Error('GA4 returned an invalid event count.');
+    return {
+      runId: browserRunId,
+      event: value('eventName'),
+      eventCount: Number(count),
+    };
+  });
+  const screenViewsObserved = rows.some(
+    (row) => row.event === 'screen_view' && row.eventCount > 0,
+  );
+  const missing = expectedViews.filter((view) => {
+    const reportedViews = pageRows
+      .filter((row) => row.runId === view.runId)
+      .reduce((sum, row) => sum + row.pageViews, 0);
+    const eventCount = (name) =>
+      rows
+        .filter((row) => row.runId === view.runId && row.event === name)
+        .reduce((sum, row) => sum + row.eventCount, 0);
+    return (
+      reportedViews <= 0 ||
+      eventCount('page_view') < reportedViews ||
+      screenViewsObserved
+    );
+  });
+  return { verified: missing.length === 0, rows, missing };
+}
+
+export function evaluateIngestionProbe(data, config) {
+  const report = evaluateReport(data, config);
+  const ingestionProbe = config.expectedViews.find((view) =>
+    report.rows.some(
+      (row) =>
+        row.runId === view.runId &&
+        row.title === view.title &&
+        row.pageViews > 0,
+    ),
+  );
+  return {
+    ...report,
+    verified: Boolean(ingestionProbe),
+    ingestionProbe: ingestionProbe || null,
+  };
 }
 
 export async function pollIngestion({
@@ -146,16 +286,19 @@ export async function pollIngestion({
   timeoutMs = 180_000,
   intervalMs = 10_000,
   onProgress = async () => {},
+  query,
+  evaluate,
 }) {
   if (!expectedViews.length)
     throw new Error('No expected page views to verify.');
-  const request = realtimeRequest(runId, streamId);
+  const request = query || realtimeRequest(runId, streamId);
   const deadline = now() + timeoutMs;
   let attempts = 0;
+  let lastEvidence;
   let result = { verified: false, rows: [], missing: expectedViews };
   while (true) {
     if (attempts > 0 && now() >= deadline)
-      throw new Error('GA4 ingestion was not confirmed before the deadline.');
+      throw new Ga4IngestionPending(lastEvidence);
     attempts++;
     let response;
     let data;
@@ -187,7 +330,7 @@ export async function pollIngestion({
       response = { ok: false, status: 0 };
     }
     if (response.ok) {
-      result = evaluateReport(data, {
+      result = (evaluate || evaluateReport)(data, {
         runId,
         streamId,
         expectedViews,
@@ -229,16 +372,16 @@ export async function pollIngestion({
       lastHttpStatus: response.status || null,
       transportError: response.status === 0 ? 'request-failed' : null,
     };
+    lastEvidence = evidence;
     await onProgress(evidence);
     if (result.verified) return evidence;
     const remaining = deadline - now();
-    if (remaining <= 0)
-      throw new Error('GA4 ingestion was not confirmed before the deadline.');
+    if (remaining <= 0) throw new Ga4IngestionPending(lastEvidence);
     await wait(Math.min(intervalMs, remaining));
   }
 }
 
-export async function main(env = process.env) {
+export async function main(env = process.env, { poll = pollIngestion } = {}) {
   const output =
     env.GA4_READBACK_OUTPUT || 'test-results-production/ga4-api-readback.json';
   async function save(value) {
@@ -255,7 +398,7 @@ export async function main(env = process.env) {
       !/^[0-9]+$/.test(propertyId || '') ||
       !/^[0-9]+$/.test(streamId || '') ||
       !runId ||
-      runId.length > 36 ||
+      runId.length > 34 ||
       !/^(gha-[0-9]+-[0-9]+|local-[a-z0-9][a-z0-9._-]*)$/.test(runId) ||
       !/^G-[A-Z0-9]+$/.test(measurementId || '') ||
       !env.GA4_ACCESS_TOKEN
@@ -263,37 +406,112 @@ export async function main(env = process.env) {
       throw new Error(
         'GA4 read-back requires valid property, stream, run, measurement, and access-token configuration.',
       );
-    const expectedViews = await loadExpectedViews(
+    const journeyExpectedViews = await loadExpectedViews(
       env.GA4_EVIDENCE_DIRECTORY || 'test-results-production',
       { runId, target, measurementId },
     );
-    const result = await pollIngestion({
+    // GA4 is aggregate telemetry, not a complete request log. Both browser
+    // journeys must finish; this independent smoke check requires their
+    // one actual visited page to be ingested and reports remaining coverage.
+    const expectedViews = journeyExpectedViews;
+    const coverage = (rows) => {
+      const missing = journeyExpectedViews.filter(
+        (view) =>
+          !rows.some(
+            (row) =>
+              row.runId === view.runId &&
+              row.title === view.title &&
+              row.pageViews > 0,
+          ),
+      );
+      return {
+        expected: journeyExpectedViews.length,
+        observed: journeyExpectedViews.length - missing.length,
+        complete: missing.length === 0,
+        missing,
+      };
+    };
+    const pages = await poll({
       propertyId,
       streamId,
       runId,
       expectedViews,
       token: env.GA4_ACCESS_TOKEN,
+      evaluate: evaluateIngestionProbe,
       onProgress: async (evidence) => {
-        await save(evidence);
+        await save({
+          ...evidence,
+          status: 'pages-pending',
+          verified: false,
+          journeyExpectedViews,
+          reportingCoverage: coverage(evidence.rows),
+          verificationScope: 'run-ingestion',
+        });
         console.log(
           'GA4 API attempt ' +
             evidence.attempts +
             ': ' +
-            (expectedViews.length - evidence.missing.length) +
+            coverage(evidence.rows).observed +
             '/' +
-            expectedViews.length +
-            ' expected page/device pairs received.',
+            journeyExpectedViews.length +
+            ' journey page/browser pairs reported; current-run ingestion beacon ' +
+            (evidence.verified ? 'confirmed.' : 'pending.'),
         );
       },
     });
+    const eventVerification = await poll({
+      propertyId,
+      streamId,
+      runId,
+      expectedViews: [pages.ingestionProbe],
+      token: env.GA4_ACCESS_TOKEN,
+      query: realtimeEventRequest(runId, streamId),
+      evaluate: (data, config) =>
+        evaluateEventReport(data, { ...config, pageRows: pages.rows }),
+      onProgress: async (evidence) => {
+        await save({
+          ...pages,
+          journeyExpectedViews,
+          reportingCoverage: coverage(pages.rows),
+          verificationScope: 'run-ingestion',
+          status: evidence.verified ? 'verified' : 'events-pending',
+          verified: evidence.verified,
+          eventVerification: evidence,
+        });
+        console.log(
+          'GA4 event-type attempt ' +
+            evidence.attempts +
+            ': ' +
+            (evidence.verified
+              ? 'page_view totals confirmed; no screen_view events.'
+              : 'waiting for matching page_view totals without screen_view events.'),
+        );
+      },
+    });
+    const result = {
+      ...pages,
+      journeyExpectedViews,
+      reportingCoverage: coverage(pages.rows),
+      verificationScope: 'run-ingestion',
+      status: 'verified',
+      verified: true,
+      eventVerification,
+    };
     if (env.GITHUB_STEP_SUMMARY)
       await appendFile(
         env.GITHUB_STEP_SUMMARY,
         '\n### GA4 API ingestion verified\n\nRun: ' +
           runId +
           '\n\n' +
-          expectedViews.length +
-          ' expected page/device pairs confirmed by the Realtime Data API.\n',
+          'A visited page from this run was confirmed by the page and event reports. Probe: ' +
+          pages.ingestionProbe.device +
+          ' ' +
+          pages.ingestionProbe.path +
+          '. Both full browser journeys passed server and collection checks.\n\nObserved GA4 reporting coverage: ' +
+          coverage(pages.rows).observed +
+          '/' +
+          journeyExpectedViews.length +
+          ' journey page/browser pairs. This is an ingestion smoke check; it does not attest complete analytics capture of every automated visit.\n',
       );
     return result;
   } catch (error) {
@@ -304,12 +522,30 @@ export async function main(env = process.env) {
     try {
       previous = JSON.parse(await readFile(output, 'utf8'));
     } catch {}
-    await save({ ...previous, status: 'failed', verified: false, message });
+    const pending = isReportingDelay(error);
+    await save({
+      ...previous,
+      status: pending ? 'pending' : 'failed',
+      verified: false,
+      message,
+    });
     if (env.GITHUB_STEP_SUMMARY)
       await appendFile(
         env.GITHUB_STEP_SUMMARY,
-        '\n### GA4 API ingestion not verified\n\n' + message + '\n',
+        '\n### GA4 API ingestion ' +
+          (pending ? 'pending' : 'not verified') +
+          '\n\n' +
+          message +
+          (pending
+            ? ' Both full browser journeys passed. This valid API response does not yet confirm ingestion; see the JSON evidence.\n'
+            : '\n'),
       );
+    if (pending) {
+      console.log(
+        '::notice::GA4 ingestion is pending, not verified. Website and collection tests passed; no matching processed traffic has been attested yet. See ga4-api-readback.json.',
+      );
+      return { ...previous, status: 'pending', verified: false, message };
+    }
     throw new Error(message);
   }
 }

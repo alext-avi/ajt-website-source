@@ -39,6 +39,7 @@ test('real production journeys deliver page views through the deployed Google ta
   baseURL,
 }, testInfo) => {
   const metadata = testInfo.config.metadata;
+  const runId = metadata.runId + (isMobile ? '-m' : '-d');
   const expectedPageViews = new Map<string, string>();
   let journeyVerified = false;
   const events: ReturnType<typeof collectionEvents> = [];
@@ -77,7 +78,7 @@ test('real production journeys deliver page views through the deployed Google ta
           events.some(
             (event) =>
               event.measurementId === metadata.measurementId &&
-              event.runId === metadata.runId &&
+              event.runId === runId &&
               event.event === 'page_view' &&
               event.status >= 200 &&
               event.status < 300 &&
@@ -98,7 +99,7 @@ test('real production journeys deliver page views through the deployed Google ta
     await test.step('follow the live referral Worker and grant real analytics consent', async () => {
       const response = await page.goto(
         '/r/playwright-ci/production-checks?utm_medium=testing&utm_content=' +
-          metadata.runId,
+          runId,
       );
       expect(response?.status()).toBe(200);
       expect(response?.headers()['cf-ray']).toBeTruthy();
@@ -108,7 +109,7 @@ test('real production journeys deliver page views through the deployed Google ta
         utm_source: 'playwright-ci',
         utm_medium: 'testing',
         utm_campaign: 'production-checks',
-        utm_content: metadata.runId,
+        utm_content: runId,
       });
       await expect(page.getByRole('heading', { level: 1 })).toContainText(
         'I build software.',
@@ -125,7 +126,7 @@ test('real production journeys deliver page views through the deployed Google ta
       await expectPageView('/');
       const landingEvent = events.find((event) => event.event === 'page_view')!;
       expect(new URL(landingEvent.page!).searchParams.get('utm_content')).toBe(
-        metadata.runId,
+        runId,
       );
     });
 
@@ -224,6 +225,8 @@ test('real production journeys deliver page views through the deployed Google ta
       JSON.stringify(
         {
           ...metadata,
+          workflowRunId: metadata.runId,
+          runId,
           project: testInfo.project.name,
           deviceCategory: isMobile ? 'mobile' : 'desktop',
           journeyVerified,

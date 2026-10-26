@@ -24,7 +24,7 @@ export function validAnalyticsRunId(value: unknown): value is string {
   return (
     typeof value === 'string' &&
     value.length <= 36 &&
-    /^(gha-[0-9]+-[0-9]+|local-[a-z0-9][a-z0-9._-]*)$/.test(value)
+    /^(gha-[0-9]+-[0-9]+(?:-[dm])?|local-[a-z0-9][a-z0-9._-]*)$/.test(value)
   );
 }
 

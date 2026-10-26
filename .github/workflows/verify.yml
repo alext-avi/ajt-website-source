@@ -147,7 +147,7 @@ jobs:
 
           Deployment: $PRODUCTION_DEPLOYMENT
 
-          Run marker: $PLAYWRIGHT_RUN_ID (source playwright-ci, medium testing, campaign production-checks).
+          Workflow marker: $PLAYWRIGHT_RUN_ID. Browser markers append -d (desktop Chromium) or -m (mobile Safari), with source playwright-ci, medium testing, campaign production-checks.
 
           The browser uses the deployed Google tag after consent. Reports attach Cloudflare response IDs and Google collection responses. Testing an existing deployment does not attest that this workflow's source revision was deployed.
           EOF
@@ -173,7 +173,7 @@ jobs:
           access_token_lifetime: 600s
           create_credentials_file: false
           export_environment_variables: false
-      - name: Confirm this run was ingested by the GA4 API
+      - name: Read this run's GA4 ingestion status
         env:
           GA4_ACCESS_TOKEN: ${{ steps.ga4-auth.outputs.access_token }}
         run: npm run ga4:verify

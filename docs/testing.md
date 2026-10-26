@@ -35,7 +35,7 @@ npx --no-install playwright show-trace path/to/trace.zip
 
 ## Live production tests
 
-The live suite also writes machine-readable journey manifests for [GA4 API ingestion verification](ga4-api-verification.md). Production CI follows the browser tests with a read-only Realtime Data API query for that exact run and requires both devices' expected page views to appear. It needs the dedicated reporting identity and User-scoped ci_run_id definition described in that guide.
+The live suite also writes machine-readable journey manifests for [GA4 API ingestion verification](ga4-api-verification.md). After both full browser journeys pass, production CI uses read-only Realtime Data API reports to confirm ingestion of at least one actual visited page from this exact run and its page_view event totals. It reports observed coverage across all journey pages separately; it does not require aggregate analytics to act as a complete request log. It needs the dedicated reporting identity and User-scoped ci_run_id definition described in that guide.
 
 The local suite verifies a build before publication. A separate production suite makes real HTTPS requests to the deployed website in desktop Chromium and mobile WebKit. It follows the referral Worker, accepts analytics consent, navigates the main sections, searches Writing, opens an article and a talk, and verifies successful page-view collection responses from the real Google tag. An HTTP project checks public slides, video headers, and private-route exclusions against the same public server. No responses are mocked and no Analytics events are injected by the test.
 
@@ -45,7 +45,7 @@ Run it explicitly with the target and expected measurement ID:
     PLAYWRIGHT_GA4_MEASUREMENT_ID=G-JLX8RLTRH4 \
     npm run test:live
 
-Each browser starts at /r/playwright-ci/production-checks with medium testing and a unique utm_content run marker. The user agent includes AJT-Playwright/1.0 for server logs. No GA4 exclusion filter is enabled by this setup: traffic should remain visible in Realtime and subsequently in campaign reports, subject to Google's normal processing and bot filtering. Raw user agent is not a general GA4 data-filter dimension; use the campaign source to identify these visits. Google collection accepting a request is transport evidence; GA4's reporting UI or API is the separate evidence of ingestion.
+Each browser starts at /r/playwright-ci/production-checks with medium testing and a unique utm_content browser marker: the workflow run ID followed by -d for desktop Chromium or -m for mobile Safari. Browsers retain their standard Playwright device-profile user agents; the HTTP asset checks use AJT-Playwright/1.0. No GA4 exclusion filter is enabled by this setup. Raw user agent is not a general GA4 data-filter dimension; use the campaign source and browser markers to identify these visits. Google collection accepting a request is transport evidence; GA4's reporting UI or API is the separate evidence of ingestion.
 
 The HTML report at playwright-report-production/index.html attaches the tested URL, run marker, CI link, source revision, document statuses, Cloudflare Ray IDs, and successful Google collection responses. Only selected collection fields are saved in the JSON evidence, without cookies or client/session IDs. The live suite makes normal TLS checks, runs one worker with no retries, and requires explicit configuration to prevent accidental live traffic.
 
