@@ -9,17 +9,12 @@ import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 
-const names = [
-  'customUser:ci_run_id',
-  'streamId',
-  'eventName',
-  'unifiedScreenName',
-];
+const names = ['customUser:ci_run_id', 'streamId', 'unifiedScreenName'];
 
 export function realtimeRequest(runId, streamId) {
   return {
     dimensions: names.map((name) => ({ name })),
-    metrics: [{ name: 'eventCount' }],
+    metrics: [{ name: 'screenPageViews' }],
     dimensionFilter: {
       andGroup: {
         expressions: [
@@ -32,10 +27,7 @@ export function realtimeRequest(runId, streamId) {
               },
             },
           },
-          ...[
-            ['streamId', streamId],
-            ['eventName', 'page_view'],
-          ].map(([fieldName, value]) => ({
+          ...[['streamId', streamId]].map(([fieldName, value]) => ({
             filter: {
               fieldName,
               stringFilter: { matchType: 'EXACT', value, caseSensitive: true },
@@ -45,6 +37,16 @@ export function realtimeRequest(runId, streamId) {
       },
     },
     limit: '100',
+  };
+}
+
+export function realtimeEventRequest(runId, streamId) {
+  return {
+    ...realtimeRequest(runId, streamId),
+    dimensions: ['customUser:ci_run_id', 'streamId', 'eventName'].map(
+      (name) => ({ name }),
+    ),
+    metrics: [{ name: 'eventCount' }],
   };
 }
 
@@ -114,7 +116,7 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   if (
     data.kind !== 'analyticsData#runRealtimeReport' ||
     !names.every((name) => dimensions?.includes(name)) ||
-    !metrics?.includes('eventCount') ||
+    !metrics?.includes('screenPageViews') ||
     (data.rows !== undefined && !Array.isArray(data.rows))
   )
     throw new Error('Unexpected GA4 Realtime API response schema.');
@@ -122,16 +124,13 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   for (const row of data.rows || []) {
     const value = (name) =>
       row.dimensionValues?.[dimensions.indexOf(name)]?.value;
-    const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
+    const count = row.metricValues?.[metrics.indexOf('screenPageViews')]?.value;
     const browserRunId = value('customUser:ci_run_id');
     if (
       ![runId + '-d', runId + '-m'].includes(browserRunId) ||
-      value('streamId') !== streamId ||
-      value('eventName') !== 'page_view'
+      value('streamId') !== streamId
     )
-      throw new Error(
-        'GA4 returned rows outside the requested run, stream, or page_view event.',
-      );
+      throw new Error('GA4 returned rows outside the requested run or stream.');
     if (!/^[0-9]+$/.test(count) || !Number.isSafeInteger(Number(count)))
       throw new Error('GA4 returned an invalid page-view count.');
     rows.push({
@@ -154,6 +153,62 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   return { verified: missing.length === 0, rows, missing };
 }
 
+export function evaluateEventReport(
+  data,
+  { runId, streamId, expectedViews, pageRows },
+) {
+  const dimensions = data.dimensionHeaders?.map((header) => header.name);
+  const metrics = data.metricHeaders?.map((header) => header.name);
+  if (
+    data.kind !== 'analyticsData#runRealtimeReport' ||
+    !['customUser:ci_run_id', 'streamId', 'eventName'].every((name) =>
+      dimensions?.includes(name),
+    ) ||
+    !metrics?.includes('eventCount') ||
+    (data.rows !== undefined && !Array.isArray(data.rows))
+  )
+    throw new Error('Unexpected GA4 event report schema.');
+  const rows = (data.rows || []).map((row) => {
+    const value = (name) =>
+      row.dimensionValues?.[dimensions.indexOf(name)]?.value;
+    const browserRunId = value('customUser:ci_run_id');
+    const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
+    if (
+      ![runId + '-d', runId + '-m'].includes(browserRunId) ||
+      value('streamId') !== streamId
+    )
+      throw new Error(
+        'GA4 returned event rows outside the requested run or stream.',
+      );
+    if (
+      typeof value('eventName') !== 'string' ||
+      !/^[0-9]+$/.test(count) ||
+      !Number.isSafeInteger(Number(count))
+    )
+      throw new Error('GA4 returned an invalid event count.');
+    return {
+      runId: browserRunId,
+      event: value('eventName'),
+      eventCount: Number(count),
+    };
+  });
+  const missing = expectedViews.filter((view) => {
+    const reportedViews = pageRows
+      .filter((row) => row.runId === view.runId)
+      .reduce((sum, row) => sum + row.pageViews, 0);
+    const eventCount = (name) =>
+      rows
+        .filter((row) => row.runId === view.runId && row.event === name)
+        .reduce((sum, row) => sum + row.eventCount, 0);
+    return (
+      reportedViews <= 0 ||
+      eventCount('page_view') < reportedViews ||
+      eventCount('screen_view') !== 0
+    );
+  });
+  return { verified: missing.length === 0, rows, missing };
+}
+
 export async function pollIngestion({
   propertyId,
   streamId,
@@ -166,10 +221,12 @@ export async function pollIngestion({
   timeoutMs = 180_000,
   intervalMs = 10_000,
   onProgress = async () => {},
+  query,
+  evaluate,
 }) {
   if (!expectedViews.length)
     throw new Error('No expected page views to verify.');
-  const request = realtimeRequest(runId, streamId);
+  const request = query || realtimeRequest(runId, streamId);
   const deadline = now() + timeoutMs;
   let attempts = 0;
   let result = { verified: false, rows: [], missing: expectedViews };
@@ -207,7 +264,7 @@ export async function pollIngestion({
       response = { ok: false, status: 0 };
     }
     if (response.ok) {
-      result = evaluateReport(data, {
+      result = (evaluate || evaluateReport)(data, {
         runId,
         streamId,
         expectedViews,
@@ -287,14 +344,14 @@ export async function main(env = process.env) {
       env.GA4_EVIDENCE_DIRECTORY || 'test-results-production',
       { runId, target, measurementId },
     );
-    const result = await pollIngestion({
+    const pages = await pollIngestion({
       propertyId,
       streamId,
       runId,
       expectedViews,
       token: env.GA4_ACCESS_TOKEN,
       onProgress: async (evidence) => {
-        await save(evidence);
+        await save({ ...evidence, status: 'pages-pending', verified: false });
         console.log(
           'GA4 API attempt ' +
             evidence.attempts +
@@ -306,6 +363,38 @@ export async function main(env = process.env) {
         );
       },
     });
+    const eventVerification = await pollIngestion({
+      propertyId,
+      streamId,
+      runId,
+      expectedViews,
+      token: env.GA4_ACCESS_TOKEN,
+      query: realtimeEventRequest(runId, streamId),
+      evaluate: (data, config) =>
+        evaluateEventReport(data, { ...config, pageRows: pages.rows }),
+      onProgress: async (evidence) => {
+        await save({
+          ...pages,
+          status: evidence.verified ? 'verified' : 'events-pending',
+          verified: evidence.verified,
+          eventVerification: evidence,
+        });
+        console.log(
+          'GA4 event-type attempt ' +
+            evidence.attempts +
+            ': ' +
+            (evidence.verified
+              ? 'page_view totals confirmed; no screen_view events.'
+              : 'waiting for matching page_view totals without screen_view events.'),
+        );
+      },
+    });
+    const result = {
+      ...pages,
+      status: 'verified',
+      verified: true,
+      eventVerification,
+    };
     if (env.GITHUB_STEP_SUMMARY)
       await appendFile(
         env.GITHUB_STEP_SUMMARY,

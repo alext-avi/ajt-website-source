@@ -8,6 +8,8 @@ import {
   evaluateReport,
   pollIngestion,
   loadExpectedViews,
+  realtimeEventRequest,
+  evaluateEventReport,
 } from './verify-ga4.mjs';
 
 const runId = 'gha-12345-1';
@@ -25,28 +27,27 @@ function report(views = expectedViews) {
   return {
     kind: 'analyticsData#runRealtimeReport',
     dimensionHeaders: [
-      { name: 'eventName' },
       { name: 'unifiedScreenName' },
       { name: 'customUser:ci_run_id' },
       { name: 'streamId' },
     ],
-    metricHeaders: [{ name: 'eventCount' }],
+    metricHeaders: [{ name: 'screenPageViews' }],
     rows: views.map((view) => ({
-      dimensionValues: ['page_view', view.title, view.runId, streamId].map(
-        (value) => ({ value }),
-      ),
+      dimensionValues: [view.title, view.runId, streamId].map((value) => ({
+        value,
+      })),
       metricValues: [{ value: '1' }],
     })),
   };
 }
 const ok = (data) => ({ ok: true, status: 200, json: async () => data });
 
-test('the API request verifies exact page_view events within the total dimension limit', () => {
+test('page and event queries use compatible dimension sets within the total limit', () => {
   const request = realtimeRequest(runId, streamId);
-  assert.equal(request.dimensions.length, 4);
+  assert.equal(request.dimensions.length, 3);
   assert.deepEqual(
     request.dimensions.map(({ name }) => name),
-    ['customUser:ci_run_id', 'streamId', 'eventName', 'unifiedScreenName'],
+    ['customUser:ci_run_id', 'streamId', 'unifiedScreenName'],
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -58,7 +59,7 @@ test('the API request verifies exact page_view events within the total dimension
           return [filter.fieldName, filter.stringFilter.value];
         }),
     ),
-    { streamId, eventName: 'page_view' },
+    { streamId },
   );
   assert.deepEqual(request.dimensionFilter.andGroup.expressions[0], {
     filter: {
@@ -69,14 +70,20 @@ test('the API request verifies exact page_view events within the total dimension
       },
     },
   });
-  assert.deepEqual(request.metrics, [{ name: 'eventCount' }]);
+  assert.deepEqual(request.metrics, [{ name: 'screenPageViews' }]);
+  const events = realtimeEventRequest(runId, streamId);
+  assert.deepEqual(
+    events.dimensions.map(({ name }) => name),
+    ['customUser:ci_run_id', 'streamId', 'eventName'],
+  );
+  assert.deepEqual(events.metrics, [{ name: 'eventCount' }]);
   const referencedDimensions = new Set([
     ...request.dimensions.map(({ name }) => name),
     ...request.dimensionFilter.andGroup.expressions.map(
       ({ filter }) => filter.fieldName,
     ),
   ]);
-  assert.equal(referencedDimensions.size, 4);
+  assert.equal(referencedDimensions.size, 3);
 });
 
 test('API read-back verifies both devices and all pages using the returned headers', () => {
@@ -90,11 +97,10 @@ test('API read-back verifies both devices and all pages using the returned heade
   assert.ok(partial.missing.every((view) => view.device === 'mobile'));
 });
 
-test('unrelated runs, streams, screen_view events, or malformed counts cannot satisfy ingestion', () => {
+test('unrelated runs, streams, or malformed counts cannot satisfy ingestion', () => {
   for (const [index, value] of [
-    [2, 'gha-old-1'],
-    [3, 'another-stream'],
-    [0, 'screen_view'],
+    [1, 'gha-old-1'],
+    [2, 'another-stream'],
   ]) {
     const data = report();
     data.rows[0].dimensionValues[index].value = value;
@@ -109,6 +115,52 @@ test('unrelated runs, streams, screen_view events, or malformed counts cannot sa
   const zero = report();
   zero.rows[0].metricValues[0].value = '0';
   assert.equal(evaluateReport(zero, options).verified, false);
+});
+
+test('independent event totals require page_view ingestion and reject screen_view substitutes', async () => {
+  const pageRows = evaluateReport(report(), options).rows;
+  const events = {
+    kind: 'analyticsData#runRealtimeReport',
+    dimensionHeaders: ['eventName', 'streamId', 'customUser:ci_run_id'].map(
+      (name) => ({ name }),
+    ),
+    metricHeaders: [{ name: 'eventCount' }],
+    rows: ['-d', '-m'].map((suffix) => ({
+      dimensionValues: ['page_view', streamId, runId + suffix].map((value) => ({
+        value,
+      })),
+      metricValues: [{ value: '8' }],
+    })),
+  };
+  const config = { ...options, pageRows };
+  assert.equal(evaluateEventReport(events, config).verified, true);
+  const incomplete = structuredClone(events);
+  incomplete.rows[1].metricValues[0].value = '7';
+  assert.equal(evaluateEventReport(incomplete, config).verified, false);
+  const screens = structuredClone(events);
+  screens.rows.push({
+    dimensionValues: ['screen_view', streamId, runId + '-m'].map((value) => ({
+      value,
+    })),
+    metricValues: [{ value: '1' }],
+  });
+  assert.equal(evaluateEventReport(screens, config).verified, false);
+  screens.rows[1].dimensionValues[0].value = 'screen_view';
+  assert.equal(evaluateEventReport(screens, config).verified, false);
+  assert.equal(
+    (
+      await pollIngestion({
+        ...options,
+        propertyId: '560723382',
+        token: 'test',
+        query: realtimeEventRequest(runId, streamId),
+        evaluate: (data, base) =>
+          evaluateEventReport(data, { ...base, pageRows }),
+        fetchImpl: async () => ok(events),
+      })
+    ).verified,
+    true,
+  );
 });
 
 test('polling waits for processed rows and never saves the access token in evidence', async () => {
