@@ -57,6 +57,12 @@ Keystatic runs locally by default. Its admin UI and API do not exist in producti
 
 An optional authenticated **GitHub mode** is implemented for the local editor. It requires an existing repository and a GitHub App; setup and the hosted-editor tradeoff are documented in [the CMS decision](docs/cms.md). GitHub-backed login cannot be verified until that repository and App are configured. The deployed static website does not offer an unauthenticated content editor.
 
+## Pull request reviews
+
+[CodeRabbit](https://www.coderabbit.ai/oss) provides free automated reviews for public repositories. The GitHub App must be installed on this repository; no API key or Actions secret is needed. Review settings live in [`.coderabbit.yaml`](.coderabbit.yaml): balanced feedback, automatic reviews of ready pull requests and subsequent commits, and no automatic approvals. Draft pull requests are skipped.
+
+The review guidance protects original publication text and dates, private consulting details, database revision safety, and production deployment guards. CodeRabbit feedback supplements the existing verification workflow. It does not publish content or deploy the website.
+
 ## Cloudflare deployment
 
 This project uses **Cloudflare Workers Static Assets** and **D1**. No Cloudflare Astro adapter or SSR runtime is required. The small Worker in `worker/index.ts` handles referral redirects; static assets bypass it. `CONTENT_DB` binds the content database for future authenticated content tools; public page requests do not query it.

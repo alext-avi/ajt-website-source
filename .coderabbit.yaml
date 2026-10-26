@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+early_access: false
+enable_free_tier: true
+reviews:
+  profile: chill
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  in_progress_fortune: false
+  poem: false
+  auto_approvals:
+    enabled: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+  path_instructions:
+    - path: "src/content/**"
+      instructions: >-
+        Preserve original author text, LinkedIn source links, and original post
+        dates. Review schema validity, publication status, and broken media links.
+        Do not invent event details or add dates or private slides to the
+        enterprise consulting talk.
+    - path: "data/content.json"
+      instructions: >-
+        This is a validated publication snapshot exported from D1. Flag drafts,
+        example content, private source material, or changes to original post
+        text and dates. Content and media retain their separate reserved rights.
+    - path: "scripts/**"
+      instructions: >-
+        Check publication validation and database revision safety. D1 writes must
+        preserve optimistic concurrency and revision history. Never suggest
+        exposing unauthenticated database writes or including credentials.
+    - path: ".github/workflows/**"
+      instructions: >-
+        Keep verification available to pull requests and forks. Deployment must
+        retain its repository, main-branch, event, and credential guards. Pull
+        requests must never receive production credentials or deploy the site.
