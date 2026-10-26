@@ -77,6 +77,15 @@ test('page and event queries use compatible dimension sets within the total limi
     ['customUser:ci_run_id', 'streamId', 'eventName'],
   );
   assert.deepEqual(events.metrics, [{ name: 'eventCount' }]);
+  assert.deepEqual(events.dimensionFilter.andGroup.expressions.at(-1), {
+    filter: {
+      fieldName: 'eventName',
+      inListFilter: {
+        values: ['page_view', 'screen_view'],
+        caseSensitive: true,
+      },
+    },
+  });
   const referencedDimensions = new Set([
     ...request.dimensions.map(({ name }) => name),
     ...request.dimensionFilter.andGroup.expressions.map(
@@ -134,6 +143,14 @@ test('independent event totals require page_view ingestion and reject screen_vie
   };
   const config = { ...options, pageRows };
   assert.equal(evaluateEventReport(events, config).verified, true);
+  assert.throws(
+    () =>
+      evaluateEventReport(
+        { ...events, rowCount: events.rows.length + 1 },
+        config,
+      ),
+    /Incomplete GA4 event report/,
+  );
   const incomplete = structuredClone(events);
   incomplete.rows[1].metricValues[0].value = '7';
   assert.equal(evaluateEventReport(incomplete, config).verified, false);

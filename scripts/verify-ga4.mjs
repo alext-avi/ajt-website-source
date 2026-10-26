@@ -41,12 +41,29 @@ export function realtimeRequest(runId, streamId) {
 }
 
 export function realtimeEventRequest(runId, streamId) {
+  const request = realtimeRequest(runId, streamId);
   return {
-    ...realtimeRequest(runId, streamId),
+    ...request,
     dimensions: ['customUser:ci_run_id', 'streamId', 'eventName'].map(
       (name) => ({ name }),
     ),
     metrics: [{ name: 'eventCount' }],
+    dimensionFilter: {
+      andGroup: {
+        expressions: [
+          ...request.dimensionFilter.andGroup.expressions,
+          {
+            filter: {
+              fieldName: 'eventName',
+              inListFilter: {
+                values: ['page_view', 'screen_view'],
+                caseSensitive: true,
+              },
+            },
+          },
+        ],
+      },
+    },
   };
 }
 
@@ -159,6 +176,15 @@ export function evaluateEventReport(
 ) {
   const dimensions = data.dimensionHeaders?.map((header) => header.name);
   const metrics = data.metricHeaders?.map((header) => header.name);
+  if (
+    data.rowCount !== undefined &&
+    (!Number.isSafeInteger(data.rowCount) ||
+      data.rowCount < 0 ||
+      data.rowCount > (data.rows || []).length)
+  )
+    throw new Error(
+      'Incomplete GA4 event report; refusing to infer absent event types.',
+    );
   if (
     data.kind !== 'analyticsData#runRealtimeReport' ||
     !['customUser:ci_run_id', 'streamId', 'eventName'].every((name) =>
