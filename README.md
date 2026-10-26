@@ -57,6 +57,17 @@ Keystatic runs locally by default. Its admin UI and API do not exist in producti
 
 An optional authenticated **GitHub mode** is implemented for the local editor. It requires an existing repository and a GitHub App; setup and the hosted-editor tradeoff are documented in [the CMS decision](docs/cms.md). GitHub-backed login cannot be verified until that repository and App are configured. The deployed static website does not offer an unauthenticated content editor.
 
+## Automated tests
+
+CI runs the existing Node content/database checks plus Playwright integration tests in desktop Chromium and mobile WebKit. The integration suite builds the production site and exercises it through Cloudflare's local HTTPS runtime, including navigation, themes, Writing search, referral links, media, slides, and analytics consent. It uses stubbed external services and requires no production credentials.
+
+```sh
+npx --no-install playwright install chromium webkit
+npm run test:ci
+```
+
+Failed browser tests retain screenshots and traces; CI uploads the HTML report and failure artifacts for seven days. See [the testing guide](docs/testing.md) for coverage, debugging commands, and optional Playwright MCP setup.
+
 ## Pull request reviews
 
 [CodeRabbit](https://www.coderabbit.ai/oss) provides free automated reviews for public repositories. The GitHub App must be installed on this repository; no API key or Actions secret is needed. Review settings live in [`.coderabbit.yaml`](.coderabbit.yaml): balanced feedback, automatic reviews of ready pull requests and subsequent commits, and no automatic approvals. Draft pull requests are skipped.
