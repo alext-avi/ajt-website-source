@@ -1,9 +1,26 @@
-import { analyticsLocation, analyticsReferrer } from '../lib/analytics';
+import {
+  analyticsLocation,
+  analyticsReferrer,
+  analyticsRunId,
+  validAnalyticsRunId,
+} from '../lib/analytics';
 
 const notice = document.querySelector<HTMLElement>('#analytics-notice');
 const measurementId = notice?.dataset.measurementId;
 const choiceKey = 'ajt.analytics-consent.v1';
+const runKey = 'ajt.analytics-ci-run.v1';
 let active = false;
+
+function getRunId() {
+  const current = analyticsRunId(location.href);
+  try {
+    if (current) sessionStorage.setItem(runKey, current);
+    const stored = current || sessionStorage.getItem(runKey);
+    return validAnalyticsRunId(stored) ? stored : undefined;
+  } catch {
+    return current;
+  }
+}
 
 function getChoice() {
   try {
@@ -46,6 +63,7 @@ function enableAnalytics() {
     ad_personalization: 'denied',
   });
   window.gtag('js', new Date());
+  const runId = getRunId();
   window.gtag('config', measurementId, {
     page_location: analyticsLocation(location.href),
     page_referrer: analyticsReferrer(document.referrer, location.origin),
@@ -53,6 +71,7 @@ function enableAnalytics() {
     allow_ad_personalization_signals: false,
     cookie_expires: 60 * 60 * 24 * 90,
     cookie_flags: 'SameSite=Lax;Secure',
+    ...(runId ? { user_properties: { ci_run_id: runId } } : {}),
   });
   const script = document.createElement('script');
   script.async = true;
@@ -89,6 +108,11 @@ if (notice && measurementId) {
     .querySelector('[data-analytics-deny]')
     ?.addEventListener('click', () => {
       saveChoice('denied');
+      try {
+        sessionStorage.removeItem(runKey);
+      } catch {
+        /* Storage may be unavailable. No analytics is sent after withdrawal. */
+      }
       notice.hidden = true;
       clearAnalyticsCookies();
       if (active) {

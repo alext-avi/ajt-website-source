@@ -2,7 +2,29 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../worker/index.ts';
 import { referralDestination } from '../src/lib/referrals.ts';
-import { analyticsLocation, analyticsReferrer } from '../src/lib/analytics.ts';
+import {
+  analyticsLocation,
+  analyticsReferrer,
+  analyticsRunId,
+  validAnalyticsRunId,
+} from '../src/lib/analytics.ts';
+
+test('only explicit production-test campaigns get a bounded GA4 run property', () => {
+  const base =
+    'https://site.test/?utm_source=playwright-ci&utm_medium=testing&utm_campaign=production-checks&utm_content=';
+  assert.equal(analyticsRunId(base + 'gha-12345-1'), 'gha-12345-1');
+  assert.equal(
+    analyticsRunId(base + 'local-proof-20261026-03'),
+    'local-proof-20261026-03',
+  );
+  assert.equal(
+    analyticsRunId(base.replace('playwright-ci', 'linkedin') + 'gha-12345-1'),
+    undefined,
+  );
+  assert.equal(analyticsRunId(base + 'email@example.test'), undefined);
+  assert.equal(analyticsRunId(base + 'local-' + 'a'.repeat(31)), undefined);
+  assert.equal(validAnalyticsRunId(null), false);
+});
 
 test('new referral sources work without registration and normalize consistently', () => {
   const linkedIn = referralDestination(

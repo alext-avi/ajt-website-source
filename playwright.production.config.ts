@@ -20,8 +20,13 @@ if (
 const runId =
   process.env.PLAYWRIGHT_RUN_ID ||
   'local-' + new Date().toISOString().replace(/[^0-9]/g, '');
-if (!/^[a-z0-9][a-z0-9._-]{0,100}$/i.test(runId))
-  throw new Error('PLAYWRIGHT_RUN_ID must be a short URL-safe identifier.');
+if (
+  runId.length > 36 ||
+  !/^(gha-[0-9]+-[0-9]+|local-[a-z0-9][a-z0-9._-]*)$/.test(runId)
+)
+  throw new Error(
+    'PLAYWRIGHT_RUN_ID must start with gha- or local- and fit GA4’s 36-character user-property limit.',
+  );
 
 const userAgentSuffix = ' AJT-Playwright/1.0';
 export default defineConfig({

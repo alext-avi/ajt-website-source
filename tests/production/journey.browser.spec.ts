@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { test, expect, type Response } from '@playwright/test';
 
 function collectionEvents(response: Response) {
@@ -27,6 +28,7 @@ function collectionEvents(response: Response) {
       source: params.get('cs'),
       medium: params.get('cm'),
       campaign: params.get('cn'),
+      runId: params.get('up.ci_run_id'),
     };
   });
 }
@@ -37,6 +39,8 @@ test('real production journeys deliver page views through the deployed Google ta
   baseURL,
 }, testInfo) => {
   const metadata = testInfo.config.metadata;
+  const expectedPageViews = new Map<string, string>();
+  let journeyVerified = false;
   const events: ReturnType<typeof collectionEvents> = [];
   const documents: {
     at: string;
@@ -73,6 +77,7 @@ test('real production journeys deliver page views through the deployed Google ta
           events.some(
             (event) =>
               event.measurementId === metadata.measurementId &&
+              event.runId === metadata.runId &&
               event.event === 'page_view' &&
               event.status >= 200 &&
               event.status < 300 &&
@@ -86,6 +91,7 @@ test('real production journeys deliver page views through the deployed Google ta
         },
       )
       .toBe(true);
+    expectedPageViews.set(path, await page.title());
   }
 
   try {
@@ -208,21 +214,35 @@ test('real production journeys deliver page views through the deployed Google ta
       body: await page.screenshot({ fullPage: true }),
       contentType: 'image/png',
     });
+    journeyVerified = true;
   } finally {
-    await testInfo.attach('production-network-evidence', {
-      body: JSON.stringify(
+    const evidencePath = testInfo.outputPath(
+      'production-network-evidence.json',
+    );
+    await writeFile(
+      evidencePath,
+      JSON.stringify(
         {
           ...metadata,
           project: testInfo.project.name,
+          deviceCategory: isMobile ? 'mobile' : 'desktop',
+          journeyVerified,
+          expectedPageViews: [...expectedPageViews].map(([path, title]) => ({
+            path,
+            title,
+          })),
           userAgent: testInfo.project.use.userAgent,
           documents,
           googleCollectionResponses: events,
           browserErrors: errors,
-          note: 'Real server and Google tag responses; collection acceptance alone does not prove GA4 reporting ingestion or that the source revision was deployed.',
+          note: 'Real server and Google tag responses; GA4 API read-back is a separate verification step.',
         },
         null,
         2,
       ),
+    );
+    await testInfo.attach('production-network-evidence', {
+      path: evidencePath,
       contentType: 'application/json',
     });
   }
