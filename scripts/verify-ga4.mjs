@@ -19,14 +19,12 @@ const names = [
 export function realtimeRequest(runId, streamId) {
   return {
     dimensions: names.map((name) => ({ name })),
-    metrics: [{ name: 'eventCount' }],
+    metrics: [{ name: 'screenPageViews' }],
     dimensionFilter: {
       andGroup: {
         expressions: [
           ['customUser:ci_run_id', runId],
           ['streamId', streamId],
-          // Keep eventName filter-only to fit Realtime's four-dimension limit.
-          ['eventName', 'page_view'],
         ].map(([fieldName, value]) => ({
           filter: {
             fieldName,
@@ -97,7 +95,7 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   if (
     data.kind !== 'analyticsData#runRealtimeReport' ||
     !names.every((name) => dimensions?.includes(name)) ||
-    !metrics?.includes('eventCount') ||
+    !metrics?.includes('screenPageViews') ||
     (data.rows !== undefined && !Array.isArray(data.rows))
   )
     throw new Error('Unexpected GA4 Realtime API response schema.');
@@ -105,18 +103,18 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   for (const row of data.rows || []) {
     const value = (name) =>
       row.dimensionValues?.[dimensions.indexOf(name)]?.value;
-    const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
+    const count = row.metricValues?.[metrics.indexOf('screenPageViews')]?.value;
     if (
       value('customUser:ci_run_id') !== runId ||
       value('streamId') !== streamId
     )
       throw new Error('GA4 returned rows outside the requested run or stream.');
     if (!/^[0-9]+$/.test(count) || !Number.isSafeInteger(Number(count)))
-      throw new Error('GA4 returned an invalid event count.');
+      throw new Error('GA4 returned an invalid page-view count.');
     rows.push({
       device: value('deviceCategory'),
       title: value('unifiedScreenName'),
-      eventCount: Number(count),
+      pageViews: Number(count),
     });
   }
   const missing = expectedViews.filter(
@@ -125,7 +123,7 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
         (row) =>
           row.device === view.device &&
           row.title === view.title &&
-          row.eventCount > 0,
+          row.pageViews > 0,
       ),
   );
   return { verified: missing.length === 0, rows, missing };

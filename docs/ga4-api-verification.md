@@ -32,9 +32,9 @@ Configure these non-secret Actions variables on the private production repo:
 
 Each completed browser journey writes a JSON manifest under test-results-production with its run ID, target, measurement ID, device category, successfully checked paths, and actual page titles. Failed, missing, or stale journey manifests are rejected.
 
-The API request filters page_view events by the exact ci_run_id and stream ID. It requires a positive event count for every expected page title on both desktop and mobile, rather than relying on aggregate traffic counts. It polls for up to three minutes for reporting latency; authentication/schema errors fail immediately. Missing rows at the deadline fail the step.
+The API request uses Google's screenPageViews metric and filters by the exact ci_run_id and web stream ID. This metric counts web page views (and app screen views for app streams), excluding unrelated events such as scrolls and outbound clicks. It requires a positive page-view count for every expected page title on both desktop and mobile, rather than relying on aggregate traffic counts. It polls for up to three minutes for reporting latency; authentication/schema errors fail immediately. Missing rows at the deadline fail the step.
 
-Realtime limits each request to four output dimensions. The query returns the run ID, stream ID, device category, and page title; eventName remains an exact page_view filter without consuming an output column.
+Realtime limits each request to four dimensions, including dimensions referenced only in filters. The query returns the run ID, stream ID, device category, and page title. Using the page-view metric avoids introducing a fifth eventName dimension through a filter.
 
 The production-playwright-results artifact retains the manifests, the API query, selected returned rows and counts, missing page/device pairs, attempt count, and timestamps for seven days. Authentication headers, cookies, and client/session IDs are not written to the JSON evidence. Failure traces can contain the test browser's anonymous network and storage state.
 

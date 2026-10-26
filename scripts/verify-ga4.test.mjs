@@ -29,7 +29,7 @@ function report(views = expectedViews) {
       { name: 'customUser:ci_run_id' },
       { name: 'streamId' },
     ],
-    metricHeaders: [{ name: 'eventCount' }],
+    metricHeaders: [{ name: 'screenPageViews' }],
     rows: views.map((view) => ({
       dimensionValues: [view.device, view.title, runId, streamId].map(
         (value) => ({ value }),
@@ -40,7 +40,7 @@ function report(views = expectedViews) {
 }
 const ok = (data) => ({ ok: true, status: 200, json: async () => data });
 
-test('the API request filters the exact run, stream, and real page-view events', () => {
+test('the API request uses the page-view metric within the total dimension limit', () => {
   const request = realtimeRequest(runId, streamId);
   assert.equal(request.dimensions.length, 4);
   assert.deepEqual(
@@ -55,8 +55,16 @@ test('the API request filters the exact run, stream, and real page-view events',
         return [filter.fieldName, filter.stringFilter.value];
       }),
     ),
-    { 'customUser:ci_run_id': runId, streamId, eventName: 'page_view' },
+    { 'customUser:ci_run_id': runId, streamId },
   );
+  assert.deepEqual(request.metrics, [{ name: 'screenPageViews' }]);
+  const referencedDimensions = new Set([
+    ...request.dimensions.map(({ name }) => name),
+    ...request.dimensionFilter.andGroup.expressions.map(
+      ({ filter }) => filter.fieldName,
+    ),
+  ]);
+  assert.equal(referencedDimensions.size, 4);
 });
 
 test('API read-back verifies both devices and all pages using the returned headers', () => {
@@ -83,7 +91,7 @@ test('unrelated runs, streams, or malformed counts cannot satisfy ingestion', ()
   malformed.rows[0].metricValues[0].value = 'NaN';
   assert.throws(
     () => evaluateReport(malformed, options),
-    /invalid event count/,
+    /invalid page-view count/,
   );
   const zero = report();
   zero.rows[0].metricValues[0].value = '0';
