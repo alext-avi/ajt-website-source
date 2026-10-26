@@ -6,6 +6,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# Hold the production lock through verification, deployment, and live checks.
+# PRs and the public source repo get unique groups and remain independent.
+concurrency:
+  group: ${{ github.repository == 'alext-avi/ajt-website' && github.ref == 'refs/heads/main' && 'production' || format('verification-{0}-{1}', github.run_id, github.run_attempt) }}
+  cancel-in-progress: false
 env:
   ASTRO_TELEMETRY_DISABLED: '1'
   SITE_URL: ${{ vars.SITE_URL }}
@@ -49,9 +54,6 @@ jobs:
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    concurrency:
-      group: production
-      cancel-in-progress: false
     steps:
       - name: Check deployment credentials
         id: credentials

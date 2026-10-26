@@ -24,7 +24,7 @@ If the secret is missing, the workflow still verifies the website and explicitly
 
 ## Ordering and recovery
 
-Production jobs share a concurrency group and do not interrupt a deployment already in progress. Immediately before upload, the job compares its commit to the current `main` tip. An outdated queued job skips its upload, so it cannot replace a newer build.
+Production main workflows share a concurrency group across verification, deployment, and live checks, and do not interrupt a run already in progress. A later deployment cannot replace the site while an earlier run is checking it. PRs and the public source repo use independent groups. Immediately before upload, the job compares its commit to the current `main` tip. An outdated queued job skips its upload, so it cannot replace a newer build.
 
 To retry a transient failure, re-run the workflow for the current `main` commit or use **Run workflow** on `main`. To roll back site content through this pipeline, revert the relevant commit and push the revert to `main`. A manual run from an old commit is intentionally skipped once `main` has moved forward.
 
