@@ -9,5 +9,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+playwright-report-production/
+test-results-production/
 artifacts/
 data/content.next.json

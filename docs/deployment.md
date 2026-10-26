@@ -4,6 +4,8 @@ The workflow in `.github/workflows/verify.yml` runs Astro diagnostics, a product
 
 The deployment job installs dependencies from the same lockfile, pulls published D1 records, validates and tests the snapshot build with the production variables, checks its canonical origin, and runs the installed Wrangler CLI. Pull-request verification uses the committed snapshot and needs no Cloudflare access. No separate deployment action or unpinned Wrangler download is needed. GitHub actions are pinned to full commit SHAs. The GitHub token has read-only repository access and is not persisted in the checkout.
 
+After the deploy stage, the production-checks job exercises the public website and its real Google Analytics tag with Playwright. It uses no Cloudflare credentials. If deployment was skipped because the token is absent, the job explicitly tests the existing production deployment; a passing test does not claim that the current source revision was uploaded. Failed deployments and outdated queued uploads do not run live checks. See [testing.md](testing.md) for the campaign markers and network evidence.
+
 ## One-time authorization
 
 Wrangler's local OAuth login cannot authenticate a GitHub-hosted runner. Use a separate account-owned Cloudflare API token for CI:
