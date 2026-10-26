@@ -23,10 +23,7 @@ export function isReportingDelay(error) {
     error.evidence?.lastHttpStatus === 200 &&
     !error.evidence.transportError &&
     !error.evidence.rows?.some(
-      (row) =>
-        row.event === 'screen_view' &&
-        row.eventCount > 0 &&
-        error.evidence.expectedViews.some((view) => view.runId === row.runId),
+      (row) => row.event === 'screen_view' && row.eventCount > 0,
     )
   );
 }
@@ -240,6 +237,9 @@ export function evaluateEventReport(
       eventCount: Number(count),
     };
   });
+  const screenViewsObserved = rows.some(
+    (row) => row.event === 'screen_view' && row.eventCount > 0,
+  );
   const missing = expectedViews.filter((view) => {
     const reportedViews = pageRows
       .filter((row) => row.runId === view.runId)
@@ -251,7 +251,7 @@ export function evaluateEventReport(
     return (
       reportedViews <= 0 ||
       eventCount('page_view') < reportedViews ||
-      eventCount('screen_view') !== 0
+      screenViewsObserved
     );
   });
   return { verified: missing.length === 0, rows, missing };

@@ -176,6 +176,24 @@ test('independent event totals require page_view ingestion and reject screen_vie
     metricValues: [{ value: '1' }],
   });
   assert.equal(evaluateEventReport(screens, config).verified, false);
+  const desktopProbe = {
+    ...config,
+    expectedViews: config.expectedViews.filter(
+      (view) => view.device === 'desktop',
+    ),
+  };
+  const unexpectedMobileScreen = evaluateEventReport(screens, desktopProbe);
+  assert.equal(unexpectedMobileScreen.verified, false);
+  assert.equal(
+    isReportingDelay(
+      new Ga4IngestionPending({
+        ...unexpectedMobileScreen,
+        expectedViews: desktopProbe.expectedViews,
+        lastHttpStatus: 200,
+      }),
+    ),
+    false,
+  );
   screens.rows[1].dimensionValues[0].value = 'screen_view';
   assert.equal(evaluateEventReport(screens, config).verified, false);
   assert.equal(
