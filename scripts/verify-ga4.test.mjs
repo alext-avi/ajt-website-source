@@ -10,6 +10,7 @@ import {
   loadExpectedViews,
   realtimeEventRequest,
   evaluateEventReport,
+  evaluateIngestionProbe,
 } from './verify-ga4.mjs';
 
 const runId = 'gha-12345-1';
@@ -93,6 +94,16 @@ test('page and event queries use compatible dimension sets within the total limi
     ),
   ]);
   assert.equal(referencedDimensions.size, 3);
+});
+
+test('an ingestion smoke probe requires a matching actual page and reports incomplete coverage', () => {
+  const one = evaluateIngestionProbe(report([expectedViews[3]]), options);
+  assert.equal(one.verified, true);
+  assert.deepEqual(one.ingestionProbe, expectedViews[3]);
+  assert.equal(one.missing.length, 15);
+  assert.equal(evaluateIngestionProbe(report([]), options).verified, false);
+  const unknown = report([{ ...expectedViews[0], title: 'Unvisited page' }]);
+  assert.equal(evaluateIngestionProbe(unknown, options).verified, false);
 });
 
 test('API read-back verifies both devices and all pages using the returned headers', () => {

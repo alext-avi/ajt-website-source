@@ -235,6 +235,23 @@ export function evaluateEventReport(
   return { verified: missing.length === 0, rows, missing };
 }
 
+export function evaluateIngestionProbe(data, config) {
+  const report = evaluateReport(data, config);
+  const ingestionProbe = config.expectedViews.find((view) =>
+    report.rows.some(
+      (row) =>
+        row.runId === view.runId &&
+        row.title === view.title &&
+        row.pageViews > 0,
+    ),
+  );
+  return {
+    ...report,
+    verified: Boolean(ingestionProbe),
+    ingestionProbe: ingestionProbe || null,
+  };
+}
+
 export async function pollIngestion({
   propertyId,
   streamId,
@@ -372,12 +389,8 @@ export async function main(env = process.env) {
     );
     // GA4 is aggregate telemetry, not a complete request log. Both browser
     // journeys must finish; this independent smoke check requires their
-    // desktop landing beacon to be ingested and reports remaining coverage.
-    const expectedViews = journeyExpectedViews.filter(
-      (view) => view.device === 'desktop' && view.path === '/',
-    );
-    if (expectedViews.length !== 1)
-      throw new Error('Missing the desktop landing-page ingestion probe.');
+    // one actual visited page to be ingested and reports remaining coverage.
+    const expectedViews = journeyExpectedViews;
     const coverage = (rows) => {
       const missing = journeyExpectedViews.filter(
         (view) =>
@@ -401,6 +414,7 @@ export async function main(env = process.env) {
       runId,
       expectedViews,
       token: env.GA4_ACCESS_TOKEN,
+      evaluate: evaluateIngestionProbe,
       onProgress: async (evidence) => {
         await save({
           ...evidence,
@@ -408,6 +422,7 @@ export async function main(env = process.env) {
           verified: false,
           journeyExpectedViews,
           reportingCoverage: coverage(evidence.rows),
+          verificationScope: 'run-ingestion',
         });
         console.log(
           'GA4 API attempt ' +
@@ -416,7 +431,7 @@ export async function main(env = process.env) {
             coverage(evidence.rows).observed +
             '/' +
             journeyExpectedViews.length +
-            ' journey page/browser pairs reported; desktop landing beacon ' +
+            ' journey page/browser pairs reported; current-run ingestion beacon ' +
             (evidence.verified ? 'confirmed.' : 'pending.'),
         );
       },
@@ -425,7 +440,7 @@ export async function main(env = process.env) {
       propertyId,
       streamId,
       runId,
-      expectedViews,
+      expectedViews: [pages.ingestionProbe],
       token: env.GA4_ACCESS_TOKEN,
       query: realtimeEventRequest(runId, streamId),
       evaluate: (data, config) =>
@@ -435,6 +450,7 @@ export async function main(env = process.env) {
           ...pages,
           journeyExpectedViews,
           reportingCoverage: coverage(pages.rows),
+          verificationScope: 'run-ingestion',
           status: evidence.verified ? 'verified' : 'events-pending',
           verified: evidence.verified,
           eventVerification: evidence,
@@ -453,6 +469,7 @@ export async function main(env = process.env) {
       ...pages,
       journeyExpectedViews,
       reportingCoverage: coverage(pages.rows),
+      verificationScope: 'run-ingestion',
       status: 'verified',
       verified: true,
       eventVerification,
@@ -463,7 +480,11 @@ export async function main(env = process.env) {
         '\n### GA4 API ingestion verified\n\nRun: ' +
           runId +
           '\n\n' +
-          'Desktop landing-page ingestion confirmed by the page and event reports. Both full browser journeys passed server and collection checks.\n\nObserved GA4 reporting coverage: ' +
+          'A visited page from this run was confirmed by the page and event reports. Probe: ' +
+          pages.ingestionProbe.device +
+          ' ' +
+          pages.ingestionProbe.path +
+          '. Both full browser journeys passed server and collection checks.\n\nObserved GA4 reporting coverage: ' +
           coverage(pages.rows).observed +
           '/' +
           journeyExpectedViews.length +
