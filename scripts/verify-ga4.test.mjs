@@ -369,6 +369,7 @@ test('only complete live journey manifests from this run and target can be used'
   await writeFile(desktopPath, JSON.stringify(desktop));
   const output = join(directory, 'api-evidence.json');
   const summary = join(directory, 'summary.md');
+  const log = t.mock.method(console, 'log', () => {});
   const pending = await main(
     {
       GA4_PROPERTY_ID: '560723382',
@@ -403,6 +404,13 @@ test('only complete live journey manifests from this run and target can be used'
   assert.equal(JSON.parse(saved).verified, false);
   assert.equal(saved.includes('not-for-evidence'), false);
   assert.match(await readFile(summary, 'utf8'), /ingestion pending/);
+  assert.ok(
+    log.mock.calls.some((call) =>
+      call.arguments[0].includes(
+        '::notice::GA4 ingestion is pending, not verified.',
+      ),
+    ),
+  );
 });
 
 test('network failures and request timeouts retry inside the deadline', async () => {
