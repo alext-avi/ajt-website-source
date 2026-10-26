@@ -340,10 +340,35 @@ export async function main(env = process.env) {
       throw new Error(
         'GA4 read-back requires valid property, stream, run, measurement, and access-token configuration.',
       );
-    const expectedViews = await loadExpectedViews(
+    const journeyExpectedViews = await loadExpectedViews(
       env.GA4_EVIDENCE_DIRECTORY || 'test-results-production',
       { runId, target, measurementId },
     );
+    // GA4 is aggregate telemetry, not a complete request log. Both browser
+    // journeys must finish; this independent smoke check requires their
+    // desktop landing beacon to be ingested and reports remaining coverage.
+    const expectedViews = journeyExpectedViews.filter(
+      (view) => view.device === 'desktop' && view.path === '/',
+    );
+    if (expectedViews.length !== 1)
+      throw new Error('Missing the desktop landing-page ingestion probe.');
+    const coverage = (rows) => {
+      const missing = journeyExpectedViews.filter(
+        (view) =>
+          !rows.some(
+            (row) =>
+              row.runId === view.runId &&
+              row.title === view.title &&
+              row.pageViews > 0,
+          ),
+      );
+      return {
+        expected: journeyExpectedViews.length,
+        observed: journeyExpectedViews.length - missing.length,
+        complete: missing.length === 0,
+        missing,
+      };
+    };
     const pages = await pollIngestion({
       propertyId,
       streamId,
@@ -351,15 +376,22 @@ export async function main(env = process.env) {
       expectedViews,
       token: env.GA4_ACCESS_TOKEN,
       onProgress: async (evidence) => {
-        await save({ ...evidence, status: 'pages-pending', verified: false });
+        await save({
+          ...evidence,
+          status: 'pages-pending',
+          verified: false,
+          journeyExpectedViews,
+          reportingCoverage: coverage(evidence.rows),
+        });
         console.log(
           'GA4 API attempt ' +
             evidence.attempts +
             ': ' +
-            (expectedViews.length - evidence.missing.length) +
+            coverage(evidence.rows).observed +
             '/' +
-            expectedViews.length +
-            ' expected page/device pairs received.',
+            journeyExpectedViews.length +
+            ' journey page/browser pairs reported; desktop landing beacon ' +
+            (evidence.verified ? 'confirmed.' : 'pending.'),
         );
       },
     });
@@ -375,6 +407,8 @@ export async function main(env = process.env) {
       onProgress: async (evidence) => {
         await save({
           ...pages,
+          journeyExpectedViews,
+          reportingCoverage: coverage(pages.rows),
           status: evidence.verified ? 'verified' : 'events-pending',
           verified: evidence.verified,
           eventVerification: evidence,
@@ -391,6 +425,8 @@ export async function main(env = process.env) {
     });
     const result = {
       ...pages,
+      journeyExpectedViews,
+      reportingCoverage: coverage(pages.rows),
       status: 'verified',
       verified: true,
       eventVerification,
@@ -401,8 +437,11 @@ export async function main(env = process.env) {
         '\n### GA4 API ingestion verified\n\nRun: ' +
           runId +
           '\n\n' +
-          expectedViews.length +
-          ' expected page/device pairs confirmed by the Realtime Data API.\n',
+          'Desktop landing-page ingestion confirmed by the page and event reports. Both full browser journeys passed server and collection checks.\n\nObserved GA4 reporting coverage: ' +
+          coverage(pages.rows).observed +
+          '/' +
+          journeyExpectedViews.length +
+          ' journey page/browser pairs. This is an ingestion smoke check; it does not attest complete analytics capture of every automated visit.\n',
       );
     return result;
   } catch (error) {

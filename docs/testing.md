@@ -35,7 +35,7 @@ npx --no-install playwright show-trace path/to/trace.zip
 
 ## Live production tests
 
-The live suite also writes machine-readable journey manifests for [GA4 API ingestion verification](ga4-api-verification.md). Production CI follows the browser tests with a read-only Realtime Data API query for that exact run and requires both devices' expected page views to appear. It needs the dedicated reporting identity and User-scoped ci_run_id definition described in that guide.
+The live suite also writes machine-readable journey manifests for [GA4 API ingestion verification](ga4-api-verification.md). After both full browser journeys pass, production CI uses read-only Realtime Data API reports to confirm this run's desktop landing-page ingestion and page_view event totals. It reports observed coverage across all journey pages separately; it does not require aggregate analytics to act as a complete request log. It needs the dedicated reporting identity and User-scoped ci_run_id definition described in that guide.
 
 The local suite verifies a build before publication. A separate production suite makes real HTTPS requests to the deployed website in desktop Chromium and mobile WebKit. It follows the referral Worker, accepts analytics consent, navigates the main sections, searches Writing, opens an article and a talk, and verifies successful page-view collection responses from the real Google tag. An HTTP project checks public slides, video headers, and private-route exclusions against the same public server. No responses are mocked and no Analytics events are injected by the test.
 
