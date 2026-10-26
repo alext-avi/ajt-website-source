@@ -1,5 +1,49 @@
 import { test, expect } from './fixtures';
 
+test('the CI run property starts after consent, follows navigation, and clears on withdrawal', async ({
+  page,
+}) => {
+  await page.route('https://www.googletagmanager.com/gtag/js**', (route) =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: '/* Local test tag. */',
+    }),
+  );
+  const runId = 'local-browser-check';
+  const storedRun = () =>
+    page.evaluate(() => sessionStorage.getItem('ajt.analytics-ci-run.v1'));
+  const config = () =>
+    page.evaluate(
+      () =>
+        (Reflect.get(window, 'dataLayer') as ArrayLike<unknown>[] | undefined)
+          ?.map((args) => Array.from(args))
+          .find((args) => args[0] === 'config')?.[2],
+    );
+  await page.goto(
+    '/r/playwright-ci/production-checks?utm_medium=testing&utm_content=' +
+      runId,
+  );
+  expect(await storedRun()).toBeNull();
+  await page
+    .getByRole('button', { name: 'Allow analytics', exact: true })
+    .click();
+  await expect
+    .poll(config)
+    .toMatchObject({ user_properties: { ci_run_id: runId } });
+  await page.goto('/about/');
+  await expect
+    .poll(config)
+    .toMatchObject({ user_properties: { ci_run_id: runId } });
+  await page
+    .getByRole('button', { name: 'Analytics choices', exact: true })
+    .click();
+  await Promise.all([
+    page.waitForEvent('load'),
+    page.getByRole('button', { name: 'No thanks', exact: true }).click(),
+  ]);
+  expect(await storedRun()).toBeNull();
+});
+
 test('declining analytics persists across page loads and preferences can be reopened', async ({
   page,
   externalRequests,

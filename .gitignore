@@ -13,3 +13,5 @@ playwright-report-production/
 test-results-production/
 artifacts/
 data/content.next.json
+
+gha-creds-*.json

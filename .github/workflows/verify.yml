@@ -113,7 +113,10 @@ jobs:
       needs.deploy.result == 'success' &&
       (needs.deploy.outputs.deployed == 'true' || needs.deploy.outputs.credentials-configured == 'false')
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
     container:
       image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
     env:
@@ -121,6 +124,11 @@ jobs:
       PLAYWRIGHT_GA4_MEASUREMENT_ID: ${{ vars.PUBLIC_GA4_MEASUREMENT_ID }}
       PLAYWRIGHT_RUN_ID: gha-${{ github.run_id }}-${{ github.run_attempt }}
       PRODUCTION_DEPLOYMENT: ${{ needs.deploy.outputs.deployed == 'true' && 'deployed-this-run' || 'existing-production-deployment' }}
+      GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+      GA4_STREAM_ID: ${{ vars.GA4_STREAM_ID }}
+      GA4_GOOGLE_CLOUD_PROJECT: ${{ vars.GA4_GOOGLE_CLOUD_PROJECT }}
+      GA4_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GA4_WORKLOAD_IDENTITY_PROVIDER }}
+      GA4_SERVICE_ACCOUNT: ${{ vars.GA4_SERVICE_ACCOUNT }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -143,8 +151,32 @@ jobs:
 
           The browser uses the deployed Google tag after consent. Reports attach Cloudflare response IDs and Google collection responses. Testing an existing deployment does not attest that this workflow's source revision was deployed.
           EOF
+      - name: Check GA4 API read-back configuration
+        run: |
+          for setting in GA4_PROPERTY_ID GA4_STREAM_ID GA4_GOOGLE_CLOUD_PROJECT GA4_WORKLOAD_IDENTITY_PROVIDER GA4_SERVICE_ACCOUNT; do
+            if [ -z "$(printenv "$setting")" ]; then
+              echo "::error::Missing $setting. Configure read-only GA4 API access before running the round-trip check."
+              exit 1
+            fi
+          done
       - name: Test the real website and Google Analytics collection
         run: npm run test:live
+      - name: Authenticate for read-only GA4 reporting
+        id: ga4-auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          project_id: ${{ vars.GA4_GOOGLE_CLOUD_PROJECT }}
+          workload_identity_provider: ${{ vars.GA4_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GA4_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/analytics.readonly
+          access_token_lifetime: 600s
+          create_credentials_file: false
+          export_environment_variables: false
+      - name: Confirm this run was ingested by the GA4 API
+        env:
+          GA4_ACCESS_TOKEN: ${{ steps.ga4-auth.outputs.access_token }}
+        run: npm run ga4:verify
       - name: Save live browser and network evidence
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

@@ -25,7 +25,8 @@
     "db:migrate:remote": "wrangler d1 migrations apply CONTENT_DB --remote",
     "db:seed": "node scripts/content-db.mjs seed",
     "db:pull": "node scripts/content-db.mjs pull",
-    "db:push": "node scripts/content-db.mjs push"
+    "db:push": "node scripts/content-db.mjs push",
+    "ga4:verify": "node scripts/verify-ga4.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.5",
