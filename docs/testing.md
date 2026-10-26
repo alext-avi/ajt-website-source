@@ -33,6 +33,22 @@ npx --no-install playwright show-trace path/to/trace.zip
 
 `npm run test:ci` runs type checking, builds and tests the site through Playwright, and runs the existing Node content/database/referral checks against that build. Every test gets a fresh browser context. CI retries a failed integration test once and rejects accidentally focused tests (`test.only`). Screenshots and traces are retained on failure; HTML reports and failure artifacts are uploaded by GitHub Actions for seven days. Local reports and test results are Git-ignored.
 
+## Live production tests
+
+The local suite verifies a build before publication. A separate production suite makes real HTTPS requests to the deployed website in desktop Chromium and mobile WebKit. It follows the referral Worker, accepts analytics consent, navigates the main sections, searches Writing, opens an article and a talk, and verifies successful page-view collection responses from the real Google tag. An HTTP project checks public slides, video headers, and private-route exclusions against the same public server. No responses are mocked and no Analytics events are injected by the test.
+
+Run it explicitly with the target and expected measurement ID:
+
+    PLAYWRIGHT_PRODUCTION_URL=https://alexander-thomas.alexander-jt.workers.dev \
+    PLAYWRIGHT_GA4_MEASUREMENT_ID=G-JLX8RLTRH4 \
+    npm run test:live
+
+Each browser starts at /r/playwright-ci/production-checks with medium testing and a unique utm_content run marker. The user agent includes AJT-Playwright/1.0 for server logs. No GA4 exclusion filter is enabled by this setup: traffic should remain visible in Realtime and subsequently in campaign reports, subject to Google's normal processing and bot filtering. Raw user agent is not a general GA4 data-filter dimension; use the campaign source to identify these visits. Google collection accepting a request is transport evidence; GA4's reporting UI or API is the separate evidence of ingestion.
+
+The HTML report at playwright-report-production/index.html attaches the tested URL, run marker, CI link, source revision, document statuses, Cloudflare Ray IDs, and successful Google collection responses. Only selected collection fields are saved in the JSON evidence, without cookies or client/session IDs. The live suite makes normal TLS checks, runs one worker with no retries, and requires explicit configuration to prevent accidental live traffic.
+
+On private production main, the production-checks CI job runs after successful verification and the deploy stage. It tests the current live site when deployment credentials are absent, and labels that as existing-production-deployment rather than claiming the workflow's revision was deployed. It runs after an actual successful upload when credentials are configured. Failed deployments and outdated queued uploads do not start live checks. Pull requests and the public source repository never automatically run production tests. Reports and network evidence are retained for seven days.
+
 ## Interactive test authoring with MCP
 
 Microsoft's [Playwright MCP](https://github.com/microsoft/playwright-mcp) can inspect pages and try interactions while authoring tests. It is a developer tool, separate from the test runner and CI. For Codex, a pinned, isolated setup is:
