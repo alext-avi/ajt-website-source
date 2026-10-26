@@ -1,0 +1,77 @@
+---
+import type { CollectionEntry } from 'astro:content';
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+const { post } = Astro.props;
+const data = post.data;
+---
+
+{data.video && (
+  <figure class="post-video">
+    <video
+      controls
+      playsinline
+      preload="none"
+      poster={data.videoPoster}
+      width={data.videoWidth}
+      height={data.videoHeight}
+      aria-label={`Video accompanying ${data.title}`}
+    >
+      <source src={data.video} type="video/mp4" />
+      <a href={data.video}>Download the video</a>
+    </video>
+  </figure>
+)}
+{data.linkedinVideoEmbed && (
+  <figure class="post-video post-video-linkedin" data-linkedin-video>
+    <div class="video-load-panel">
+      <p class="eyebrow">Video</p>
+      <p>Watch the original video here using LinkedIn’s player.</p>
+      <button class="video-load-button" type="button" hidden>
+        Load video player
+      </button>
+    </div>
+    <template>
+      <iframe
+        src={data.linkedinVideoEmbed}
+        height="399"
+        width="504"
+        frameborder="0"
+        allowfullscreen=""
+        title="Embedded post"
+      ></iframe>
+    </template>
+    <figcaption>
+      {data.linkedinVideoCredit && (
+        <span>Video by {data.linkedinVideoCredit}. </span>
+      )}
+      <a href={data.linkedinVideoSource ?? data.linkedinUrl}>
+        Watch on LinkedIn ↗
+      </a>
+    </figcaption>
+  </figure>
+)}
+<script>
+  for (const container of document.querySelectorAll<HTMLElement>(
+    '[data-linkedin-video]',
+  )) {
+    const button = container.querySelector<HTMLButtonElement>('button');
+    const template = container.querySelector<HTMLTemplateElement>('template');
+    const panel = container.querySelector<HTMLElement>('.video-load-panel');
+    if (!button || !template || !panel) continue;
+    button.hidden = false;
+    button.addEventListener(
+      'click',
+      () => {
+        const frame = template.content.cloneNode(true) as DocumentFragment;
+        const iframe = frame.querySelector('iframe');
+        if (!iframe) return;
+        iframe.tabIndex = 0;
+        panel.replaceWith(frame);
+        container.querySelector('iframe')?.focus();
+      },
+      { once: true },
+    );
+  }
+</script>

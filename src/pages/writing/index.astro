@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import Icon from '../../components/Icon.astro';
+import WritingExplorer from '../../components/WritingExplorer';
+import ContactBand from '../../components/ContactBand.astro';
+import { getPosts, formatDate, readingTime } from '../../lib/content';
+const posts = (await getPosts()).map((post) => ({
+  id: post.id,
+  ...post.data,
+  date: formatDate(post.data.date),
+  isoDate: post.data.date.toISOString(),
+  updated: undefined,
+  readingTime: readingTime(post.body),
+}));
+---
+
+<Base
+  title="Writing"
+  description="Notes on applied AI, engineering leadership, software architecture, and the realities of building dependable systems."
+>
+  <PageIntro
+    eyebrow="Notes from the work"
+    title="Thinking out loud. Carefully."
+    description="Practical notes on software, teams, and AI. The decisions, tradeoffs, and questions that are worth more than a quick answer."
+  />
+  <section class="shell page-body">
+    <WritingExplorer posts={posts} client:load />
+    <noscript>
+      <p class="preview-note">
+        All articles are listed above. Category filtering and search are
+        available with JavaScript enabled.
+      </p>
+    </noscript>
+    <div class="writing-end">
+      <span>Prefer a feed to an algorithm?</span>
+      <a href="/rss.xml">
+        Subscribe via RSS <Icon name="rss" size={15} />
+      </a>
+    </div>
+  </section>
+  <ContactBand
+    title="Something here got you thinking?"
+    description="I’m always interested in how other people are approaching the same problems."
+  />
+</Base>

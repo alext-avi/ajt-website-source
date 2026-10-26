@@ -1,0 +1,49 @@
+---
+import Icon from './Icon.astro';
+import SignatureMark from './SignatureMark.astro';
+import { site } from '../lib/site';
+interface Props {
+  analyticsEnabled?: boolean;
+}
+const { analyticsEnabled = false } = Astro.props;
+---
+
+<footer class="site-footer">
+  <div class="shell footer-top">
+    <div>
+      <a class="wordmark footer-wordmark" href="/">
+        <SignatureMark />
+        <span>Alexander Thomas</span>
+      </a>
+      <p>Good software. Thoughtful leadership. Practical AI.</p>
+    </div>
+    <div class="footer-links">
+      {site.linkedin && (
+        <a href={site.linkedin}>
+          LinkedIn <Icon name="external" size={15} />
+        </a>
+      )}
+      <a href={site.github}>
+        GitHub <Icon name="external" size={15} />
+      </a>
+      <a href="/rss.xml">
+        RSS <Icon name="rss" size={14} />
+      </a>
+      <a href="/privacy/">Privacy</a>
+      {analyticsEnabled && (
+        <button
+          class="footer-analytics"
+          type="button"
+          data-open-analytics-preferences
+        >
+          Analytics choices
+        </button>
+      )}
+    </div>
+  </div>
+  <div class="shell footer-bottom">
+    <span>© {new Date().getFullYear()} Alexander Thomas</span>
+    <span>Built with intention. And Astro.</span>
+    <a href="#top">Back to top ↑</a>
+  </div>
+</footer>

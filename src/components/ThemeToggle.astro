@@ -1,0 +1,54 @@
+---
+import Icon from './Icon.astro';
+---
+
+<button
+  class="theme-toggle"
+  type="button"
+  data-theme-toggle
+  aria-label="Switch to light mode"
+  title="Switch to light mode"
+  hidden
+>
+  <span class="theme-icon-sun">
+    <Icon name="sun" size={18} />
+  </span>
+  <span class="theme-icon-moon">
+    <Icon name="moon" size={18} />
+  </span>
+</button>
+<script>
+  const button = document.querySelector<HTMLButtonElement>(
+    '[data-theme-toggle]',
+  );
+  function updateTheme(theme: 'dark' | 'light') {
+    document.documentElement.dataset.theme = theme;
+    const label =
+      theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    button?.setAttribute('aria-label', label);
+    button?.setAttribute('title', label);
+    document
+      .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'dark' ? '#091321' : '#faf8f2');
+  }
+  updateTheme(
+    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
+  );
+  if (button) {
+    button.hidden = false;
+    button.addEventListener('click', () => {
+      const theme =
+        document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      updateTheme(theme);
+      try {
+        localStorage.setItem('ajt.theme', theme);
+      } catch {
+        /* The current-page choice still works. */
+      }
+    });
+  }
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'ajt.theme')
+      updateTheme(event.newValue === 'light' ? 'light' : 'dark');
+  });
+</script>

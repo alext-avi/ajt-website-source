@@ -1,0 +1,33 @@
+---
+interface Props {
+  measurementId: string;
+}
+const { measurementId } = Astro.props;
+---
+
+<aside
+  id="analytics-notice"
+  class="analytics-notice"
+  data-measurement-id={measurementId}
+  aria-label="Analytics choices"
+  hidden
+>
+  <p class="analytics-title">Allow analytics?</p>
+  <p>
+    I use Google Analytics to understand visits, activity on this site, and
+    which links bring people here. Optional analytics cookies stay off until you
+    choose.
+  </p>
+  <div class="analytics-actions">
+    <button type="button" data-analytics-allow>
+      Allow analytics
+    </button>
+    <button type="button" data-analytics-deny>
+      No thanks
+    </button>
+    <a href="/privacy/">Details</a>
+  </div>
+</aside>
+<script>
+  import '../scripts/analytics';
+</script>

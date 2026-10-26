@@ -1,0 +1,24 @@
+---
+import Icon from './Icon.astro';
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = 'Have something worth building?',
+  description = 'A technology challenge, a leadership opportunity, or a room full of curious people. I’d like to hear about it.',
+} = Astro.props;
+---
+
+<section class="contact-band">
+  <div class="shell contact-band-inner">
+    <div>
+      <p class="eyebrow">Let’s connect</p>
+      <h2>{title}</h2>
+      <p>{description}</p>
+    </div>
+    <a class="button light" href="/contact/">
+      Start a conversation <Icon />
+    </a>
+  </div>
+</section>

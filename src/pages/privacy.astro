@@ -1,0 +1,123 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+const analyticsConfigured = /^G-[A-Z0-9]+$/.test(
+  (import.meta.env.PUBLIC_GA4_MEASUREMENT_ID || '').trim(),
+);
+---
+
+<Base
+  title="Privacy & analytics"
+  description="How this website uses optional analytics and referral links, and how to change your analytics choice."
+>
+  <PageIntro
+    eyebrow="Your visit"
+    title="Privacy & analytics."
+    description="A few straightforward notes about what this site measures and what you can control."
+  />
+  <section class="shell page-body article-grid">
+    <article class="prose">
+      {!analyticsConfigured && (
+        <>
+          <h2>Analytics are off</h2>
+          <p>
+            This site is not currently sending visitor analytics to Google or
+            setting analytics cookies.
+          </p>
+        </>
+      )}
+      {analyticsConfigured && (
+        <>
+          <h2>Optional Google Analytics</h2>
+          <p>
+            This site uses Google Analytics 4 to understand which pages people
+            visit and which shared links bring them here. The Google tag loads
+            only after you choose “Allow analytics.” Choosing “No thanks” keeps
+            it off. You can browse the whole site either way.
+          </p>
+          <p>
+            When enabled, analytics can include page visits, campaign source,
+            browser and device information, and approximate location. Enhanced
+            measurement is enabled, so supported interactions such as searches,
+            scrolls, outbound clicks, and file downloads may also be measured.
+            Advertising personalization and Google signals are disabled in the
+            site’s tag. This site does not use session recordings.
+          </p>
+          <h2>Your choice</h2>
+          <p>
+            Your analytics choice is saved in this browser’s local storage. Use
+            “Analytics choices” in the footer to change it. Declining after
+            previously allowing analytics removes this site’s Google Analytics
+            cookies and reloads the page with the tag disabled. Analytics
+            cookies are configured to expire 90 days after their last update.
+          </p>
+          <p>
+            The site also respects browser Do Not Track and Global Privacy
+            Control signals by keeping the Google tag off.
+          </p>
+        </>
+      )}
+      <h2>Videos</h2>
+      <p>
+        Some articles include video files hosted on this site. These do not load
+        a third-party player. Shared videos use LinkedIn’s player only after you
+        select “Load video player.” That connects your browser to LinkedIn,
+        whose privacy and cookie policies then apply. You can also follow the
+        original video link directly.
+      </p>
+      <p>
+        <a href="https://www.linkedin.com/legal/privacy-policy">
+          LinkedIn’s privacy policy
+        </a>
+        .
+      </p>
+      <h2>Your display preference</h2>
+      <p>
+        The light or dark appearance you choose is saved in this browser’s local
+        storage so it stays consistent as you browse.
+      </p>
+      <h2>Referral links</h2>
+      <p>
+        Links such as <code>/r/linkedin</code> add campaign information to the
+        destination URL. This identifies where a link was shared, rather than
+        identifying an individual visitor. No separate referral cookie or
+        visitor database is used. Campaign information is measured only when
+        optional analytics is enabled.
+      </p>
+      <h2>Page addresses and site hosting</h2>
+      {analyticsConfigured && (
+        <p>
+          The initial page address supplied by this site’s tag includes the path
+          and recognized campaign parameters, with unrelated query parameters
+          and fragments excluded. Automatic measurement events may also include
+          addresses, search terms, and details of the interaction. Please keep
+          personal or sensitive information out of search terms and referral
+          links.
+        </p>
+      )}
+      <p>
+        Learn{' '}
+        <a href="https://policies.google.com/technologies/partner-sites">
+          how Google uses information from sites that use its services
+        </a>
+        .
+      </p>
+      <p>
+        Cloudflare hosts this website and processes the network requests needed
+        to serve it. Email and professional profile links open the relevant
+        service.
+      </p>
+      <p>
+        Read{' '}
+        <a href="https://policies.google.com/privacy">
+          Google’s privacy policy
+        </a>{' '}
+        and{' '}
+        <a href="https://www.cloudflare.com/privacypolicy/">
+          Cloudflare’s privacy policy
+        </a>{' '}
+        for information about those services.
+      </p>
+    </article>
+  </section>
+</Base>

@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { site, contactHref } from '../lib/site';
+---
+
+<Base
+  title="Contact"
+  description="Get in touch with Alexander Thomas about technology leadership, architecture, practical AI, and speaking opportunities."
+>
+  <PageIntro
+    eyebrow="Get in touch"
+    title="Let’s talk about the work."
+    description="A challenging system, a leadership opportunity, or a conversation worth having. Tell me what you’re working through."
+  />
+  <section class="shell page-body contact-grid">
+    <div>
+      <div class="contact-links">
+        {site.email && (
+          <a class="contact-item" href={contactHref()}>
+            <div>
+              <p class="contact-item-label">Email is the best place to start</p>
+              <strong>{site.email}</strong>
+            </div>
+            <Icon name="external" size={25} />
+          </a>
+        )}
+        {site.linkedin && (
+          <a class="contact-item" href={site.linkedin}>
+            <div>
+              <p class="contact-item-label">The professional network</p>
+              <strong>Connect on LinkedIn</strong>
+            </div>
+            <Icon name="external" size={25} />
+          </a>
+        )}
+        <a class="contact-item" href={site.github}>
+          <div>
+            <p class="contact-item-label">Code & projects</p>
+            <strong>github.com/alext-avi</strong>
+          </div>
+          <Icon name="external" size={25} />
+        </a>
+      </div>
+      <p class="contact-location">
+        Based in Apex, North Carolina. Open to conversations further afield.
+      </p>
+    </div>
+    <aside class="contact-context">
+      <p class="eyebrow mb-4">A few good reasons to connect</p>
+      <h2>What’s on your mind?</h2>
+      <p>
+        A little context helps. What are you trying to do, what is getting in
+        the way, and what would a useful next step look like?
+      </p>
+      <ul>
+        <li>
+          <span>01</span>Technology & engineering leadership
+        </li>
+        <li>
+          <span>02</span>Software architecture & modernization
+        </li>
+        <li>
+          <span>03</span>Practical AI & development workflows
+        </li>
+        <li>
+          <span>04</span>Conferences, meetups & workshops
+        </li>
+      </ul>
+    </aside>
+  </section>
+</Base>

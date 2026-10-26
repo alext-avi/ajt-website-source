@@ -1,0 +1,45 @@
+---
+title: The backup plan belongs in the design
+summary: About a month ago, I refactored the agent network for a project I’m working on. Every agent file got a model assignment appropriate to its job, mostly Sonnet and Opus. Fable could orchestrate, but I did not want it dragging every…
+draft: false
+featured: false
+example: false
+tags:
+  - AI agents
+  - Security
+  - Cost controls
+image: /images/linkedin/7498347111021977600-1.jpg
+imageAlt: "Jurassic Park meme: Agents, uh, find a way."
+date: 2026-08-26T00:00:00.000Z
+category: Architecture
+linkedinUrl: https://www.linkedin.com/posts/alexander-jt_agenticai-aisecurity-share-7498347107683176448-EMR2
+linkedinRepost: false
+linkedinVideo: false
+videoWidth: 1280
+videoHeight: 720
+---
+
+About a month ago, I refactored the agent network for a project I’m working on\. Every agent file got a model assignment appropriate to its job, mostly Sonnet and Opus\. Fable could orchestrate, but I did not want it dragging every subagent along for the ride\.
+
+Worked great\. No notes\.
+
+Then Anthropic had a Sonnet and Opus outage while I was away from my desk\.
+
+The Fable orchestrator went ahead and elevated every agent to Fable\. “Got the job done, boss\.” Very proudly, I might add\. They seemed indifferent to what they had done to my token spend\.
+
+That was neither intended nor desired\. I had set those model assignments specifically to prevent it\.
+
+Last week, [Bryan Lorette](<https://www.linkedin.com/in/blorette/>)’s Assume Agentic Overreach talk at [Cloud Security Alliance Triangle Chapter](<https://www.linkedin.com/company/cloud-security-alliance-triangle-chapter/>) started with the OpenAI/Hugging Face incident and followed the problem through agent visibility, inherited permissions, runtime guardrails, and recovery\.
+
+My example was fresh in my mind, and the theme here was undeniable: Each system kept pursuing its objective through a path the human did not intend\.
+
+That ability is why agents are useful\. It also makes “we told it not to” a fairly thin recovery strategy\.
+
+The operating assumption I took away is that we'd all better learn to expect behavior we did not model\. Better visibility, tighter permissions, and runtime checks can reduce the likelihood and contain the damage, but some things will still slip through\.
+
+You need to know what happened and have a credible way back\. Fortunately for me, it just meant taking Friday off for my Claude credits to recover\.
+
+Thanks to Bryan for the discussion, and the CSA Triangle team for putting it together\.
+
+The backup plan belongs in the design, not in the incident report\.<br />
+[\#AgenticAI](<https://www.linkedin.com/search/results/all/?keywords=%23agenticai&origin=HASH_TAG_FROM_FEED>) [\#AISecurity](<https://www.linkedin.com/search/results/all/?keywords=%23aisecurity&origin=HASH_TAG_FROM_FEED>)

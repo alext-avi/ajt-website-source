@@ -1,0 +1,63 @@
+---
+interface Props {
+  kind?: 'systems' | 'agents' | 'mobile' | 'platform';
+}
+const { kind = 'systems' } = Astro.props;
+---
+
+<div class:list={['project-art', kind]} aria-hidden="true">
+  {kind === 'systems' && (
+    <div class="systems-art">
+      <div class="art-chip">TIMEKEEPING</div>
+      <span class="art-connector"></span>
+      <div class="art-node">
+        Context
+        <br />
+        <b>Planning engine</b>
+        <span>Human judgment, informed.</span>
+      </div>
+      <span class="art-connector"></span>
+      <div class="art-chip">STAFFING NOTES</div>
+    </div>
+  )}
+  {kind === 'agents' && (
+    <div class="agents-art">
+      <div class="art-code">
+        <span class="code-muted">// A better development loop</span>
+        <br />
+        <span class="code-accent">plan</span> <span class="code-arrow">→</span>{' '}
+        implement
+        <br />
+        <span class="code-accent">review</span>{' '}
+        <span class="code-arrow">→</span> verify
+        <br />
+        <span class="code-muted">human accountable throughout</span>
+      </div>
+      <span class="terminal-cursor"></span>
+    </div>
+  )}
+  {kind === 'mobile' && (
+    <div class="mobile-art">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-block"></div>
+        <div class="phone-line"></div>
+        <div class="phone-line short"></div>
+        <div class="phone-grid">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <span class="mobile-caption">MOBILE ↔ PLATFORM</span>
+    </div>
+  )}
+  {kind === 'platform' && (
+    <div class="platform-art">
+      <div class="platform-layer">EXPERIENCE</div>
+      <div class="platform-layer">SERVICES</div>
+      <div class="platform-layer">RELIABLE FOUNDATIONS</div>
+    </div>
+  )}
+</div>

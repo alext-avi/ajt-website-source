@@ -1,0 +1,198 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import ContactBand from '../components/ContactBand.astro';
+import { site } from '../lib/site';
+---
+
+<Base
+  title="About"
+  description="A software builder who leads. Alexander Thomas on engineering leadership, hands-on architecture, and putting AI to useful work."
+>
+  <PageIntro
+    eyebrow="A little about me"
+    title="A builder who leads."
+    description="I like turning unclear, consequential problems into software people can use and teams can confidently own."
+  />
+  <section class="shell page-body about-grid">
+    <div class="body-copy">
+      <p>
+        I’m Alexander Thomas. Alex is fine. I’m Chief Technology Officer at
+        Applied Visions, where I work with organizations and engineering teams
+        to build new products, modernize existing systems, and put AI to
+        practical use.
+      </p>
+      <p>
+        I’ve spent nearly two decades moving between business strategy and
+        technical execution. The work has ranged from consumer mobile
+        applications and transit systems to multi-tenant SaaS platforms and
+        enterprise AI.
+      </p>
+      <p>
+        The common thread is getting close enough to the problem to make good
+        decisions, then staying involved long enough to see those decisions
+        through.
+      </p>
+      <h2>Leadership with technical context.</h2>
+      <p>
+        My leadership work spans more than 40 people across engineering, QA,
+        product, and design. I care about giving teams clear priorities, useful
+        feedback, and enough context to make decisions without waiting for
+        permission at every step.
+      </p>
+      <p>
+        I also stay hands-on. Architecture, code, delivery pipelines, and
+        production behavior keep strategy honest. Understanding the details
+        helps me ask better questions and recognize when a team needs a
+        decision, a different approach, or simply room to work.
+      </p>
+      <h2>AI, with an operating plan.</h2>
+      <p>
+        I build AI-powered products and help teams adopt AI-assisted
+        development. That includes implementation, review, testing, and the less
+        glamorous work of making a change sustainable across real projects.
+      </p>
+      <p>
+        I start with the work, not the model. Some problems need interpretation
+        and judgment. Others need dependable rules. Either way, ownership,
+        permissions, evaluation, observability, and cost belong in the design.
+      </p>
+      <h2>A few chapters along the way.</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <span>2026–now</span>
+          <div>
+            <h3>CTO, Applied Visions</h3>
+            <p>
+              Technical direction, practical AI adoption, software
+              modernization, and product delivery.
+            </p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span>2019–2026</span>
+          <div>
+            <h3>Principal Solutions Architect, Applied Visions</h3>
+            <p>
+              Solution architecture and technical delivery across custom
+              products, enterprise AI, and modernization programs.
+            </p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span>2019–now</span>
+          <div>
+            <h3>CTO & Product Owner, MealTrack</h3>
+            <p>
+              Connecting roadmap, architecture, customer commitments, and
+              delivery for a multi-tenant SaaS platform.
+            </p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span>2009–2019</span>
+          <div>
+            <h3>Engineering & technical leadership, Applied Visions</h3>
+            <p>
+              Desktop, mobile, web, cloud, and integration systems, including
+              transit and consumer applications.
+            </p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span>2007–2009</span>
+          <div>
+            <h3>Applications Developer, Computer Associates</h3>
+            <p>
+              Enterprise web applications, backend integrations, and data
+              pipelines.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="profile-aside">
+      <p class="eyebrow">At a glance</p>
+      <h2>Strategy to source code.</h2>
+      <dl>
+        <div>
+          <dt>Currently</dt>
+          <dd>
+            CTO at Applied Visions
+            <br />
+            CTO & Product Owner at MealTrack
+          </dd>
+        </div>
+        <div>
+          <dt>Based in</dt>
+          <dd>Apex, North Carolina</dd>
+        </div>
+        <div>
+          <dt>Experience</dt>
+          <dd>Nearly 20 years in software delivery</dd>
+        </div>
+        <div>
+          <dt>Education</dt>
+          <dd>
+            BS, Computer Science
+            <br />
+            Stony Brook University
+          </dd>
+        </div>
+        <div>
+          <dt>My technical home base</dt>
+          <dd>
+            .NET / C# · React · TypeScript
+            <br />
+            Azure · Distributed systems · Applied AI
+          </dd>
+        </div>
+      </dl>
+      {site.linkedin && (
+        <a class="text-link" href={site.linkedin}>
+          Connect on LinkedIn <Icon name="external" size={16} />
+        </a>
+      )}
+      <br />
+      <a class="text-link" href={site.github}>
+        Find me on GitHub <Icon name="external" size={16} />
+      </a>
+    </aside>
+  </section>
+  <section class="shell section border-top">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">How I work</p>
+        <h2>A few things I come back to.</h2>
+      </div>
+    </div>
+    <div class="principles">
+      <article class="principle">
+        <span>01 / CONTEXT</span>
+        <h3>Start with the actual problem.</h3>
+        <p>
+          Understand how the business works before deciding what the technology
+          should do. A useful question often beats a clever solution.
+        </p>
+      </article>
+      <article class="principle">
+        <span>02 / OWNERSHIP</span>
+        <h3>Make responsibility clear.</h3>
+        <p>
+          Give people the context and authority to do good work. Build systems
+          that someone can understand, maintain, and operate.
+        </p>
+      </article>
+      <article class="principle">
+        <span>03 / JUDGMENT</span>
+        <h3>Keep the tradeoffs visible.</h3>
+        <p>
+          Cost, security, delivery time, and maintainability all count. The best
+          choice depends on the problem and the team that will live with it.
+        </p>
+      </article>
+    </div>
+  </section>
+  <ContactBand title="Good work starts with a conversation." />
+</Base>

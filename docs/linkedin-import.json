@@ -1,0 +1,572 @@
+{
+  "importedOn": "2026-10-25",
+  "requestedRange": {
+    "start": "2025-10-25",
+    "end": "2026-10-25"
+  },
+  "exportFile": "AggregateAnalytics_Alexander Thomas_2025-10-26_2026-10-25.xlsx",
+  "dateMethod": "Original Post Publish Date from LinkedIn export; matched by canonical post ID. No dates inferred from relative ages or activity IDs.",
+  "bodyMethod": "Published author text captured from the signed-in activity view. Body whitespace normalized only for the integrity hash. Website titles and excerpt summaries are editorial metadata.",
+  "mediaMethod": "Sixteen original attached images and GIFs copied unchanged. Three matching local video originals are hosted directly; two shared videos use their creators’ LinkedIn video-only players. Source links retain shared-post context; third-party reshare text is excluded.",
+  "posts": [
+    {
+      "slug": "2026-10-22-software-risk-without-code-changes",
+      "title": "Software risk changes even when code does not",
+      "date": "2026-10-22",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsopen-share-7519154145040203776-xBgZ",
+      "activityId": "7519154145744936960",
+      "postId": "7519154145040203776",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B22"
+      },
+      "normalizedBodySha256": "de40a7d6f6b7f49b9994fd9daeebd9ac556f0caff42c402ace01f5441eed2961",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-10-20-all-things-open-day-two",
+      "title": "All Things Open: day two",
+      "date": "2026-10-20",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsopen-ugcPost-7518311365556523008-cjI2",
+      "activityId": "7518311366265356288",
+      "postId": "7518311365556523008",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F28"
+      },
+      "normalizedBodySha256": "4bb89d3cf0cee9bf9fcb7b56d73cde2856ba88f84a7d4cbf67101f054d95b5ce",
+      "localImages": [
+        "/images/linkedin/7518311366265356288-1.jpg",
+        "/images/linkedin/7518311366265356288-2.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-10-16-speaking-at-all-things-open",
+      "title": "Speaking at All Things Open",
+      "date": "2026-10-16",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsopen-share-7516835012823121920-_NiS",
+      "activityId": "7516836009108668416",
+      "postId": "7516835012823121920",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F22"
+      },
+      "normalizedBodySha256": "7c5c9910beb7f99677ff293d453de9f4b5bcabfdbaefcedca618817ff6a9caf5",
+      "localImages": [
+        "/images/linkedin/7516836009108668416-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-10-12-test-strategy-speed-limit",
+      "title": "Your test strategy determines your speed limit",
+      "date": "2026-10-12",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_ive-never-played-go-ive-played-enough-ugcPost-7515438895371534337-4bU4",
+      "activityId": "7515438947615858688",
+      "postId": "7515438895371534337",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B20"
+      },
+      "normalizedBodySha256": "c7a9cf6091cd22398945010652df5308aa362c92d1389a632ed8aef70bf30f23",
+      "localImages": [],
+      "videoOnLinkedIn": true
+    },
+    {
+      "slug": "2026-10-06-product-value-when-agents-can-act",
+      "title": "Why should your product still exist?",
+      "date": "2026-10-06",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_as-agents-get-more-capable-why-should-your-share-7513244061248471041-hY_U",
+      "activityId": "7513244062813118464",
+      "postId": "7513244061248471041",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B35"
+      },
+      "normalizedBodySha256": "e2835f84abde2a8a6bddf25e5a8a68864c5204c6c68360337b590167824b68e2",
+      "localImages": [
+        "/images/linkedin/7513244062813118464-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-10-05-ai-conference-drumline",
+      "title": "A drumline at The AI Conference",
+      "date": "2026-10-05",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_something-about-a-drumline-always-gets-me-ugcPost-7512910287461871616-layk",
+      "activityId": "7512910287960846338",
+      "postId": "7512910287461871616",
+      "commentary": true,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F37"
+      },
+      "normalizedBodySha256": "ead48de39095919c233e8183bf83d40fe3215e63ee20dbe188899e487571d054",
+      "localImages": [],
+      "videoOnLinkedIn": true
+    },
+    {
+      "slug": "2026-10-05-buttery-agent-interface-hack-day",
+      "title": "Buttery: an agent as the application interface",
+      "date": "2026-10-05",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_conferences-hack-day-a-one-day-hackathon-ugcPost-7512908338322444288-61mN",
+      "activityId": "7512908390185201664",
+      "postId": "7512908338322444288",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B19"
+      },
+      "normalizedBodySha256": "8ace06a32dad66aeff7bfd42f28478ae45a57346dd17e19e7f5f12b5138bd403",
+      "localImages": [],
+      "videoOnLinkedIn": true
+    },
+    {
+      "slug": "2026-10-02-incentives-and-ai-adoption",
+      "title": "Incentives, AI, and the people whose work changes",
+      "date": "2026-10-02",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_this-gif-brings-me-so-much-joy-it-feels-share-7511807558056357888-KzWW",
+      "activityId": "7511807559683678208",
+      "postId": "7511807558056357888",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B30"
+      },
+      "normalizedBodySha256": "5c589d7761b60bf177d3d53a041acccd21282ca616208152f27b0ef3eac81c40",
+      "localImages": [
+        "/images/linkedin/7511807559683678208-1.gif"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-10-02-smaller-models-for-code-review",
+      "title": "Trying a smaller model for code review",
+      "date": "2026-10-02",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_last-night-dave-sifry-gave-an-ignite-talk-share-7511646266439647232-NDMy",
+      "activityId": "7511650194728341504",
+      "postId": "7511646266439647232",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B21"
+      },
+      "normalizedBodySha256": "7a08672ac27495d13fdddbbb187de502a1b9e7ffac8094e6dcf01b2c811909dc",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-10-01-ai-conference-day-two",
+      "title": "The AI Conference: day two",
+      "date": "2026-10-01",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_the-ai-conference-day-2-3-lets-get-it-share-7511477807714058240-QWE6",
+      "activityId": "7511477808779538433",
+      "postId": "7511477807714058240",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F21"
+      },
+      "normalizedBodySha256": "84785e6b692ecc453d861110cc909af1913fe01c7f2c0fc7e971472dbeb1750d",
+      "localImages": [
+        "/images/linkedin/7511477808779538433-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-10-01-agent-traces-and-delivery-cost",
+      "title": "Agent traces, visibility, and delivery cost",
+      "date": "2026-10-01",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_i-did-promise-to-keep-you-posted-from-the-share-7511476294761684992-FOyq",
+      "activityId": "7511476297815187456",
+      "postId": "7511476294761684992",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B11"
+      },
+      "normalizedBodySha256": "649c55532ee8e03bc08bf267de1f7a87533e42dbdbd410aadce91bec11bc8480",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-09-30-learning-at-the-ai-conference",
+      "title": "Learning at The AI Conference",
+      "date": "2026-09-30",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_ai-appliedai-aistrategy-share-7511131315522523136-Tczc",
+      "activityId": "7511131316512378882",
+      "postId": "7511131315522523136",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F27"
+      },
+      "normalizedBodySha256": "9804a8c58b967e6532a96b23d4d55ad90e532275140ea7055ca2a6163e615ce7",
+      "localImages": [
+        "/images/linkedin/7511131316512378882-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-09-29-ai-for-coral-restoration",
+      "title": "AI for coral restoration",
+      "date": "2026-09-29",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_this-is-one-of-the-most-exciting-things-i-ugcPost-7510845684384677888-3b0j",
+      "activityId": "7510845685034872832",
+      "postId": "7510845684384677888",
+      "commentary": true,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F36"
+      },
+      "normalizedBodySha256": "182f8e1339c3e3a59a4e105616071b35d8dc1ee1189d4b1d36084eb52c98f1bc",
+      "localImages": [],
+      "videoOnLinkedIn": true
+    },
+    {
+      "slug": "2026-09-09-small-models-intent-classification",
+      "title": "Fine-tuning small models for useful intent classification",
+      "date": "2026-09-09",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_fine-tuned-small-language-models-are-the-share-7503475192749281281-dvaq",
+      "activityId": "7503475194687045633",
+      "postId": "7503475192749281281",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B29"
+      },
+      "normalizedBodySha256": "448b045f5ce8bdf01550fbb5dc822da9dbcc812c5593d00d43d7fb71e6cc4aeb",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-09-03-browser-agents-make-it-tangible",
+      "title": "Browser agents make the capability tangible",
+      "date": "2026-09-03",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_anthropic-quietly-added-what-i-think-is-a-ugcPost-7501326844399603712-tzaf",
+      "activityId": "7501326878251802624",
+      "postId": "7501326844399603712",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F34"
+      },
+      "normalizedBodySha256": "3c19fd293455d7e9c59fc9fa8762e591c0cc3f835bf47629635c27d6c61ecb51",
+      "localImages": [],
+      "videoOnLinkedIn": true
+    },
+    {
+      "slug": "2026-08-31-using-software-without-its-ui",
+      "title": "Using software without learning its interface",
+      "date": "2026-08-31",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_i-use-hubspot-every-day-but-i-have-no-idea-share-7500254912073613312-EgPm",
+      "activityId": "7500254915185844224",
+      "postId": "7500254912073613312",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F33"
+      },
+      "normalizedBodySha256": "496b825a7dd880e5b4ba6c248e61f4c6ae5c3fd76cb94fd53684f8c773fd3489",
+      "localImages": [
+        "/images/linkedin/7500254915185844224-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-08-26-agent-overreach-and-recovery",
+      "title": "The backup plan belongs in the design",
+      "date": "2026-08-26",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_agenticai-aisecurity-share-7498347107683176448-EMR2",
+      "activityId": "7498347111021977600",
+      "postId": "7498347107683176448",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F14"
+      },
+      "normalizedBodySha256": "9823533590665efc0fbf15109f47362ddaff10fd1f9304275b240cc3e7fea63a",
+      "localImages": [
+        "/images/linkedin/7498347111021977600-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-08-20-prototypes-and-production-responsibility",
+      "title": "Base camp gets higher, but the mountain is still there",
+      "date": "2026-08-20",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_better-tools-are-changing-who-can-start-the-share-7495951704933437440-4Ilk",
+      "activityId": "7496181755930931201",
+      "postId": "7495951704933437440",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B14"
+      },
+      "normalizedBodySha256": "66ddb4b22b51fbaabf9bd4f95bf0f02de8f273c18ac3c0d3f9b79eb5ed4b2d8b",
+      "localImages": [
+        "/images/linkedin/7496181755930931201-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-08-17-curiosity-in-the-ai-first-sdlc",
+      "title": "Curiosity belongs in the AI-first SDLC",
+      "date": "2026-08-17",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_ted-lasso-made-this-alleged-walt-whitman-share-7495150034750115840-G9L2",
+      "activityId": "7495150037572689921",
+      "postId": "7495150034750115840",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F15"
+      },
+      "normalizedBodySha256": "3b24461d1f23b628d1181cd8dc012dc25c682b5cbca4e80dbb25edcd7dce8298",
+      "localImages": [
+        "/images/linkedin/7495150037572689921-1.gif"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-08-10-when-work-needs-a-handoff",
+      "title": "When the right answer is a handoff",
+      "date": "2026-08-10",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_mostly-agree-but-sometimes-the-most-efficient-share-7492692688794824704-munE",
+      "activityId": "7492692689428131840",
+      "postId": "7492692688794824704",
+      "commentary": true,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B34"
+      },
+      "normalizedBodySha256": "ee88641e42b34ebfd7ef1d151df8c3925e073c0dd82c7daada9fd5972665971f",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-08-10-ai-literacy-and-shared-practices",
+      "title": "AI literacy needs shared practices",
+      "date": "2026-08-10",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_one-of-the-things-that-stuck-with-me-from-share-7492595069418647552-kbJ7",
+      "activityId": "7492595072560115712",
+      "postId": "7492595069418647552",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F16"
+      },
+      "normalizedBodySha256": "e71d664b5bb9959ea9d5dc6439c67266f29e04ddc541e8a7df13f296a987b576",
+      "localImages": [
+        "/images/linkedin/7492595072560115712-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-08-06-not-every-workflow-needs-a-pit-crew",
+      "title": "Not every workflow needs a pit crew",
+      "date": "2026-08-06",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_not-every-workflow-needs-a-pit-crew-sometimes-share-7491127507157516289-cuJP",
+      "activityId": "7491127508348669952",
+      "postId": "7491127507157516289",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F30"
+      },
+      "normalizedBodySha256": "ae372494021f5b58a8e1d4fdd59bb579cf77f0005cda94e1f907207ef3ae2cbb",
+      "localImages": [
+        "/images/linkedin/7491127508348669952-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-07-28-build-an-agent-in-a-day",
+      "title": "Build an Agent in a Day",
+      "date": "2026-07-28",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsai-buildanagentinaday-share-7487862126615859200-y0-Y",
+      "activityId": "7487862127811047426",
+      "postId": "7487862126615859200",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F19"
+      },
+      "normalizedBodySha256": "0b084bdef6b17c8798af6349319f13e318c29cad5585f6a9b80d80c73a78ef13",
+      "localImages": [
+        "/images/linkedin/7487862127811047426-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-07-15-security-is-a-discipline",
+      "title": "Security is a discipline",
+      "date": "2026-07-15",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_spending-the-day-at-the-official-cybersecurity-share-7483153437040386049-etgY",
+      "activityId": "7483153438063751168",
+      "postId": "7483153437040386049",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F4"
+      },
+      "normalizedBodySha256": "03cf3da168c979ec9d4002338b6330f184194effc8a1d46341ea6dabc30ea41a",
+      "localImages": [
+        "/images/linkedin/7483153438063751168-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-03-26-apex-intelligence-business-owners",
+      "title": "An AI conversation with Apex business owners",
+      "date": "2026-03-26",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_kicked-off-the-morning-at-apex-intelligence-share-7442914538800189441-9q3z",
+      "activityId": "7442914539567886336",
+      "postId": "7442914538800189441",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B27"
+      },
+      "normalizedBodySha256": "89642c17981c7fa4deabbbd2b09eda236a949e71a3e01d476ea286376401eff8",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-03-24-all-things-ai-durham",
+      "title": "All Things AI in Durham",
+      "date": "2026-03-24",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_day-2-of-all-things-ai-in-durham-energizing-share-7442234529051975681-g2Of",
+      "activityId": "7442234530117095425",
+      "postId": "7442234529051975681",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F13"
+      },
+      "normalizedBodySha256": "2b9f9add2b6cd3f1f7bbac6cb819d32a56a97a870a95923d8c050cf24c65d79f",
+      "localImages": [
+        "/images/linkedin/7442234530117095425-1.jpg"
+      ],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-02-17-ai-trust-and-operations",
+      "title": "The hard parts of software are trust and operations",
+      "date": "2026-02-17",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_still-seeing-devs-post-ai-cant-even-count-share-7429536324900052992-qiUp",
+      "activityId": "7429536325697150976",
+      "postId": "7429536324900052992",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B17"
+      },
+      "normalizedBodySha256": "3b90df83e8a2baf96f6bb3fb33c436c23e1fb21e60050af9108dcc82836f7bf9",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-02-09-can-your-product-be-used-by-an-agent",
+      "title": "Can your product be used by an agent?",
+      "date": "2026-02-09",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_openclaw-is-blowing-up-the-internet-right-share-7426299209097781249-gjAn",
+      "activityId": "7426614613389205504",
+      "postId": "7426299209097781249",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B9"
+      },
+      "normalizedBodySha256": "ab13a7c832a2c10d1a848298c505444c66a5a9d44ad76696a82f9247dabd1d73",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-01-27-do-you-need-a-native-app",
+      "title": "Do you need a native app?",
+      "date": "2026-01-27",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_even-in-2026-i-still-hear-it-we-need-an-share-7421903417318481920-8OR2",
+      "activityId": "7421903420028100608",
+      "postId": "7421903417318481920",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F6"
+      },
+      "normalizedBodySha256": "0c8ac26dd9ad788b05a9e26dbbd9241ba4654bd5f3f7610f14f8cc59d1701bc6",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-01-13-staying-current-with-ai-tooling",
+      "title": "Staying current is the advantage",
+      "date": "2026-01-13",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_being-early-in-ai-isnt-the-moat-you-think-share-7416606414900453376-XlIa",
+      "activityId": "7416849046599966721",
+      "postId": "7416606414900453376",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B31"
+      },
+      "normalizedBodySha256": "69b306e4e3b8f94ed92a653ea1d867abe106abfeb4bfe90d18a169cb7cb863a2",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2026-01-08-signal-in-technology-decisions",
+      "title": "Noise is cheap. Signal is earned.",
+      "date": "2026-01-08",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_in-a-world-full-of-new-tools-and-louder-headlines-share-7415155822869303296-Js2A",
+      "activityId": "7415155824353849344",
+      "postId": "7415155822869303296",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B16"
+      },
+      "normalizedBodySha256": "3eaed3fa55d1b351643440a155ffdaf80e41b13bb59676f9e456e56075fe09ec",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2025-11-24-ai-for-small-and-midsize-businesses",
+      "title": "Practical AI for small and midsize businesses",
+      "date": "2025-11-24",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_ai-digitaltransformation-smb-share-7398777515009474560-r3GY",
+      "activityId": "7398777515894493184",
+      "postId": "7398777515009474560",
+      "commentary": false,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "F29"
+      },
+      "normalizedBodySha256": "09cca12c32e66cfe9142e3d1f2f26c019e7ca36429366fe61261553743170c63",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    },
+    {
+      "slug": "2025-11-18-how-much-cloud-scale",
+      "title": "How much cloud scale do you need?",
+      "date": "2025-11-18",
+      "sourceUrl": "https://www.linkedin.com/posts/alexander-jt_how-much-scale-will-your-cloud-architecture-share-7396618399684067328--OrD",
+      "activityId": "7396618400246046721",
+      "postId": "7396618399684067328",
+      "commentary": true,
+      "dateEvidence": {
+        "sheet": "TOP POSTS",
+        "cell": "B36"
+      },
+      "normalizedBodySha256": "a84a1ee1f1eb428c3912eef458c82670342b3181e2b01bce5cfa85137c248d4f",
+      "localImages": [],
+      "videoOnLinkedIn": false
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import PostRow from '../../components/PostRow.astro';
+import { getTalks, getPosts, formatDate } from '../../lib/content';
+import { contactHref } from '../../lib/site';
+export async function getStaticPaths() {
+  return (await getTalks()).map((talk) => ({
+    params: { id: talk.id },
+    props: { talk },
+  }));
+}
+interface Props {
+  talk: CollectionEntry<'talks'>;
+}
+const { talk } = Astro.props;
+const { Content } = await render(talk);
+const related = (await getPosts()).filter((p) =>
+  talk.data.relatedArticles.includes(p.id),
+);
+---
+
+<Base
+  title={talk.data.title}
+  description={talk.data.summary}
+  noindex={talk.data.draft}
+  image={talk.data.image}
+>
+  <header class="shell detail-head">
+    <a class="breadcrumb" href="/speaking/">
+      ← Talks & speaking
+    </a>
+    <p class="eyebrow">
+      {talk.data.status === 'proposed'
+        ? 'Available session topic'
+        : talk.data.event}
+    </p>
+    <h1>{talk.data.title}</h1>
+    <p class="lede">{talk.data.summary}</p>
+    <div class="article-meta">
+      <span>
+        {talk.data.status === 'proposed'
+          ? 'Proposed topic, no confirmed event'
+          : talk.data.status === 'past'
+            ? 'Past session'
+            : 'Upcoming session'}
+      </span>
+      {talk.data.date && (
+        <time datetime={talk.data.date.toISOString()}>
+          {formatDate(talk.data.date)}
+        </time>
+      )}
+      {talk.data.location && <span>{talk.data.location}</span>}
+    </div>
+  </header>
+  <div class="shell page-body article-grid">
+    <div class="article-body">
+      {talk.data.draft && (
+        <p class="preview-note">
+          Draft talk preview. Excluded from production builds.
+        </p>
+      )}
+      {talk.data.image && talk.data.slides && (
+        <a
+          class="slide-preview"
+          href={talk.data.slides}
+          aria-label={`View slides for ${talk.data.title}`}
+        >
+          <img
+            src={talk.data.image}
+            alt={talk.data.imageAlt ?? ''}
+            width="960"
+            height="540"
+          />
+          <span>
+            View slides (PDF) <Icon name="external" size={17} />
+          </span>
+        </a>
+      )}
+      <article class="prose">
+        <Content />
+      </article>
+      {(talk.data.slides ||
+        talk.data.video ||
+        talk.data.resources.length > 0) && (
+        <section class="mt-10">
+          <h2 class="text-2xl mb-5">Watch & explore.</h2>
+          <ul class="resource-list">
+            {talk.data.video && (
+              <li>
+                <a href={talk.data.video}>
+                  Watch the recording <Icon name="external" size={17} />
+                </a>
+              </li>
+            )}
+            {talk.data.slides && (
+              <li>
+                <a href={talk.data.slides}>
+                  {talk.data.slides.endsWith('.pdf')
+                    ? 'View slides (PDF)'
+                    : 'View presentation slides'}
+                  <Icon name="external" size={17} />
+                </a>
+              </li>
+            )}
+            {talk.data.resources.map((resource) => (
+              <li>
+                <a href={resource.url}>
+                  {resource.label}
+                  <Icon name="external" size={17} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {related.length > 0 && (
+        <section class="related-section">
+          <h2>Related thinking.</h2>
+          {related.map((post) => (
+            <PostRow post={post} />
+          ))}
+        </section>
+      )}
+    </div>
+    <aside class="project-facts">
+      <h2>For this audience</h2>
+      <p>{talk.data.audience}</p>
+      <h2>Topics</h2>
+      <div class="tech-list">
+        {talk.data.tags.map((tag) => (
+          <span>{tag}</span>
+        ))}
+      </div>
+      <a
+        class="text-link"
+        href={contactHref(`Speaking inquiry: ${talk.data.title}`)}
+      >
+        Discuss this session <Icon name="external" size={17} />
+      </a>
+    </aside>
+  </div>
+</Base>

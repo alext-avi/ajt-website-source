@@ -1,0 +1,48 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ProjectArt from './ProjectArt.astro';
+import Icon from './Icon.astro';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  index?: number;
+}
+const { project, index = 0 } = Astro.props;
+---
+
+<article class="project-card">
+  <a
+    class="project-image-link"
+    href={`/projects/${project.id}/`}
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    {project.data.image ? (
+      <img
+        src={project.data.image}
+        alt=""
+        width="640"
+        height="360"
+        loading="lazy"
+      />
+    ) : (
+      <ProjectArt kind={project.data.kind} />
+    )}
+    <span class="project-number">0{index + 1}</span>
+  </a>
+  <div class="project-card-meta">
+    <span>{project.data.tags[0] ?? 'Architecture'}</span>
+    {project.data.draft && <span class="status-label">Draft case study</span>}
+  </div>
+  <h3>
+    <a href={`/projects/${project.id}/`}>
+      {project.data.title}
+      <Icon name="external" size={21} />
+    </a>
+  </h3>
+  <p>{project.data.summary}</p>
+  <div class="tech-list">
+    {project.data.technologies.slice(0, 4).map((t) => (
+      <span>{t}</span>
+    ))}
+  </div>
+</article>

@@ -1,0 +1,32 @@
+---
+title: Fine-tuning small models for useful intent classification
+summary: Fine-tuned Small Language Models are the absolute backbone of an efficient AI-automation paradigm.
+draft: false
+featured: false
+example: false
+tags:
+  - Small language models
+  - Evaluation
+  - Data privacy
+date: 2026-09-09T00:00:00.000Z
+category: Applied AI
+linkedinUrl: https://www.linkedin.com/posts/alexander-jt_fine-tuned-small-language-models-are-the-share-7503475192749281281-dvaq
+linkedinRepost: false
+linkedinVideo: false
+videoWidth: 1280
+videoHeight: 720
+---
+
+Fine\-tuned Small Language Models are the absolute backbone of an efficient AI\-automation paradigm\.
+
+A good AI pipeline typically has at least a few intent classifiers\. Sure, you can pull in a GPT nano or an open\-weights model for these things, but the efficacy is typically impacted\. You can also bring in a large model and get better results at a higher price\. Or you can invest a little in tuning an SLM, and get the best of both worlds\.
+
+This was on display last night at the [All Things Open Conference](<https://www.linkedin.com/company/all-things-open/>) RTP meetup where [Nihal Kaul](<https://www.linkedin.com/in/nihalwashere/>) put on an intent classifying demo using a very small, locally running open weights model\. That model posted about a 53% accuracy, only a little better than a coin flip, on finding a small number of intents\. With a few minutes of tuning (and some expert guidance\.\.\. and a nice set of training data \- not to be ignored) that same model posted a 93% accuracy\.
+
+I'm confident a Terra or Sonnet model could achieve similar ends at many multiples of the price \- Anyone whose ever set up an AI to manage their email knows how fast a little intent management can chew your API credits\.
+
+This becomes especially relevant when the input we're classifying is working against is potentially sensitive which is so common in these kinds of setups\. Maybe the thing you're classifying in the first place is the sensitivity\! In that case, shipping the input to OpenAI or Anthropic may not be an option\.
+
+The small model that we're tuning can run anywhere\. On a VPC, on premise, on your laptop\. Sensitive data gets flagged, nothing gets leaked, and the accuracy is like you gave it to a frontier model \- and paid for it\.
+
+As always, thanks to [Todd Lewis](<https://www.linkedin.com/in/thetoddlewis/>) (who gives the most thanks) and the ATO team for putting on another great, insightful event and [Fidelity Investments](<https://www.linkedin.com/company/fidelity-investments/>) for providing the space and some pretty solid pizza\.

@@ -1,0 +1,1091 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "collection": "posts",
+      "slug": "2025-11-18-how-much-cloud-scale",
+      "data": {
+        "title": "How much cloud scale do you need?",
+        "summary": "How much scale will your cloud architecture support, and how much do you need?",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Cloud architecture",
+          "Product design"
+        ],
+        "date": "2025-11-18T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_how-much-scale-will-your-cloud-architecture-share-7396618399684067328--OrD",
+        "linkedinRepost": true,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nHow much scale will your cloud architecture support, and how much do you need?\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2025-11-24-ai-for-small-and-midsize-businesses",
+      "data": {
+        "title": "Practical AI for small and midsize businesses",
+        "summary": "AI isn’t just for the tech giants anymore—it’s delivering real, measurable value for small and midsize businesses, too.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI adoption",
+          "Business workflows"
+        ],
+        "date": "2025-11-24T00:00:00.000Z",
+        "category": "Applied AI",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_ai-digitaltransformation-smb-share-7398777515009474560-r3GY",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nAI isn’t just for the tech giants anymore—it’s delivering real, measurable value for small and midsize businesses, too\\.\n\nAfter reviewing highlights from the recent Microsoft Ignite session, I’m more convinced than ever that AI is leveling the playing field for SMBs ready to innovate\\.<br />\nHere’s what stood out:<br />\nTime savings are real\\. AI is helping teams automate repetitive tasks, reclaim hours in the workweek, and focus on what matters most—serving customers and growing the business\\.<br />\nExpertise is now accessible\\. Tools powered by AI can capture and share knowledge across the organization, making it easier for everyone to make smarter decisions, faster\\.<br />\nScaling up is within reach\\. With AI\\-driven insights, even lean teams can personalize customer experiences, streamline operations, and compete with much larger players\\.<br />\nYou don’t have to build from scratch\\. Many SMBs are finding success by adopting proven AI solutions and focusing on practical use cases that drive immediate value\\.<br />\nThe bottom line: AI isn’t just hype—it’s a toolkit for real business gains, no matter your size\\.<br />\nIf you’re curious about how AI could help your business work smarter, I’m always happy to share ideas or talk through what’s working in the field\\.<br />\nSession details: [https://lnkd\\.in/enk7AakX](<https://lnkd.in/enk7AakX>)<br />\n[\\#AI](<https://www.linkedin.com/search/results/all/?keywords=%23ai&origin=HASH_TAG_FROM_FEED>) [\\#DigitalTransformation](<https://www.linkedin.com/search/results/all/?keywords=%23digitaltransformation&origin=HASH_TAG_FROM_FEED>) [\\#SMB](<https://www.linkedin.com/search/results/all/?keywords=%23smb&origin=HASH_TAG_FROM_FEED>)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-01-08-signal-in-technology-decisions",
+      "data": {
+        "title": "Noise is cheap. Signal is earned.",
+        "summary": "In a world full of new tools and louder headlines, time is our scarcest resource. Every week a new platform promises to fix everything. Most of us don’t have the space to evaluate them all, and the signal gets buried in the noise.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Technology strategy",
+          "Modernization"
+        ],
+        "date": "2026-01-08T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_in-a-world-full-of-new-tools-and-louder-headlines-share-7415155822869303296-Js2A",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nIn a world full of new tools and louder headlines, time is our scarcest resource\\.<br />\nEvery week a new platform promises to fix everything\\. Most of us don’t have the space to evaluate them all, and the signal gets buried in the noise\\.\n\nThat is why trust matters more than ever\\. Trusted partners help you boost signal in technology investment decisions: clarify the business case, map risks and trade‑offs, align with constraints, and focus on outcomes you can measure\\.\n\nIn my work, the best partners have helped teams retire expensive legacy tools, reduce repetitive manual steps, and spend more time on meaningful work\\. I’ve seen this across logistics, insurance, and fleet operations where right sized solutions replaced complexity and produced clear improvements: less rework, faster cycle times, better customer outcomes, and new revenue opportunities\\.\n\nIf you are working through your next decision in AI, data, cloud, or process modernization, look for advisors who earn trust through clarity, accountability, and measurable results\\.\n\nNoise is cheap\\. Signal is earned\\.<br />\nIf you want to talk through how to boost signal in your technology decisions, I’m always open for a quick call\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-01-13-staying-current-with-ai-tooling",
+      "data": {
+        "title": "Staying current is the advantage",
+        "summary": "Being early in AI isn’t the moat you think it is.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI strategy",
+          "Cloud platforms"
+        ],
+        "date": "2026-01-13T00:00:00.000Z",
+        "category": "Applied AI",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_being-early-in-ai-isnt-the-moat-you-think-share-7416606414900453376-XlIa",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nBeing early in AI isn’t the moat you think it is\\.\n\nThe real edge? Staying current with the tools\\.\n\nPlatforms like AWS Bedrock, Azure AI Foundry, and Google Vertex AI are evolving faster than most bespoke LLM solutions can keep up with\\. If your product is tightly coupled to a single model or you’re still layering in things like RAG or web search manually, you’re likely missing out on what these platforms now offer out of the box — with better performance, governance, and scale\\. And killer control planes to prove value before you commit\\.\n\nCase\\-in\\-point Thomson Reuters: They built an internal AI platform to give teams access to generative tools\\. But the real unlock came when they integrated AWS Bedrock — suddenly, they could spin up new use cases in hours, not days, and experiment with the latest models without re\\-architecting their stack\\.\n\nThe companies winning in this space aren’t just building — they’re iterating\\. They’re plugging into the right platforms, aligning with the right partners, and staying close to the edge of what’s possible\\.\n\nIf you’re leading AI strategy, ask yourself: are we moving fast enough to keep up with the tooling? Or are we betting on a moat that’s already been filled in?\n\nLet’s talk if you’re looking to stay ahead of the curve\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-01-27-do-you-need-a-native-app",
+      "data": {
+        "title": "Do you need a native app?",
+        "summary": "Even in 2026, I still hear it. “We need an app.”",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Mobile",
+          "Product design"
+        ],
+        "date": "2026-01-27T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_even-in-2026-i-still-hear-it-we-need-an-share-7421903417318481920-8OR2",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nEven in 2026, I still hear it\\. “We need an app\\.”\n\nIt sounds good in a pitch\\. But most of the time, it’s a bad call\\.\n\nThe biggest real advantage native apps have? Push notifications\\. That lock screen is prime real estate\\. But getting access is tough, and keeping it is tougher\\.\n\nOn iOS, only half of users say yes to push (51 percent opt\\-in vs\\. 81 percent on Android)¹\\. And if your first few messages miss? Ten percent will shut you off\\. Six percent will delete your app²\\. That’s not a growth channel\\. That’s a liability\\.\n\nPush is powerful, but it’s not a strategy\\. If you don’t have something worth saying, and the discipline to say it rarely and well, skip it\\.\n\nAnd if push is your only reason to go native, skip that too\\. Native apps cost two to three times more than web apps³\\. Most people only use 11 apps a day and about 30 a month⁴\\. If you’re not in that circle, you’re just noise\\.\n\nPWAs? Not much better\\. Most people don’t know what they are\\. I'd wager half the people that read this post are googling it right now\\. The experience is inconsistent\\. The value is overhyped\\. Niche use cases only\\.\n\nHere’s the truth: A great mobile web experience is fast, flexible, discoverable, and easy to update\\. It’s not a compromise\\. It’s a competitive edge\\. And it'll get you to market faster, and cheaper\\.\n\nSources:<br />\n1\\. Business of Apps – Push Notifications Statistics (2025)<br />\n2\\. Helplama &amp; VWO Engage – Push Notification Opt\\-Out Behavior (2025)<br />\n3\\. Glance – How Much Cheaper Is It to Build a PWA Compared to a Native App? (2025)<br />\n4\\. BuildFire – Mobile App Usage Statistics (2026)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-02-09-can-your-product-be-used-by-an-agent",
+      "data": {
+        "title": "Can your product be used by an agent?",
+        "summary": "OpenClaw is blowing up the internet right now — and not because it’s polished. It’s chaotic, exploitable, wide‑open, and somehow still the clearest signal of where software is going next.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "MCP",
+          "AI agents",
+          "Product design"
+        ],
+        "date": "2026-02-09T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_openclaw-is-blowing-up-the-internet-right-share-7426299209097781249-gjAn",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nOpenClaw is blowing up the internet right now — and not because it’s polished\\. It’s chaotic, exploitable, wide‑open, and somehow still the clearest signal of where software is going next\\. \n\nThe takeaway isn’t about OpenClaw itself\\.  <br />\nIt’s what it proves:\n\nAgents aren’t the future interface — they’re the interface of today\\.\n\nOpenClaw went from a weekend project to 140k\\+ stars because it showed people what happens when software stops waiting for prompts and starts acting\\. It reads files, runs workflows, makes decisions, and keeps going long after the user logs off\\. Explosive, messy, inevitable\\. \n\nThis changes the question entirely\\.\n\nNot “Do we need an AI strategy?”  <br />\nCan your product be used by an agent?\n\nBecause the systems taking over the next decade won’t be humans clicking UI\\.  <br />\nThey’ll be agents calling APIs, chaining actions, enforcing policies, and blending your data with everything else in the environment\\.\n\nThat requires foundations — not demos:<br />\n\\- Clean APIs  <br />\n\\- Evented systems  <br />\n\\- Permissioned, well‑scoped actions  <br />\n\\- And MCP (Model Context Protocol) as a first‑class surface\n\nOpenClaw is noisy, imperfect proof that the shift already happened\\.  <br />\nThe products that win the next decade are the ones that agents can use today\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-02-17-ai-trust-and-operations",
+      "data": {
+        "title": "The hard parts of software are trust and operations",
+        "summary": "Still seeing devs post “AI can’t even count fingers / write regex” memes. That’s not skepticism. It’s denial.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI-assisted development",
+          "Software delivery"
+        ],
+        "date": "2026-02-17T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_still-seeing-devs-post-ai-cant-even-count-share-7429536324900052992-qiUp",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nStill seeing devs post “AI can’t even count fingers / write regex” memes\\. That’s not skepticism\\. It’s denial\\.\n\nAI is already part of the stack\\. If you’re not onboarding it with tools, prompts, and guardrails, you’re being left behind\\. Someone on your team is already using it and quietly compounding the gains\\.\n\nOn the flip side, Elon Musk says “code itself will go away” and that by the end of 2026 we might not even bother coding because AI will “create the binary directly\\.” Calm down\\.\n\nThe leap from “AI writes a lot of code” to “high\\-level languages disappear in a year” isn’t bold\\. It’s unserious\\.\n\nThe hard parts of software aren’t syntax\\. They’re trust and operations:<br />\n• Readability: Teams need diffs\\. Reviews\\. Refactors\\. Onboarding\\.<br />\n• Context limits: Real systems and their history don’t fit neatly into a prompt\\. Generating raw binaries doesn’t reduce complexity — it hides it\\.<br />\n• Debugging &amp; observability: When prod breaks, you need traceable behavior, not a black\\-box executable\\.<br />\n• Security &amp; verification: Provenance, reproducible builds, audits, compliance — all require inspectable artifacts\\.\n\nThe real shift isn’t downward to machine code\\. It’s upward: clearer specs, stronger tests, tighter feedback loops, better architecture\\.\n\nIf you’re reading these headlines and deciding it’s all hype, that’s a mistake\\. This is real\\. The leverage is real\\.\n\nIntegrate AI into your IDE\\. Into CI\\. Into review\\. Raise the bar on tests and validation, not lower it\\.\n\nMemes won’t keep you employed\\. Ignoring the shift won’t ship software\\.\n\nBut developers who can wield these systems, constrain them, audit them, and take responsibility for the outcomes? They’re going to be very hard to replace\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-03-24-all-things-ai-durham",
+      "data": {
+        "title": "All Things AI in Durham",
+        "summary": "Day 2 of All Things AI in Durham!",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "All Things AI"
+        ],
+        "image": "/images/linkedin/7442234530117095425-1.jpg",
+        "imageAlt": "Alexander Thomas at an All Things AI booth between two astronaut figures.",
+        "date": "2026-03-24T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_day-2-of-all-things-ai-in-durham-energizing-share-7442234529051975681-g2Of",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nDay 2 of All Things AI in Durham\\!\n\nEnergizing to dig into what’s real, what’s hype, and what’s next as AI continues to reshape our industry\\. Lots to reflect on—and apply\\.\n\nIf you’re here, reach out and let’s chat\\!\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-03-26-apex-intelligence-business-owners",
+      "data": {
+        "title": "An AI conversation with Apex business owners",
+        "summary": "Kicked off the morning at Apex Intelligence — a new Apex Chamber connection circle focused on AI for small businesses, hosted by my friend Paul Trent.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Apex Intelligence",
+          "AI adoption"
+        ],
+        "date": "2026-03-26T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_kicked-off-the-morning-at-apex-intelligence-share-7442914538800189441-9q3z",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nKicked off the morning at Apex Intelligence — a new Apex Chamber connection circle focused on AI for small businesses, hosted by my friend [Paul Trent](<https://www.linkedin.com/in/paultrent/>)\\.\n\nThe room was full of owners asking the right questions about AI\\. Not “will it replace us?” but “how do we use this to grow?” Sharing ideas, getting and giving feedback\\.\n\nThis is the conversation I love having\\. More of this, please\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-07-15-security-is-a-discipline",
+      "data": {
+        "title": "Security is a discipline",
+        "summary": "Spending the day at The Official Cybersecurity Summit.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Security",
+          "Software delivery"
+        ],
+        "image": "/images/linkedin/7483153438063751168-1.jpg",
+        "imageAlt": "Alexander Thomas at the Cybersecurity Summit.",
+        "date": "2026-07-15T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_spending-the-day-at-the-official-cybersecurity-share-7483153437040386049-etgY",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nSpending the day at The Official Cybersecurity Summit\\.\n\nUncomfortable truth: breaking software has never been more trivial\\. The tools required are ubiquitous, reconnaissance is automated, and exploitation is commoditized\\.\n\nYet so many still treat security as an afterthought\\. A checkbox before release\\. That posture was obsolete &gt;5 years ago\\. Now it’s malpractice\\.\n\nSecurity isn’t a phase, it’s a discipline\\. Baked in from the first commit, defended on every one after\\.\n\nWe must continue to raise the bar\\. Then raise it again\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-07-28-build-an-agent-in-a-day",
+      "data": {
+        "title": "Build an Agent in a Day",
+        "summary": "It’s easy to get buried in the day-to-day and forget to look up once in a while.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Agent systems",
+          "All Things AI"
+        ],
+        "image": "/images/linkedin/7487862127811047426-1.jpg",
+        "imageAlt": "Alexander Thomas beside a Build an Agent in a Day welcome sign.",
+        "date": "2026-07-28T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsai-buildanagentinaday-share-7487862126615859200-y0-Y",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nIt’s easy to get buried in the day\\-to\\-day and forget to look up once in a while\\.\n\nSpending the day at Build an Agent in a Day seeing how others are approaching agentic AI\\. It’s encouraging to see the conversation shifting from what’s possible to what’s actually useful\\.\n\nAlways good to compare notes, challenge assumptions, and leave with a few new ideas\\.\n\n[\\#AllThingsAI](<https://www.linkedin.com/search/results/all/?keywords=%23allthingsai&origin=HASH_TAG_FROM_FEED>) [\\#BuildAnAgentInADay](<https://www.linkedin.com/search/results/all/?keywords=%23buildanagentinaday&origin=HASH_TAG_FROM_FEED>)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-08-06-not-every-workflow-needs-a-pit-crew",
+      "data": {
+        "title": "Not every workflow needs a pit crew",
+        "summary": "Not every workflow needs a pit crew. Sometimes jobs are a routine process - like getting the paper tray refilled.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Automation",
+          "AI agents"
+        ],
+        "image": "/images/linkedin/7491127508348669952-1.jpg",
+        "imageAlt": "Illustration of a pit crew working on an office printer.",
+        "date": "2026-08-06T00:00:00.000Z",
+        "category": "Applied AI",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_not-every-workflow-needs-a-pit-crew-sometimes-share-7491127507157516289-cuJP",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nNot every workflow needs a pit crew\\.<br />\nSometimes jobs are a routine process \\- like getting the paper tray refilled\\.\n\nThe same is true of AI agents\\.\n\nMany organizations are trying to solve deterministic problems with non\\-deterministic technology\\.\n\nIf the business rule is “when X happens, do Y,” start with automation\\.\n\nIt’s cheaper, easier to govern, easier to test, and easier to scale\\. It executes the same process consistently\\.\n\nThe goal isn’t to use the most capable system everywhere\\. It’s to match the capability to the problem\\.\n\nOnce the process is understood and controlled, introduce AI where judgment, interpretation, and reasoning actually create value—when inputs vary, instructions are incomplete, or the path can’t be fully predefined\\.\n\nThe best agents don’t replace effective automation\\. They build on it\\.\n\nThe path to effective agents usually starts with effective automation\\.\n\nAutomate the routine\\. Save the pit crew for the problems that actually require one\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-08-10-ai-literacy-and-shared-practices",
+      "data": {
+        "title": "AI literacy needs shared practices",
+        "summary": "One of the things that stuck with me from the recent All Things Open Conference meetup wasn’t one of the slides. It was the little outdoor space at The Barn: a few chairs arranged around a hearth.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI adoption",
+          "Governance"
+        ],
+        "image": "/images/linkedin/7492595072560115712-1.jpg",
+        "imageAlt": "Outdoor seating and a stone fireplace at The Barn at Bandwidth.",
+        "date": "2026-08-10T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_one-of-the-things-that-stuck-with-me-from-share-7492595069418647552-kbJ7",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nOne of the things that stuck with me from the recent [All Things Open Conference](<https://www.linkedin.com/company/all-things-open/>) meetup wasn’t one of the slides\\. It was the little outdoor space at The Barn: a few chairs arranged around a hearth\\.\n\nThat felt appropriate because one of the evening’s themes was that AI literacy is no longer optional at work\\. But organizations aren’t going to create it by buying licenses, circulating a policy, or teaching everyone a few prompts\\.<br />\nIn the work I’ve done with organizations, I’ve often found that the tools arrive before the shared practices do\\. By the time leaders start asking how AI is being used in software development and across the business, teams may already have their own habits—some useful, some risky, and many invisible outside the team\\.\n\nGetting a handle on that doesn’t mean shutting experimentation down\\. It means understanding where AI is already showing up, what information is moving through it, and where people may be relying on an answer without enough review\\. Then you can build guidance around the work people are actually doing\\.<br />\nResponsible use isn’t something a policy can create by itself\\. People need room to compare notes, challenge outputs, talk honestly about mistakes, and work out what good use looks like in their jobs\\.\n\nMaybe that’s why the hearth stuck with me\\. The technology may be new, but shared judgment is still built the old\\-fashioned way: people sitting together and talking through what they’re seeing\\.\n\nThanks to [All Things Open Conference](<https://www.linkedin.com/company/all-things-open/>) for bringing the conversation together, and to [Bandwidth Inc\\.](<https://www.linkedin.com/company/bandwidth-inc/>) for welcoming us to such a remarkable space\\.\n\nPS\\. That image isn't AI, and I'm not even a good photographer\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-08-10-when-work-needs-a-handoff",
+      "data": {
+        "title": "When the right answer is a handoff",
+        "summary": "Mostly agree. But sometimes the most efficient thing to do is hand this off to someone else/ their agents. Sometimes my developers get instructions about the infrastructure or devops pipelines they don’t have the context / can’t digest.…",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Agentic SDLC",
+          "Technical leadership"
+        ],
+        "date": "2026-08-10T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_mostly-agree-but-sometimes-the-most-efficient-share-7492692688794824704-munE",
+        "linkedinRepost": true,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nMostly agree\\.\n\nBut sometimes the most efficient thing to do is hand this off to someone else/ their agents\\. Sometimes my developers get instructions about the infrastructure or devops pipelines they don’t have the context / can’t digest\\. I don’t want that knowledge through their filter\\. For those, have Claude make a “handoff” markdown, and send me that with a note saying you don’t understand\\.\n\nFor everything else, please digest it and give me just the part where I need to make a decision\\. I’ve already got my own clauses verbose dialog to work through\\. I don’t want yours\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-08-17-curiosity-in-the-ai-first-sdlc",
+      "data": {
+        "title": "Curiosity belongs in the AI-first SDLC",
+        "summary": "Ted Lasso made this alleged Walt Whitman quote famous. \"Be curious, not Judgmental.\"",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI adoption",
+          "Discovery",
+          "Leadership"
+        ],
+        "image": "/images/linkedin/7495150037572689921-1.gif",
+        "imageAlt": "Ted Lasso darts scene: Be curious, not judgmental.",
+        "date": "2026-08-17T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_ted-lasso-made-this-alleged-walt-whitman-share-7495150034750115840-G9L2",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nTed Lasso made this alleged Walt Whitman quote famous\\. \"Be curious, not Judgmental\\.\"\n\nLast Week [Christine Babowicz](<https://www.linkedin.com/in/christinebabowicz/>) and [Danny Ahuja](<https://www.linkedin.com/in/dannyahuja/>) made it practical at [North Carolina Technology Association (NC TECH)](<https://www.linkedin.com/company/north-carolina-technology-association/>)'s Brews \\+ Bytes \\+ Insights event at the [Metlife](<https://www.linkedin.com/company/uzwow/>) Global Technology Hub\\.\n\nChristine echoed a sentiment I often laud: Leadership is showing up with good questions, not all the answers\\. Danny quoted Ted Lasso here and noted that you can only improve upon a task after you truly understand it \\- by doing it or spending time with those who do\\.\n\nThe more we talk about AI shifting from assisting people to AI acting independently, the more this matters\\. Requirements, SOPs, even interviews rarely document the whole truth\\. Immersion is key\\.\n\nOf course, they're all valuable resources\\. But often, the important details live between the lines: the exception someone handles without thinking, the calls that never make it into the documentation, and the reason the process looks strange from the outside to begin with\\. Curiosity uncovers that context\\.\n\nIn a sufficiently complex organization, no single team or role sees the whole picture\\. Working with stakeholders in each of those silos becomes essential for capturing the whole story, which is necessary when developing AI automation responsibly \\- something Christine was quick to point out\\.\n\nMaybe thats the real opportunity in an AI\\-first SDLC: not just build faster, but learn more deeply \\- ask better questions, find the missing context, and design with a fuller view of the problem\\.\n\nAI helps us move really fast\\. It's up to us to use our curiosity to make sure that speed solves the right problems\\.\n\nBarbeque sauce\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-08-20-prototypes-and-production-responsibility",
+      "data": {
+        "title": "Base camp gets higher, but the mountain is still there",
+        "summary": "Better tools are changing who can start the job, but expertise is still needed to finish the job.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Software delivery",
+          "Agentic SDLC"
+        ],
+        "image": "/images/linkedin/7496181755930931201-1.jpg",
+        "imageAlt": "Gru meme: Build an AI prototype in a day, show the demo, then realize it must be productionized.",
+        "date": "2026-08-20T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_better-tools-are-changing-who-can-start-the-share-7495951704933437440-4Ilk",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nBetter tools are changing who can start the job, but expertise is still needed to finish the job\\.\n\nAI is giving software teams and even adventurous users a trip to base camp and some excellent climbing gear, then setting them loose\\. But the mountains worth climbing will still take some experience to summit\\.\n\nPrototyping your idea can take only hours\\. It's super exciting and the change is real\\. I see these prototypes getting more and more robust, with less and less technical oversight\\. Base camp gets higher, but the mountain is still there\\.\n\nProduction still needs to be dealt with \\-integrations, user and customer experience, user acceptance, security, testing, cost controls, change controls\\.\n\nNot to mention someone accountable, especially when the phone rings at 2 a\\.m\\.\n\nAnd don't get me wrong, AI helps there too\\. But not equally, and generally not best informed without the knowledge and the judgment from someone who's been on that late night call\\.\n\nThere won't be any shortage of great demos\\. And they're only going to get  more impressive\\. The harder, and more valuable, work will be making them reliable, safe, economical, and genuinely useful\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-08-26-agent-overreach-and-recovery",
+      "data": {
+        "title": "The backup plan belongs in the design",
+        "summary": "About a month ago, I refactored the agent network for a project I’m working on. Every agent file got a model assignment appropriate to its job, mostly Sonnet and Opus. Fable could orchestrate, but I did not want it dragging every…",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI agents",
+          "Security",
+          "Cost controls"
+        ],
+        "image": "/images/linkedin/7498347111021977600-1.jpg",
+        "imageAlt": "Jurassic Park meme: Agents, uh, find a way.",
+        "date": "2026-08-26T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_agenticai-aisecurity-share-7498347107683176448-EMR2",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nAbout a month ago, I refactored the agent network for a project I’m working on\\. Every agent file got a model assignment appropriate to its job, mostly Sonnet and Opus\\. Fable could orchestrate, but I did not want it dragging every subagent along for the ride\\.\n\nWorked great\\. No notes\\.\n\nThen Anthropic had a Sonnet and Opus outage while I was away from my desk\\.\n\nThe Fable orchestrator went ahead and elevated every agent to Fable\\. “Got the job done, boss\\.” Very proudly, I might add\\. They seemed indifferent to what they had done to my token spend\\.\n\nThat was neither intended nor desired\\. I had set those model assignments specifically to prevent it\\.\n\nLast week, [Bryan Lorette](<https://www.linkedin.com/in/blorette/>)’s Assume Agentic Overreach talk at [Cloud Security Alliance Triangle Chapter](<https://www.linkedin.com/company/cloud-security-alliance-triangle-chapter/>) started with the OpenAI/Hugging Face incident and followed the problem through agent visibility, inherited permissions, runtime guardrails, and recovery\\.\n\nMy example was fresh in my mind, and the theme here was undeniable: Each system kept pursuing its objective through a path the human did not intend\\.\n\nThat ability is why agents are useful\\. It also makes “we told it not to” a fairly thin recovery strategy\\.\n\nThe operating assumption I took away is that we'd all better learn to expect behavior we did not model\\. Better visibility, tighter permissions, and runtime checks can reduce the likelihood and contain the damage, but some things will still slip through\\.\n\nYou need to know what happened and have a credible way back\\. Fortunately for me, it just meant taking Friday off for my Claude credits to recover\\.\n\nThanks to Bryan for the discussion, and the CSA Triangle team for putting it together\\.\n\nThe backup plan belongs in the design, not in the incident report\\.<br />\n[\\#AgenticAI](<https://www.linkedin.com/search/results/all/?keywords=%23agenticai&origin=HASH_TAG_FROM_FEED>) [\\#AISecurity](<https://www.linkedin.com/search/results/all/?keywords=%23aisecurity&origin=HASH_TAG_FROM_FEED>)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-08-31-using-software-without-its-ui",
+      "data": {
+        "title": "Using software without learning its interface",
+        "summary": "I use HubSpot every day, but I have no idea how to navigate HubSpot. I’m probably not going to learn.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "MCP",
+          "Product design",
+          "AI agents"
+        ],
+        "image": "/images/linkedin/7500254915185844224-1.jpg",
+        "imageAlt": "Morpheus meme: What if I told you your next power user may never learn your UI.",
+        "date": "2026-08-31T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_i-use-hubspot-every-day-but-i-have-no-idea-share-7500254912073613312-EgPm",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nI use HubSpot every day, but I have no idea how to navigate HubSpot\\. I’m probably not going to learn\\.\n\nThose statements should conflict\\. Increasingly, they don’t\\.\n\nPhone numbers used to stick because I dialed them\\. Routes stuck because getting somewhere required paying attention\\. Contacts and GPS removed that repetition, and the knowledge stopped accumulating\\.\n\nAgents may do the same thing to application interfaces\\.\n\nI don’t want to open each tool just to use its agent\\. I want its data and capabilities available through the agents I’m already using\\.\n\nFor some users, an in\\-app agent will be helpful\\. For me, it is another stop\\. As Codex, Cowork, Copilot, and similar tools make other software easier to operate, I expect more people to use applications well without learning their interfaces\\.\n\nThe traditional UI probably doesn’t disappear\\. Its job changes\\. It becomes where we inspect the underlying record, resolve ambiguity, and verify ground truth when the agent’s answer needs checking\\.\n\nThat creates a difficult design problem\\. The UI can no longer be an application’s only useful surface\\.\n\nThat is why MCP belongs in product design, not at the bottom of the integration backlog\\.\n\nAn AI\\-first application needs to work when the user doesn’t open it and remain inspectable when they do\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-09-03-browser-agents-make-it-tangible",
+      "data": {
+        "title": "Browser agents make the capability tangible",
+        "summary": "Anthropic quietly added what I think is a transformational capability to Cowork: a built-in browser.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Browser agents",
+          "Business workflows",
+          "Apex Intelligence"
+        ],
+        "date": "2026-09-03T00:00:00.000Z",
+        "category": "Applied AI",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_anthropic-quietly-added-what-i-think-is-a-ugcPost-7501326844399603712-tzaf",
+        "linkedinRepost": false,
+        "linkedinVideo": true,
+        "video": "/videos/browser-agents.mp4",
+        "videoPoster": "/images/videos/browser-agents.jpg",
+        "videoWidth": 1200,
+        "videoHeight": 960
+      },
+      "body": "\n[Anthropic](<https://www.linkedin.com/company/anthropicresearch/>) quietly added what I think is a transformational capability to Cowork: a built\\-in browser\\.\n\nChatGPT Work already had one\\. As someone who is, by any reasonable measure, pretty AI\\-pilled, I had already started shifting a certain class of work toward it\\.<br />\nOne example:\n\n“Find me hotels near a conference I’m attending in San Francisco\\. They need to be walkable or a single stop away on public transit\\. I want a gym, and by gym I mean actual strength equipment, not just cardio\\.”\n\nOff it went\\.\n\nIt analyzed distance, price, and transit options in a geography I do not know\\. It also investigated the hotel gyms closely enough to distinguish meaningful strength equipment from an amenity page that merely says “fitness center\\.”\n\nNone of those individual steps is especially difficult\\. The friction comes from crossing the boundaries between the conference location, hotel listings, maps, transit routes, prices, reviews, and photos\\. A normal search leaves me to stitch that together\\. The browser agent could work across it\\.\n\nThat connects directly to something I heard at yesterday’s [Apex Chamber of Commerce](<https://www.linkedin.com/company/apexchamber/>)\\. Apex Intelligence breakfast\\.\n\n[Matt Riley](<https://www.linkedin.com/in/matt-riley-nhi/>) gave an excellent show of how far practical AI can go once it is wired into actual work at New Home Inc\\.: sales reporting, closing schedules, contract preparation, marketing production, and training\\. Dashboards and connectors and automated workflow \\- in other words, the destination many people are trying to achieve\\.\n\nPretty soon the audience was no longer asking, “What can I do with AI?” Instead, it was “How do I get started?”\n\nConnecting an AI to a browser used to be kludgy\\. Extensions, permissions, custom integrations, and a small ceremony involving crossed fingers\\. Now both [OpenAI](<https://www.linkedin.com/company/openai/>) and [Anthropic](<https://www.linkedin.com/company/anthropicresearch/>) package the capability directly into their agent experiences\\.\n\nBrowser automation only scrapes the surface of the efficiency Matt demonstrated\\. It is slower and more fragile than a proper connector, API, or purpose\\-built workflow\\. I would not make it the permanent foundation of a critical recurring process\\.\n\nBut it is an unusually good way to make the capability tangible\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-09-09-small-models-intent-classification",
+      "data": {
+        "title": "Fine-tuning small models for useful intent classification",
+        "summary": "Fine-tuned Small Language Models are the absolute backbone of an efficient AI-automation paradigm.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Small language models",
+          "Evaluation",
+          "Data privacy"
+        ],
+        "date": "2026-09-09T00:00:00.000Z",
+        "category": "Applied AI",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_fine-tuned-small-language-models-are-the-share-7503475192749281281-dvaq",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nFine\\-tuned Small Language Models are the absolute backbone of an efficient AI\\-automation paradigm\\.\n\nA good AI pipeline typically has at least a few intent classifiers\\. Sure, you can pull in a GPT nano or an open\\-weights model for these things, but the efficacy is typically impacted\\. You can also bring in a large model and get better results at a higher price\\. Or you can invest a little in tuning an SLM, and get the best of both worlds\\.\n\nThis was on display last night at the [All Things Open Conference](<https://www.linkedin.com/company/all-things-open/>) RTP meetup where [Nihal Kaul](<https://www.linkedin.com/in/nihalwashere/>) put on an intent classifying demo using a very small, locally running open weights model\\. That model posted about a 53% accuracy, only a little better than a coin flip, on finding a small number of intents\\. With a few minutes of tuning (and some expert guidance\\.\\.\\. and a nice set of training data \\- not to be ignored) that same model posted a 93% accuracy\\.\n\nI'm confident a Terra or Sonnet model could achieve similar ends at many multiples of the price \\- Anyone whose ever set up an AI to manage their email knows how fast a little intent management can chew your API credits\\.\n\nThis becomes especially relevant when the input we're classifying is working against is potentially sensitive which is so common in these kinds of setups\\. Maybe the thing you're classifying in the first place is the sensitivity\\! In that case, shipping the input to OpenAI or Anthropic may not be an option\\.\n\nThe small model that we're tuning can run anywhere\\. On a VPC, on premise, on your laptop\\. Sensitive data gets flagged, nothing gets leaked, and the accuracy is like you gave it to a frontier model \\- and paid for it\\.\n\nAs always, thanks to [Todd Lewis](<https://www.linkedin.com/in/thetoddlewis/>) (who gives the most thanks) and the ATO team for putting on another great, insightful event and [Fidelity Investments](<https://www.linkedin.com/company/fidelity-investments/>) for providing the space and some pretty solid pizza\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-09-29-ai-for-coral-restoration",
+      "data": {
+        "title": "AI for coral restoration",
+        "summary": "This is one of the most exciting things I’ve been able to be a part of in my career, and I’m so excited to see it featured.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI adoption",
+          "Business workflows"
+        ],
+        "date": "2026-09-29T00:00:00.000Z",
+        "category": "Applied AI",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_this-is-one-of-the-most-exciting-things-i-ugcPost-7510845684384677888-3b0j",
+        "linkedinRepost": true,
+        "linkedinVideo": true,
+        "videoWidth": 1280,
+        "videoHeight": 720,
+        "linkedinVideoEmbed": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7510767966137978880?compact=1",
+        "linkedinVideoCredit": "Coral Restoration Foundation",
+        "linkedinVideoSource": "https://www.linkedin.com/feed/update/urn:li:activity:7510767970759946240/"
+      },
+      "body": "\nThis is one of the most exciting things I’ve been able to be a part of in my career, and I’m so excited to see it featured\\.\n\nThis is a great example of the kind of incredibly nuanced workflow we were able to bring clarity, and AI, to solve\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-09-30-learning-at-the-ai-conference",
+      "data": {
+        "title": "Learning at The AI Conference",
+        "summary": "Out here learning everything I can about AI so you don’t have to. Lots of great insights to share, stay tuned!",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "The AI Conference",
+          "Applied AI"
+        ],
+        "image": "/images/linkedin/7511131316512378882-1.jpg",
+        "imageAlt": "Alexander Thomas at The AI Conference in San Francisco, 2026.",
+        "date": "2026-09-30T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_ai-appliedai-aistrategy-share-7511131315522523136-Tczc",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nOut here learning everything I can about AI so you don’t have to\\. Lots of great insights to share, stay tuned\\!\n\n[\\#AI](<https://www.linkedin.com/search/results/all/?keywords=%23ai&origin=HASH_TAG_FROM_FEED>) [\\#AppliedAI](<https://www.linkedin.com/search/results/all/?keywords=%23appliedai&origin=HASH_TAG_FROM_FEED>) [\\#AIStrategy](<https://www.linkedin.com/search/results/all/?keywords=%23aistrategy&origin=HASH_TAG_FROM_FEED>)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-01-agent-traces-and-delivery-cost",
+      "data": {
+        "title": "Agent traces, visibility, and delivery cost",
+        "summary": "I did promise to keep you posted from The AI Conference. There's a ton of topic areas here, but naturally I'm drawn to those around software development.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI agents",
+          "Observability",
+          "Software delivery"
+        ],
+        "date": "2026-10-01T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_i-did-promise-to-keep-you-posted-from-the-share-7511476294761684992-FOyq",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nI did promise to keep you posted from [The AI Conference](<https://www.linkedin.com/company/theaiconference/>)\\. There's a ton of topic areas here, but naturally I'm drawn to those around software development\\.\n\n[Chetan Conikee](<https://www.linkedin.com/in/conikee/>)’s talk on agent traces got into the cost of long\\-running runs\\. They walked through tool calls, context compaction, retries, and the spend accumulating along the way\\.\n\nYou can have a final answer and a total bill without understanding how the agent got from one to the other\\. Feels familiar\\.\n\nThat leads me to an interesting conversation with [Bob Tordella](<https://www.linkedin.com/in/bobtordella/>) and [Nathan Wallace](<https://www.linkedin.com/in/e-gineer/>) at [Turbot](<https://www.linkedin.com/company/turbot/>) about Guardian\\. [Turbot](<https://www.linkedin.com/company/turbot/>) is building it to show which coding agents are running across developer machines, replay their sessions, show what credentials they can reach, and break down spend by project, model, and developer\\.\n\nThat spend analysis and work inspection seems extremely useful for me as someone running delivery\\. Where are agents doing useful work? Where are they repeating it? What patterns should we teach across the team, and where does an action need more oversight? Which projects are carrying the cost?\n\nA trace gives you a way to investigate one run\\. A view across the team could tell you whether the same problem keeps showing up\\. It could also deliver insights about our development staff\\.\n\nOf course, I haven’t used Guardian yet \\- but it's an intriguing space\\. I definitely want to inspect its utility across different tools, and that depth of session visibility calls for clear rules about who can inspect it\\. But I left the conversation wanting to get my hands on it\\.\n\nAnd given that every third vendor here is pitching some high\\-minded derivation of 'manage your agents' it was nice to see something that feels tangible\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-01-ai-conference-day-two",
+      "data": {
+        "title": "The AI Conference: day two",
+        "summary": "The AI Conference day 2 (3?)! Let’s get it.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "The AI Conference"
+        ],
+        "image": "/images/linkedin/7511477808779538433-1.jpg",
+        "imageAlt": "Purple Ai26 letters in The AI Conference exhibition hall.",
+        "date": "2026-10-01T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_the-ai-conference-day-2-3-lets-get-it-share-7511477807714058240-QWE6",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\n[The AI Conference](<https://www.linkedin.com/company/theaiconference/>) day 2 (3?)\\! Let’s get it\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-02-incentives-and-ai-adoption",
+      "data": {
+        "title": "Incentives, AI, and the people whose work changes",
+        "summary": "This gif brings me so much joy. It feels like the way I might have played a video game when I was a kid.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI adoption",
+          "The AI Conference"
+        ],
+        "image": "/images/linkedin/7511807559683678208-1.gif",
+        "imageAlt": "Boat racing game illustrating an agent scoring points by circling targets.",
+        "date": "2026-10-02T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_this-gif-brings-me-so-much-joy-it-feels-share-7511807558056357888-KzWW",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nThis gif brings me so much joy\\. It feels like the way I might have played a video game when I was a kid\\.\n\nIt's also a notoriously perfect example of misaligned reward functions delivering unintended results, as noted in OpenAI's published article: [https://lnkd\\.in/dpm7\\_S3Q](<https://lnkd.in/dpm7_S3Q>)\n\nBut on Wednesday night [Anna DeGiulio](<https://www.linkedin.com/in/anna-degiulio/>) drew another parallel during her Ignite Talk at [The AI Conference](<https://www.linkedin.com/company/theaiconference/>)\\. \"The boat is on fire\" she said, \"And we are all on it now\\.\"\n\nShe was referring to the big labs having commercial incentives to AI development and adoption, and those incentives may not be well aligned to the interests of those who will live with the results\\. This really struck me\\.\n\nWherever we sit in this space, creating new value needs to include a plan for the people whose work we’re changing\\. They should have a way to benefit from it too\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-02-smaller-models-for-code-review",
+      "data": {
+        "title": "Trying a smaller model for code review",
+        "summary": "Last night, Dave Sifry’ gave an Ignite talk and made a good case for trying a modest model for AI code review.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "AI-assisted development",
+          "Code review",
+          "Evaluation"
+        ],
+        "date": "2026-10-02T00:00:00.000Z",
+        "category": "Developer tools",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_last-night-dave-sifry-gave-an-ignite-talk-share-7511646266439647232-NDMy",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nLast night, [Dave Sifry](<https://www.linkedin.com/in/dsifry/>)’ gave an Ignite talk and made a good case for trying a modest model for AI code review\\.\n\nIn his core test, GLM\\-5\\.3\\-Flash found 71 of 147 test\\-verified bugs across six pull requests\\. Opus 5 found 74 using the same review process\\. The average cost was under 3 cents per review for Flash, versus $2\\.97 for Opus\\.\n\nNo code review is perfect, and I’ll want to give this my own eval\\. But getting that close at that price is thought provoking\\. I hadn't assumed I needed to bring Fable/Astra to every code review, but I definitely hadn't tested giving it the small ones\\.\n\nThe ignite talks were definitely a highlight of [The AI Conference](<https://www.linkedin.com/company/theaiconference/>) for me\\.\n\nDave's results:<br />\n[https://lnkd\\.in/eJqKmNsw](<https://lnkd.in/eJqKmNsw>)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-05-ai-conference-drumline",
+      "data": {
+        "title": "A drumline at The AI Conference",
+        "summary": "Something about a Drumline always gets me pumped up. Really enjoyed this!",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "The AI Conference"
+        ],
+        "date": "2026-10-05T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_something-about-a-drumline-always-gets-me-ugcPost-7512910287461871616-layk",
+        "linkedinRepost": true,
+        "linkedinVideo": true,
+        "videoWidth": 1280,
+        "videoHeight": 720,
+        "linkedinVideoEmbed": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7511454576412184576?compact=1",
+        "linkedinVideoCredit": "Andrew Caslow",
+        "linkedinVideoSource": "https://www.linkedin.com/feed/update/urn:li:activity:7511459216868405248/"
+      },
+      "body": "\nSomething about a Drumline always gets me pumped up\\. Really enjoyed this\\!\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-05-buttery-agent-interface-hack-day",
+      "data": {
+        "title": "Buttery: an agent as the application interface",
+        "summary": "Conferences Hack Day, a one-day hackathon to take an idea through to a working demo. We were encouraged to build with the sponsors tools.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Agent systems",
+          "Hack Day",
+          "Product design"
+        ],
+        "date": "2026-10-05T00:00:00.000Z",
+        "category": "Applied AI",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_conferences-hack-day-a-one-day-hackathon-ugcPost-7512908338322444288-61mN",
+        "linkedinRepost": false,
+        "linkedinVideo": true,
+        "video": "/videos/buttery.mp4",
+        "videoPoster": "/images/videos/buttery.jpg",
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nConferences Hack Day, a one\\-day hackathon to take an idea through to a working demo\\. We were encouraged to build with the sponsors tools\\.\n\nWe used the day to explore an idea Ive been thinking about: making an agent \\- your agent\\- the primary interface to an application\\. Food tracking at home was our test case\\. We called it Buttery\\.\n\nYou work through the assistant you already use: send it a receipt, confirm what to add, and it updates a record that survives the conversation\\. The inventory lives in the application, so a new conversation doesnt mean starting over\\. Build your skills and agents around it, and Buttery provides the essential tools/structure to manage the data\\.\n\nWe kept an intentionally small UI to establish ground truth: see whats stored, check the evidence, and correct mistakes\\.\n\nIntegrating the sponsors product was the name of the game, so we used [Similarweb](<https://www.linkedin.com/company/similarweb/>) for market research, [Crusoe](<https://www.linkedin.com/company/crusoe/>) running DeepSeek for receipt jargon interpretation, [Vultr](<https://www.linkedin.com/company/vultr/>) for hosting, and [DuploCloud](<https://www.linkedin.com/company/duplocloud/>) for a QA agent working through the same interface\\.\n\nYou can see how it works here:\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-06-product-value-when-agents-can-act",
+      "data": {
+        "title": "Why should your product still exist?",
+        "summary": "“As agents get more capable, why should your product still exist?”",
+        "draft": false,
+        "featured": true,
+        "example": false,
+        "tags": [
+          "Product design",
+          "AI agents",
+          "MCP"
+        ],
+        "image": "/images/linkedin/7513244062813118464-1.jpg",
+        "imageAlt": "Office Space meme: When your customer’s agent evaluates your product, what would you say you do here?",
+        "date": "2026-10-06T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_as-agents-get-more-capable-why-should-your-share-7513244061248471041-hY_U",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\n“As agents get more capable, why should your product still exist?”\n\n[Jaclyn Konzelmann](<https://www.linkedin.com/in/jaclynkonzelmann/>) asked that at [The AI Conference](<https://www.linkedin.com/company/theaiconference/>) last week\\. It's a question anyone building software product needs to be grappling with right now\\.\n\nHer example was Blender \\- a tool she'd never used and hadn't had any intention to learn \\- I made a similar example recently of Hubspot for myself\\.\n\nBecause of the capability of her agents, she was able to create an animation that she wouldn't have otherwise\\. Blender gained a user as a result\\.\n\nBlender is usually a pretty expert tool\\. Honestly, one I've tinked with and shied away from as something I didn't have the patience to learn\\. But the complexity of operation was completely mitigated by the LLM she used, and now that tool can reach a much wider audience\\.\n\nOn the other hand, it puts some pressure on us as builders\\. If a customer's agent can do the task, choose another tool, or just build a solution suitable to the task \\- what do they need our product for?\n\nThe floor for a product utility is going to continue to rise\\. Best to make sure you're continuing to ask that question as a part of your development journey\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-12-test-strategy-speed-limit",
+      "data": {
+        "title": "Your test strategy determines your speed limit",
+        "summary": "I've never played Go. I've played enough chess to appreciate its complexity, but Go is orders of magnitude more complex by possible positions. More than the number of atoms in the universe.",
+        "draft": false,
+        "featured": true,
+        "example": false,
+        "tags": [
+          "Agentic SDLC",
+          "Evaluation",
+          "AI-assisted development"
+        ],
+        "date": "2026-10-12T00:00:00.000Z",
+        "category": "Engineering leadership",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_ive-never-played-go-ive-played-enough-ugcPost-7515438895371534337-4bU4",
+        "linkedinRepost": false,
+        "linkedinVideo": true,
+        "video": "/videos/go-plant.mp4",
+        "videoPoster": "/images/videos/go-plant.jpg",
+        "videoWidth": 1080,
+        "videoHeight": 1080
+      },
+      "body": "\nI've never played Go\\. I've played enough chess to appreciate its complexity, but Go is orders of magnitude more complex by possible positions\\. More than the number of atoms in the universe\\.\n\nAI makes quick work of world champions\\.\n\nAt [The AI Conference](<https://www.linkedin.com/company/theaiconference/>) I attended a talk from [Ramez Naam](<https://www.linkedin.com/in/rameznaam/>) called \"Jagged Minds\"\\. Mapping AI's success to a game \\- even an extraordinarily complex one like Go \\- to other things we might want AI to succeed at is folly, he suggested\\.\n\nTake curing aging, for instance\\. Researchers using AI, or even AI itself, might come up with a promising idea, but finding out whether it works could take years, decades, lifetimes\\.\n\nYou can speed up go to run at computer speed, not so easy with life\\.\n\nFor those of us building software, I see a practical implication to that\\.\n\nIf we want to speed up delivery of software, a focus on only the coding will just yield pressure on the roadblocks that come next\\. We have to give the entire loop conditions upon which to evaluate success\\. Doing otherwise just means the process will pile up unverified work on the next task\\.\n\nDetermining success criteria is now the critical path towards rapid iteration\\. True agentic development needs to start there\\.\n\nThe more confidence you have in the tests, the faster your agents will iterate\\.\n\nYour test strategy determines your speed limit\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-16-speaking-at-all-things-open",
+      "data": {
+        "title": "Speaking at All Things Open",
+        "summary": "I am super excited to be speaking at All Things Open Conference in Raleigh next Tuesday, October 20, about building products for people who use them through AI agents.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "All Things Open",
+          "MCP",
+          "Agent systems"
+        ],
+        "image": "/images/linkedin/7516836009108668416-1.jpg",
+        "imageAlt": "All Things Open 2026 speaker announcement graphic.",
+        "date": "2026-10-16T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsopen-share-7516835012823121920-_NiS",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nI am super excited to be speaking at [All Things Open Conference](<https://www.linkedin.com/company/all-things-open/>) in Raleigh next Tuesday, October 20, about building products for people who use them through AI agents\\.\n\n• Your Next Power User Won’t Learn Your UI — lunchtime lightning talks, Ballroom B\\.<br />\n• The Agent Surface: Designing Products for Users Who Never Open the App — 3:15 p\\.m\\., Room 306B\\.\n\nIf you’re at ATO, come find me\\! I’ll be hanging out at the [Applied Visions, Inc\\.](<https://www.linkedin.com/company/applied-visions-inc./>) table just outside Ballrooms A\\.\n\nIf you haven’t registered yet and you’re interested to attend, I have passes\\! Message me and I’ll get you set up\\!<br />\n[\\#AllThingsOpen](<https://www.linkedin.com/search/results/all/?keywords=%23allthingsopen&origin=HASH_TAG_FROM_FEED>)<br />\n[https://lnkd\\.in/eWP\\_Ke\\-V](<https://lnkd.in/eWP_Ke-V>)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-20-all-things-open-day-two",
+      "data": {
+        "title": "All Things Open: day two",
+        "summary": "#AllThingsOpen day 2! Come stop by, second floor next to ballroom A.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "All Things Open"
+        ],
+        "image": "/images/linkedin/7518311366265356288-1.jpg",
+        "imageAlt": "Alexander Thomas at the All Things Open 2026 sponsor banner.",
+        "date": "2026-10-20T00:00:00.000Z",
+        "category": "Events & reflections",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsopen-ugcPost-7518311365556523008-cjI2",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\n[\\#AllThingsOpen](<https://www.linkedin.com/search/results/all/?keywords=%23allthingsopen&origin=HASH_TAG_FROM_FEED>) day 2\\! Come stop by, second floor next to ballroom A\\.\n\n![Conference hallway and exhibition tables at All Things Open.](/images/linkedin/7518311366265356288-2.jpg)\n",
+      "revision": 1
+    },
+    {
+      "collection": "posts",
+      "slug": "2026-10-22-software-risk-without-code-changes",
+      "data": {
+        "title": "Software risk changes even when code does not",
+        "summary": "I'm for sure going to post some stuff from #AllThingsOpen this week, but that got sideswiped yesterday/today for news from... PHP? That wasn't on my bingo card.",
+        "draft": false,
+        "featured": true,
+        "example": false,
+        "tags": [
+          "Security",
+          "Software maintenance",
+          "Applied AI"
+        ],
+        "date": "2026-10-22T00:00:00.000Z",
+        "category": "Architecture",
+        "linkedinUrl": "https://www.linkedin.com/posts/alexander-jt_allthingsopen-share-7519154145040203776-xBgZ",
+        "linkedinRepost": false,
+        "linkedinVideo": false,
+        "videoWidth": 1280,
+        "videoHeight": 720
+      },
+      "body": "\nI'm for sure going to post some stuff from [\\#AllThingsOpen](<https://www.linkedin.com/search/results/all/?keywords=%23allthingsopen&origin=HASH_TAG_FROM_FEED>) this week, but that got sideswiped yesterday/today for news from\\.\\.\\. PHP? That wasn't on my bingo card\\.\n\nI bet it wasn't on most people's, either\\. And in a day where exploits are appearing that are likely a decade old, it's never more important than ever to keep your software and systems up\\-to\\-date\\.\n\nThis particular exploit was \\- to no one's surprise \\- found with the assistance of AI agents\\. And it's a doozy, offering full access to the affected server\\. That can mean reading application data, modifying the site, stealing credentials, passwords, tokens, API keys\\. Yikes\\.\n\nSoftware doesn't need to have a change for its risk profile to change\\. It requires maintenance and attention\\. I expect we'll see lots of these popping up in the future\\.\n\nOur team was on top of this for all of our clients\\. Come talk to me if yours needed a reminder\\.\n",
+      "revision": 1
+    },
+    {
+      "collection": "projects",
+      "slug": "agentic-development",
+      "data": {
+        "title": "Agentic development, with engineering discipline",
+        "summary": "Introducing AI-assisted delivery across engineering teams, from implementation and code review to testing and production support.",
+        "draft": false,
+        "featured": true,
+        "example": false,
+        "tags": [
+          "Applied AI",
+          "Engineering leadership"
+        ],
+        "role": "Engineering leadership, adoption strategy, and hands-on technical guidance",
+        "technologies": [
+          "AI-assisted development",
+          "Code review",
+          "Testing",
+          "CI/CD"
+        ],
+        "outcomes": [
+          "Delivery practices introduced across approximately 30 engineers and more than 20 projects.",
+          "Adoption extended beyond coding into planning, review, testing, documentation, and support."
+        ],
+        "relatedArticles": [
+          "2026-10-12-test-strategy-speed-limit",
+          "2026-10-02-smaller-models-for-code-review"
+        ],
+        "order": 1,
+        "kind": "agents"
+      },
+      "body": "\n## The challenge\n\nAdding a coding assistant is straightforward. Introducing a useful development practice across a team takes more work. Requirements, architecture, implementation, review, and testing still need to fit together, and people remain accountable for the result.\n\nAt Applied Visions, my work included helping introduce AI-assisted delivery practices across approximately 30 engineers and more than 20 projects.\n\n## My role\n\nI worked across technical strategy, team adoption, and practical implementation. The scope included requirements intake, story refinement, estimation, architecture planning, coding assistance, review, testing, documentation, and production support.\n\nI also advised client organizations on agentic development through workshops, playbooks, pilot projects, and strategy conversations.\n\n## The approach\n\nThe work treated AI adoption as part of the delivery process. Generating an implementation is one step. Understanding the requirement, inspecting the change, testing its behavior, and deciding whether to ship remain engineering responsibilities.\n\nThe emphasis was on making the practices usable across actual projects and keeping technical ownership clear.\n\n## Outcomes and boundaries\n\nThe adoption scope is documented in my professional background. This overview deliberately avoids a blanket productivity percentage. Measuring delivery speed, quality, and rework requires project-specific evidence and a consistent baseline.\n\nThe practical question remains: does this workflow help a team deliver software it understands and can maintain?\n",
+      "revision": 1
+    },
+    {
+      "collection": "projects",
+      "slug": "mealtrack-modernization",
+      "data": {
+        "title": "Modernizing the MealTrack platform",
+        "summary": "Connecting product direction, platform architecture, and reliable delivery for a multi-tenant SaaS business.",
+        "draft": false,
+        "featured": true,
+        "example": false,
+        "tags": [
+          "Platform modernization",
+          "Architecture"
+        ],
+        "role": "CTO and Product Owner",
+        "technologies": [
+          "React",
+          "GraphQL",
+          "Azure",
+          "SQL Server"
+        ],
+        "outcomes": [
+          "Modernized a legacy platform with a cross-functional team of approximately 10.",
+          "Strengthened release cadence, operational reliability, scalability, and white-label capability."
+        ],
+        "relatedArticles": [
+          "2026-08-20-prototypes-and-production-responsibility"
+        ],
+        "order": 2,
+        "kind": "platform"
+      },
+      "body": "\n## The challenge\n\nA SaaS platform has to serve current customers while continuing to change. Product priorities, customer commitments, release reliability, and the long-term architecture all compete for the same engineering capacity.\n\nMy work at MealTrack connects those responsibilities rather than treating the roadmap and the technical platform as separate conversations.\n\n## My role\n\nAs CTO and Product Owner, I balance product direction, architecture, customer commitments, team leadership, and hands-on technical oversight.\n\nI led a cross-functional team of approximately 10 through modernization of a legacy platform into a product backed by React, GraphQL, Azure, and SQL Server.\n\n## Approach and architecture\n\nThe modernization work supported a multi-tenant SaaS ecommerce platform. It combined frontend development, an API layer, cloud infrastructure, and a SQL Server data foundation.\n\nThe goal was to align the platform with customer growth and business priorities while maintaining a sustainable delivery process. Technical scope and product commitments needed to be considered together.\n\n## Outcomes\n\nMy documented work includes improvements to release cadence, operational reliability, scalability, white-label capability, and platform governance.\n\nThis overview omits internal diagrams, customer-specific information, and performance figures that are not supported by public evidence.\n\n## What this work illustrates\n\nPlatform leadership is partly architecture and partly judgment. A technical roadmap has to account for what customers need now, what the business can support, and what the team can responsibly deliver next.\n",
+      "revision": 1
+    },
+    {
+      "collection": "projects",
+      "slug": "planet-fitness-mobile",
+      "data": {
+        "title": "Planet Fitness mobile architecture",
+        "summary": "Technical leadership for a national iOS and Android application rebuild, with a cloud-backed service layer.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Mobile architecture",
+          "Platform delivery"
+        ],
+        "role": "Technical lead, architecture and development",
+        "technologies": [
+          "iOS & Android",
+          "Azure",
+          "SQL Server",
+          "BFF architecture"
+        ],
+        "outcomes": [
+          "Led technical delivery for the national iOS and Android application rebuild.",
+          "Designed and delivered an Azure and SQL Server-backed backend-for-frontend architecture."
+        ],
+        "relatedArticles": [
+          "2026-01-27-do-you-need-a-native-app"
+        ],
+        "order": 3,
+        "kind": "mobile"
+      },
+      "body": "\n## The challenge\n\nA national consumer mobile application brings together user experience, backend services, data, and production operations. Mobile delivery has to be supported by an architecture that makes those pieces work together.\n\n## My role\n\nI served as technical lead for the Planet Fitness national iOS and Android application rebuild. My responsibilities included architecture and development across the application and its supporting services.\n\n## Approach and architecture\n\nThe documented platform used an Azure and SQL Server-backed backend-for-frontend, or BFF, architecture.\n\nA BFF is a service layer organized around the needs of a particular frontend. It gives a mobile application an interface suited to its workflows while keeping integrations and backend concerns behind that boundary.\n\nThat description explains the architectural pattern. It does not disclose the internal service design or the implementation of individual customer features.\n\n## Outcomes and impact\n\nThe rebuild delivered a national mobile platform. My professional background records an application serving more than two million users.\n\nThis summary includes only high-level responsibilities and platform details supported by my resume. It does not claim changes in engagement, revenue, performance, or uptime.\n",
+      "revision": 1
+    },
+    {
+      "collection": "talks",
+      "slug": "after-the-prototype",
+      "data": {
+        "title": "After the Prototype: The Engineering and Leadership Work That Makes AI Real",
+        "summary": "The engineering and leadership disciplines that turn a promising AI experiment into a system a business can responsibly operate.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Applied AI",
+          "Engineering leadership",
+          "Production systems"
+        ],
+        "audience": "CIOs, technology leaders, software and product leaders",
+        "status": "proposed",
+        "resources": [],
+        "relatedArticles": [
+          "2026-08-20-prototypes-and-production-responsibility",
+          "2026-10-12-test-strategy-speed-limit"
+        ]
+      },
+      "body": "\n## Available session topic\n\nThis is an available speaking topic, not a confirmed conference appearance.\n\nA prototype can demonstrate that AI is capable of doing something. Production demands a different standard: identity and permissions, evaluation, human oversight, security, observability, cost control, integration, and accountable ownership.\n\nDrawing on implementation experience, this session examines why promising AI experiments stall and how leaders can turn them into systems the business can responsibly operate.\n\n## Audience and focus\n\nThe session is intended for technology, software, and product leaders moving AI experiments toward production. It focuses on engineering responsibility and operational ownership after the initial decision to proceed.\n\n## Discuss a session\n\nThe scope and format can be adapted to your audience. Contact me with the event, audience, format, and the practical questions you want the conversation to address.\n",
+      "revision": 1
+    },
+    {
+      "collection": "talks",
+      "slug": "ai-agents-for-the-rest-of-us",
+      "data": {
+        "title": "AI Agents in Practice: Orchestrating Business Workflows",
+        "summary": "How AI agents coordinate tools, business systems, and reusable workflows—with a live demonstration of multi-agent orchestration, scoped access, and human review.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Applied AI",
+          "AI agents",
+          "MCP",
+          "Business workflows"
+        ],
+        "image": "/images/talks/ai-agents-in-practice.png",
+        "imageAlt": "AI Agents for the Rest of Us, the original title slide for the Apex Intelligence session.",
+        "event": "Apex Intelligence Connections Circle",
+        "date": "2026-05-28T00:00:00.000Z",
+        "location": "Springhill Suites, Apex, NC",
+        "audience": "Business leaders, owners, operations teams, and professionals evaluating agentic workflows",
+        "status": "past",
+        "slides": "/slides/ai-agents-in-practice.pdf",
+        "resources": [],
+        "relatedArticles": []
+      },
+      "body": "\n## Agentic workflows for business operations\n\nPresented to the Apex Intelligence Connections Circle, this session examined how AI agents can work across business applications: gathering evidence, coordinating tasks, and preparing work for human review.\n\nThe focus was the operating model behind that work. What can an agent access? How should a task be divided? What context does each agent need, and where should a person remain involved?\n\n## The architecture behind useful agents\n\n- **Tools and permissions:** defining the actions an agent can take and the systems it is allowed to access.\n- **Connectors and MCP:** connecting agents to business applications with explicit access scopes.\n- **Reusable skills:** capturing a repeatable process, including the instructions and output requirements that make its results useful.\n- **Specialist agents and context:** dividing a workflow into focused tasks, then bringing their findings together without losing the evidence behind them.\n\nThe session also examined where Claude Cowork and Claude Code fit: document and application workflows on one side, software engineering on the other.\n\n## A live orchestration workflow\n\nMy morning time-reconciliation workflow provided the demonstration. Specialist agents gathered activity from several work systems. A reusable skill reconciled that evidence against projects and tasks, paused for calendar input, and prepared time entries.\n\nThe walkthrough made the coordination visible: parallel information gathering, focused context, reconciliation across sources, and an explicit point for human input. It showed how an agentic workflow is assembled from responsibilities and connections that can be inspected.\n\n## Adoption with clear boundaries\n\nThe discussion connected that model to status reporting, meeting preparation, and document production. Choosing a bounded workflow, limiting access, and reviewing the result gives a team a concrete basis for deciding where agentic tools belong in its operations.\n\nThe material can be adapted for a business leadership session or a team workshop on designing and adopting agentic workflows.\n\nThe PDF below preserves the original presentation title, “AI Agents for the Rest of Us.”\n",
+      "revision": 1
+    },
+    {
+      "collection": "talks",
+      "slug": "the-agent-surface",
+      "data": {
+        "title": "The Agent Surface: Designing Products for Users Who Never Open the App",
+        "summary": "What changes when an agent becomes the way people use your software? A practical look at product access, context, permissions, and inspectable results.",
+        "draft": false,
+        "featured": true,
+        "example": false,
+        "tags": [
+          "MCP",
+          "Applied AI",
+          "Architecture"
+        ],
+        "image": "/images/talks/the-agent-surface.png",
+        "imageAlt": "Title slide for The Agent Surface at All Things Open 2026.",
+        "event": "All Things Open 2026",
+        "date": "2026-10-20T00:00:00.000Z",
+        "location": "Raleigh, North Carolina",
+        "audience": "Software engineers, architects, product leaders, and people building agent integrations",
+        "status": "past",
+        "slides": "/slides/the-agent-surface.pdf",
+        "resources": [],
+        "relatedArticles": [
+          "2026-10-06-product-value-when-agents-can-act",
+          "2026-08-31-using-software-without-its-ui"
+        ]
+      },
+      "body": "\n## About the session\n\nPeople increasingly use software through AI agents as well as through a product’s interface. That changes the contact points a team needs to design, document, and support.\n\nThis All Things Open technical session examines the agent surface: the ways an agent discovers capabilities, gets context, takes permitted actions, and produces results that a person can inspect.\n\n## What it covers\n\n- The difference between screen interaction and structured access through APIs and tools.\n- Context that persists beyond a single interaction.\n- Boundaries for actions, permissions, and delegated work.\n- Evidence that lets a person inspect what actually happened.\n\n## For organizers\n\nThis topic can be adapted for engineering teams, architecture audiences, and technology leaders. Get in touch to discuss the audience and the decisions you want the session to help them make.\n\nThe presentation PDF is available below. It preserves the incremental builds used in the delivered deck.\n",
+      "revision": 1
+    },
+    {
+      "collection": "talks",
+      "slug": "the-agentic-sdlc",
+      "data": {
+        "title": "The Agentic SDLC",
+        "summary": "An enterprise consulting session on putting agentic software delivery into practice: specialist agents, accountable handoffs, independent review, and quality gates across the SDLC.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Agentic SDLC",
+          "AI-assisted development",
+          "Engineering leadership",
+          "Software architecture"
+        ],
+        "event": "Enterprise consulting",
+        "audience": "Enterprise technology leaders, engineering managers, software architects, and delivery teams adopting agentic development",
+        "status": "past",
+        "resources": [],
+        "relatedArticles": [
+          "2026-10-12-test-strategy-speed-limit",
+          "2026-08-17-curiosity-in-the-ai-first-sdlc"
+        ]
+      },
+      "body": "\n## Agents need a delivery process\n\nGenerating code is one part of software delivery. Discovery, architecture, test planning, review, testing, and documentation still need to happen, and the work needs to survive the handoff between them.\n\nUsed in enterprise consulting, this session walks through an operating model in which an orchestrator coordinates specialist agents across that lifecycle. Each specialist has a focused task and produces a written artifact. The next stage starts with an explicit decision about whether the work is ready to proceed.\n\nThe central idea: agents can staff the SDLC. Engineering discipline still defines it.\n\n## What the session covers\n\n- **Focused agents and context.** Why discovery, implementation, and review benefit from separate responsibilities and fresh working context.\n- **Written handoffs.** How discovery summaries, architecture decisions, test plans, and review reports make the process inspectable and resumable.\n- **Parallel work with one decision.** How an orchestrator combines specialist findings, resolves conflicts, and produces a single verdict.\n- **Gates and bounded correction.** Where builds, tests, review findings, and explicit stop conditions belong, including when a failure needs human judgment.\n- **A process that fits the product.** How reviewer responsibilities change with the codebase, infrastructure, and security risks, and how lessons feed back into the workflow.\n\n## What the audience takes away\n\nA concrete way to reason about agentic delivery beyond a single coding assistant: who owns each step, what evidence they leave behind, and what must be true before work moves forward.\n\nThe material supports both a technical walkthrough and a leadership discussion about introducing agentic workflows into an existing engineering organization: how responsibilities change, how quality is assessed, and where people retain ownership of delivery decisions.\n",
+      "revision": 1
+    },
+    {
+      "collection": "talks",
+      "slug": "your-next-power-user",
+      "data": {
+        "title": "Your Next Power User Won’t Learn Your UI",
+        "summary": "A lightning talk about the people who use your product through an agent, and what their workflows ask of your software.",
+        "draft": false,
+        "featured": false,
+        "example": false,
+        "tags": [
+          "Applied AI",
+          "MCP",
+          "Product design"
+        ],
+        "image": "/images/talks/your-next-power-user.png",
+        "imageAlt": "Title slide for Your Next Power User Won’t Learn Your UI at All Things Open 2026.",
+        "event": "All Things Open 2026",
+        "date": "2026-10-20T00:00:00.000Z",
+        "location": "Raleigh, North Carolina",
+        "audience": "Developers, product teams, and technology leaders",
+        "status": "past",
+        "slides": "/slides/your-next-power-user.pdf",
+        "video": "https://www.youtube.com/watch?v=enGhXFZ1A-I&t=16395s",
+        "resources": [],
+        "relatedArticles": [
+          "2026-08-31-using-software-without-its-ui"
+        ]
+      },
+      "body": "\n## About the talk\n\nA product can be useful even when the person directing the work never opens its interface. This lightning talk introduces that shift through examples of agents working across software.\n\nThe discussion includes presentation creation, Blender, and call debriefs. The question for a product team is concrete: what should a user’s agent be able to do, and what evidence should it leave behind?\n\n## Watch the recording\n\nThe recording link starts with the host’s introduction to the lightning talk in the full-day All Things Open recording. The recording is hosted and owned by All Things Open.\n\n## Continue the conversation\n\nThe longer technical session, “The Agent Surface,” explores context, structured access, action boundaries, and inspectable results in more depth.\n",
+      "revision": 1
+    }
+  ]
+}

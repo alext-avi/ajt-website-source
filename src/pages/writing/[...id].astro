@@ -1,0 +1,186 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SignatureMark from '../../components/SignatureMark.astro';
+import PostRow from '../../components/PostRow.astro';
+import PostVideo from '../../components/PostVideo.astro';
+import {
+  getPosts,
+  formatDate,
+  readingTime,
+  tagSlug,
+  relatedPosts,
+} from '../../lib/content';
+import { site } from '../../lib/site';
+export async function getStaticPaths() {
+  return (await getPosts()).map((post) => ({
+    params: { id: post.id },
+    props: { post },
+  }));
+}
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const related = relatedPosts(post, await getPosts());
+const structured = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.summary,
+  datePublished: post.data.date.toISOString(),
+  dateModified: (post.data.updated ?? post.data.date).toISOString(),
+  author: { '@type': 'Person', name: site.name, url: Astro.site?.href },
+  mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+  image: new URL(post.data.image ?? '/images/social-card.png', Astro.site).href,
+};
+---
+
+<Base
+  title={post.data.title}
+  description={post.data.summary}
+  type="article"
+  published={post.data.date}
+  updated={post.data.updated}
+  noindex={post.data.draft}
+  image={post.data.image}
+>
+  <script
+    type="application/ld+json"
+    slot="head"
+    set:html={JSON.stringify(structured).replace(/</g, '\\u003c')}
+  />
+  <header class="shell detail-head">
+    <a class="breadcrumb" href="/writing/">
+      ← Back to writing
+    </a>
+    <p class="eyebrow">{post.data.category}</p>
+    <h1>{post.data.title}</h1>
+    <p class="lede">{post.data.summary}</p>
+    <div class="article-meta">
+      <span>By Alexander Thomas</span>
+      <span class="dot"></span>
+      <time datetime={post.data.date.toISOString()}>
+        {formatDate(post.data.date)}
+      </time>
+      <span class="dot"></span>
+      <span>{readingTime(post.body)} min read</span>
+      {post.data.updated && (
+        <span>Updated {formatDate(post.data.updated)}</span>
+      )}
+    </div>
+  </header>
+  <div class="shell page-body article-grid">
+    <div class="article-body">
+      {post.data.draft && (
+        <p class="preview-note">
+          Draft preview. This article is excluded from the public build.
+        </p>
+      )}
+      {post.data.example && (
+        <p class="preview-note">
+          Example article created for this website. This is general technical
+          guidance, with illustrative scenarios, rather than an account of a
+          particular client project.
+        </p>
+      )}
+      {post.data.linkedinUrl && (
+        <p class="publication-source">
+          {post.data.linkedinRepost
+            ? 'My commentary on a shared post. '
+            : 'Originally published on LinkedIn. '}
+          <a href={post.data.linkedinUrl}>
+            {post.data.linkedinVideo &&
+            !post.data.video &&
+            !post.data.linkedinVideoEmbed
+              ? 'View the original post and video ↗'
+              : 'View the original post ↗'}
+          </a>
+        </p>
+      )}
+      {post.data.image && (
+        <img
+          src={post.data.image}
+          alt={post.data.imageAlt ?? ''}
+          width="800"
+          height="450"
+          class="article-cover mb-8 rounded"
+        />
+      )}
+      <article class="prose">
+        <Content />
+      </article>
+      <PostVideo post={post} />
+      <div class="article-tags" aria-label="Article tags">
+        {post.data.tags.map((tag) => (
+          <a href={`/tags/${tagSlug(tag)}/`}>{tag}</a>
+        ))}
+      </div>
+      <div class="article-bottom">
+        <div class="author">
+          <span class="author-mark" aria-hidden="true">
+            <SignatureMark />
+          </span>
+          <span>
+            <strong>Alexander Thomas</strong>
+            <br />
+            CTO. Architect. Builder.
+          </span>
+        </div>
+        <button class="copy-link" type="button" hidden>
+          Copy article link
+        </button>
+        <span class="copy-status sr-only" role="status"></span>
+      </div>
+      {related.length > 0 && (
+        <section class="related-section">
+          <h2>Keep thinking.</h2>
+          {related.map((p) => (
+            <PostRow post={p} />
+          ))}
+        </section>
+      )}
+    </div>
+    {toc.length >= 3 && (
+      <aside class="toc">
+        <nav aria-label="Table of contents">
+          <h2>In this article</h2>
+          <ol>
+            {toc.map((h) => (
+              <li class={`depth-${h.depth}`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+        <div class="toc-contact">
+          Working through a similar question?
+          <a href="/contact/">Let’s compare notes ↗</a>
+        </div>
+      </aside>
+    )}
+  </div>
+</Base>
+<script>
+  const button = document.querySelector<HTMLButtonElement>('.copy-link');
+  const status = document.querySelector<HTMLElement>('.copy-status');
+  if (button && navigator.clipboard) {
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href.split('#')[0]);
+        button.textContent = 'Link copied';
+        if (status) status.textContent = 'Article link copied to clipboard.';
+        setTimeout(() => {
+          button.textContent = 'Copy article link';
+        }, 2500);
+      } catch {
+        if (status)
+          status.textContent =
+            'Unable to copy. You can copy the link from the address bar.';
+      }
+    });
+  }
+</script>

@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "alexander-thomas",
+  "account_id": "301c2c01d75b3c264d18ca39b2bfce5a",
+  "compatibility_date": "2026-10-24",
+  "workers_dev": true,
+  "preview_urls": false,
+  "main": "./worker/index.ts",
+  "d1_databases": [
+    {
+      "binding": "CONTENT_DB",
+      "database_name": "ajt-website-content",
+      "database_id": "7bfb4c08-b765-4393-b6d2-bd72f750de33",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/r/*"],
+    "not_found_handling": "404-page",
+  },
+}

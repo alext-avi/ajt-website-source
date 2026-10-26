@@ -1,0 +1,60 @@
+{
+  "updatedOn": "2026-10-25",
+  "media": [
+    {
+      "slug": "2026-10-12-test-strategy-speed-limit",
+      "kind": "local",
+      "src": "/videos/go-plant.mp4",
+      "poster": "/images/videos/go-plant.jpg",
+      "width": 1080,
+      "height": 1080,
+      "durationSeconds": 37.9,
+      "sourceFile": "Go-Plant-Time-v7-preview.mp4",
+      "method": "Original encoded streams preserved; MP4 container moved metadata to the front for playback",
+      "bytes": 21240082,
+      "sha256": "e15b0059c59280bf917182df2b0bad10be2887c045e1984f628e3bb0301d5349"
+    },
+    {
+      "slug": "2026-10-05-buttery-agent-interface-hack-day",
+      "kind": "local",
+      "src": "/videos/buttery.mp4",
+      "poster": "/images/videos/buttery.jpg",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 44.633333,
+      "sourceFile": "Buttery-Hackathon-POC.mp4",
+      "method": "Original file copied unchanged",
+      "bytes": 7196037,
+      "sha256": "95fc59dfcb44412aa1cc40c49d9a858b147f724d9d43a5851a50bd0880febafb"
+    },
+    {
+      "slug": "2026-09-03-browser-agents-make-it-tangible",
+      "kind": "local",
+      "src": "/videos/browser-agents.mp4",
+      "poster": "/images/videos/browser-agents.jpg",
+      "width": 1200,
+      "height": 960,
+      "durationSeconds": 10.133333,
+      "sourceFile": "apex-intelligence-browser-montage-5x4-with-prompt.mp4",
+      "method": "Original encoded streams preserved; MP4 container moved metadata to the front for playback",
+      "bytes": 8147785,
+      "sha256": "bdd6b0e44e7ec01dac316eaa4e42b57474c5b8f2e49da8bdbcba4fad302595b9"
+    },
+    {
+      "slug": "2026-10-05-ai-conference-drumline",
+      "kind": "linkedin",
+      "embedUrl": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7511454576412184576?compact=1",
+      "height": 399,
+      "credit": "Andrew Caslow",
+      "sourceUrl": "https://www.linkedin.com/feed/update/urn:li:activity:7511459216868405248/"
+    },
+    {
+      "slug": "2026-09-29-ai-for-coral-restoration",
+      "kind": "linkedin",
+      "embedUrl": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7510767966137978880?compact=1",
+      "height": 399,
+      "credit": "Coral Restoration Foundation",
+      "sourceUrl": "https://www.linkedin.com/feed/update/urn:li:activity:7510767970759946240/"
+    }
+  ]
+}

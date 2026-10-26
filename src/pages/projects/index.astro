@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import ContactBand from '../../components/ContactBand.astro';
+import { getProjects, isPreview } from '../../lib/content';
+const projects = await getProjects();
+---
+
+<Base
+  title="Projects"
+  description="Selected work across applied AI, engineering leadership, mobile architecture, and platform modernization."
+>
+  <PageIntro
+    eyebrow="Selected work"
+    title="The work, in context."
+    description="Software delivery is a series of choices. Here’s a closer look at the problems, the approach, and the responsibilities behind a few of mine."
+  />
+  <section class="shell page-body">
+    {isPreview && projects.some((p) => p.data.draft) && (
+      <p class="preview-note">
+        Local preview includes drafts. Draft case studies are labeled and
+        excluded from production builds.
+      </p>
+    )}
+    {projects.length ? (
+      <div class="project-grid">
+        {projects.map((project, index) => (
+          <ProjectCard project={project} index={index} />
+        ))}
+      </div>
+    ) : (
+      <div class="empty-state">
+        <h2>More project stories are on the way.</h2>
+        <p>
+          For now, my background covers engineering leadership, platform
+          modernization, mobile architecture, and practical AI.
+        </p>
+        <a class="text-link" href="/about/">
+          Explore my background →
+        </a>
+      </div>
+    )}
+  </section>
+  <ContactBand />
+</Base>

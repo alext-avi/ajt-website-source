@@ -1,0 +1,34 @@
+---
+title: Agent traces, visibility, and delivery cost
+summary: I did promise to keep you posted from The AI Conference. There's a ton of topic areas here, but naturally I'm drawn to those around software development.
+draft: false
+featured: false
+example: false
+tags:
+  - AI agents
+  - Observability
+  - Software delivery
+date: 2026-10-01T00:00:00.000Z
+category: Engineering leadership
+linkedinUrl: https://www.linkedin.com/posts/alexander-jt_i-did-promise-to-keep-you-posted-from-the-share-7511476294761684992-FOyq
+linkedinRepost: false
+linkedinVideo: false
+videoWidth: 1280
+videoHeight: 720
+---
+
+I did promise to keep you posted from [The AI Conference](<https://www.linkedin.com/company/theaiconference/>)\. There's a ton of topic areas here, but naturally I'm drawn to those around software development\.
+
+[Chetan Conikee](<https://www.linkedin.com/in/conikee/>)’s talk on agent traces got into the cost of long\-running runs\. They walked through tool calls, context compaction, retries, and the spend accumulating along the way\.
+
+You can have a final answer and a total bill without understanding how the agent got from one to the other\. Feels familiar\.
+
+That leads me to an interesting conversation with [Bob Tordella](<https://www.linkedin.com/in/bobtordella/>) and [Nathan Wallace](<https://www.linkedin.com/in/e-gineer/>) at [Turbot](<https://www.linkedin.com/company/turbot/>) about Guardian\. [Turbot](<https://www.linkedin.com/company/turbot/>) is building it to show which coding agents are running across developer machines, replay their sessions, show what credentials they can reach, and break down spend by project, model, and developer\.
+
+That spend analysis and work inspection seems extremely useful for me as someone running delivery\. Where are agents doing useful work? Where are they repeating it? What patterns should we teach across the team, and where does an action need more oversight? Which projects are carrying the cost?
+
+A trace gives you a way to investigate one run\. A view across the team could tell you whether the same problem keeps showing up\. It could also deliver insights about our development staff\.
+
+Of course, I haven’t used Guardian yet \- but it's an intriguing space\. I definitely want to inspect its utility across different tools, and that depth of session visibility calls for clear rules about who can inspect it\. But I left the conversation wanting to get my hands on it\.
+
+And given that every third vendor here is pitching some high\-minded derivation of 'manage your agents' it was nice to see something that feels tangible\.

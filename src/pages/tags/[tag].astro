@@ -1,0 +1,34 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import PostRow from '../../components/PostRow.astro';
+import { getPosts, tagSlug } from '../../lib/content';
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
+  return tags.map((tag) => ({
+    params: { tag: tagSlug(tag) },
+    props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
+  }));
+}
+const { tag, posts } = Astro.props;
+---
+
+<Base
+  title={`Writing about ${tag}`}
+  description={`Articles and practical notes on ${tag.toLowerCase()} by Alexander Thomas.`}
+>
+  <PageIntro
+    eyebrow="Explore a topic"
+    title={tag}
+    description={`${posts.length} ${posts.length === 1 ? 'article' : 'articles'} on this topic.`}
+  />
+  <section class="shell page-body">
+    <a href="/writing/" class="breadcrumb">
+      ← All writing
+    </a>
+    {posts.map((post) => (
+      <PostRow post={post} />
+    ))}
+  </section>
+</Base>
