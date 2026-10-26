@@ -67,11 +67,11 @@ The review guidance protects original publication text and dates, private consul
 
 This project uses **Cloudflare Workers Static Assets** and **D1**. No Cloudflare Astro adapter or SSR runtime is required. The small Worker in `worker/index.ts` handles referral redirects; static assets bypass it. `CONTENT_DB` binds the content database for future authenticated content tools; public page requests do not query it.
 
-The [GitHub Actions workflow](.github/workflows/verify.yml) verifies every pull request and push to `main`. After verification succeeds, a push to this repository's `main` branch deploys the site with the lockfile-pinned Wrangler CLI. The workflow can also be run manually on `main`. Deployment requires the `CLOUDFLARE_API_TOKEN` repository Actions secret; see [deployment setup](docs/deployment.md).
+The [GitHub Actions workflow](.github/workflows/verify.yml) verifies every pull request and push to `main`. This public source repository runs verification and skips deployment. Deployment is restricted to `alext-avi/ajt-website` on `main`, after verification succeeds, using the lockfile-pinned Wrangler CLI. The workflow can also be run manually on `main`; the same repository guard applies. Deployment requires the `CLOUDFLARE_API_TOKEN` repository Actions secret; see [deployment setup](docs/deployment.md).
 
 Pull requests, other branches, and copies of this repository cannot run the deployment job. Only the production job receives the Cloudflare token, for reading the D1 snapshot and deploying verified output. Production deployments are serialized, and an outdated commit is skipped if a newer commit is already on `main`. Failed verification leaves the existing website live.
 
-Repository variables `SITE_URL` and `PUBLIC_GA4_MEASUREMENT_ID` supply the build configuration. Keep `SITE_URL` consistent with the primary domain, and redeploy after changing either variable. The workflow deliberately does not require GitHub environments, which are unavailable for this private repository on its current GitHub plan.
+Repository variables `SITE_URL` and `PUBLIC_GA4_MEASUREMENT_ID` supply the build configuration. Keep `SITE_URL` consistent with the primary domain, and redeploy after changing either variable. The workflow does not require GitHub environments.
 
 For a manual deployment:
 
