@@ -9,6 +9,28 @@ import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 
+export class Ga4IngestionPending extends Error {
+  constructor(evidence) {
+    super('GA4 ingestion was not confirmed before the deadline.');
+    this.name = 'Ga4IngestionPending';
+    this.evidence = evidence;
+  }
+}
+
+export function isReportingDelay(error) {
+  return (
+    error instanceof Ga4IngestionPending &&
+    error.evidence?.lastHttpStatus === 200 &&
+    !error.evidence.transportError &&
+    !error.evidence.rows?.some(
+      (row) =>
+        row.event === 'screen_view' &&
+        row.eventCount > 0 &&
+        error.evidence.expectedViews.some((view) => view.runId === row.runId),
+    )
+  );
+}
+
 const names = ['customUser:ci_run_id', 'streamId', 'unifiedScreenName'];
 
 export function realtimeRequest(runId, streamId) {
@@ -272,10 +294,11 @@ export async function pollIngestion({
   const request = query || realtimeRequest(runId, streamId);
   const deadline = now() + timeoutMs;
   let attempts = 0;
+  let lastEvidence;
   let result = { verified: false, rows: [], missing: expectedViews };
   while (true) {
     if (attempts > 0 && now() >= deadline)
-      throw new Error('GA4 ingestion was not confirmed before the deadline.');
+      throw new Ga4IngestionPending(lastEvidence);
     attempts++;
     let response;
     let data;
@@ -349,16 +372,16 @@ export async function pollIngestion({
       lastHttpStatus: response.status || null,
       transportError: response.status === 0 ? 'request-failed' : null,
     };
+    lastEvidence = evidence;
     await onProgress(evidence);
     if (result.verified) return evidence;
     const remaining = deadline - now();
-    if (remaining <= 0)
-      throw new Error('GA4 ingestion was not confirmed before the deadline.');
+    if (remaining <= 0) throw new Ga4IngestionPending(lastEvidence);
     await wait(Math.min(intervalMs, remaining));
   }
 }
 
-export async function main(env = process.env) {
+export async function main(env = process.env, { poll = pollIngestion } = {}) {
   const output =
     env.GA4_READBACK_OUTPUT || 'test-results-production/ga4-api-readback.json';
   async function save(value) {
@@ -408,7 +431,7 @@ export async function main(env = process.env) {
         missing,
       };
     };
-    const pages = await pollIngestion({
+    const pages = await poll({
       propertyId,
       streamId,
       runId,
@@ -436,7 +459,7 @@ export async function main(env = process.env) {
         );
       },
     });
-    const eventVerification = await pollIngestion({
+    const eventVerification = await poll({
       propertyId,
       streamId,
       runId,
@@ -499,12 +522,30 @@ export async function main(env = process.env) {
     try {
       previous = JSON.parse(await readFile(output, 'utf8'));
     } catch {}
-    await save({ ...previous, status: 'failed', verified: false, message });
+    const pending = isReportingDelay(error);
+    await save({
+      ...previous,
+      status: pending ? 'pending' : 'failed',
+      verified: false,
+      message,
+    });
     if (env.GITHUB_STEP_SUMMARY)
       await appendFile(
         env.GITHUB_STEP_SUMMARY,
-        '\n### GA4 API ingestion not verified\n\n' + message + '\n',
+        '\n### GA4 API ingestion ' +
+          (pending ? 'pending' : 'not verified') +
+          '\n\n' +
+          message +
+          (pending
+            ? ' Both full browser journeys passed. This valid API response does not yet confirm ingestion; see the JSON evidence.\n'
+            : '\n'),
       );
+    if (pending) {
+      console.log(
+        '::notice::GA4 ingestion is pending, not verified. Website and collection tests passed; no matching processed traffic has been attested yet. See ga4-api-readback.json.',
+      );
+      return { ...previous, status: 'pending', verified: false, message };
+    }
     throw new Error(message);
   }
 }

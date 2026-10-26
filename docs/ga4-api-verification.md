@@ -40,7 +40,7 @@ Realtime limits each request to four dimensions, including dimensions referenced
 
 The production-playwright-results artifact retains the manifests, the API query, selected returned rows and counts, missing page/device pairs, attempt count, and timestamps for seven days. Authentication headers, cookies, and client/session IDs are not written to the JSON evidence. Failure traces can contain the test browser's anonymous network and storage state.
 
-The job summary explicitly says whether API ingestion was verified. Missing credentials, unavailable custom dimensions, permission errors, or reporting delays are failures, not successful round trips. Testing the current live site still does not prove that this workflow's source revision was deployed when the Cloudflare deployment token is absent.
+The job summary explicitly distinguishes verified ingestion from pending reporting. A valid HTTP 200 report that has not yet confirmed ingestion at the deadline produces a pending notice with verified=false; it does not fail the completed website checks or claim a successful round trip. Missing credentials, unavailable dimensions, permission/schema errors, transport failures, and observed screen_view substitutes still fail the job. Testing the current live site does not prove that this workflow's source revision was deployed when the Cloudflare deployment token is absent.
 
 For an authenticated local read-back, set the same target, measurement ID, property, stream, and run ID used by a completed live test, provide a short-lived GA4_ACCESS_TOKEN through the environment, and run npm run ga4:verify. Never place a token in chat, source code, shell command text, or committed configuration.
 

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
@@ -11,6 +11,9 @@ import {
   realtimeEventRequest,
   evaluateEventReport,
   evaluateIngestionProbe,
+  Ga4IngestionPending,
+  isReportingDelay,
+  main,
 } from './verify-ga4.mjs';
 
 const runId = 'gha-12345-1';
@@ -246,6 +249,40 @@ test('empty GA4 reports time out without a false success', async () => {
   );
   assert.ok(progress.length >= 2);
   assert.ok(progress.every((item) => item.verified === false));
+  assert.equal(
+    isReportingDelay(new Ga4IngestionPending(progress.at(-1))),
+    true,
+  );
+  assert.equal(
+    isReportingDelay(
+      new Ga4IngestionPending({ ...progress.at(-1), lastHttpStatus: 503 }),
+    ),
+    false,
+  );
+  assert.equal(
+    isReportingDelay(
+      new Ga4IngestionPending({
+        ...progress.at(-1),
+        transportError: 'request-failed',
+      }),
+    ),
+    false,
+  );
+  assert.equal(
+    isReportingDelay(
+      new Ga4IngestionPending({
+        ...progress.at(-1),
+        rows: [
+          {
+            runId: expectedViews[0].runId,
+            event: 'screen_view',
+            eventCount: 1,
+          },
+        ],
+      }),
+    ),
+    false,
+  );
 });
 
 test('permission errors fail immediately, while transient quota errors can recover', async () => {
@@ -329,6 +366,43 @@ test('only complete live journey manifests from this run and target can be used'
       /Missing complete/,
     );
   }
+  await writeFile(desktopPath, JSON.stringify(desktop));
+  const output = join(directory, 'api-evidence.json');
+  const summary = join(directory, 'summary.md');
+  const pending = await main(
+    {
+      GA4_PROPERTY_ID: '560723382',
+      GA4_STREAM_ID: streamId,
+      PLAYWRIGHT_RUN_ID: runId,
+      PLAYWRIGHT_PRODUCTION_URL: target,
+      PLAYWRIGHT_GA4_MEASUREMENT_ID: measurementId,
+      GA4_ACCESS_TOKEN: 'not-for-evidence',
+      GA4_EVIDENCE_DIRECTORY: directory,
+      GA4_READBACK_OUTPUT: output,
+      GITHUB_STEP_SUMMARY: summary,
+    },
+    {
+      poll: async (config) => {
+        const evidence = {
+          rows: [],
+          expectedViews: config.expectedViews,
+          missing: config.expectedViews,
+          verified: false,
+          lastHttpStatus: 200,
+          transportError: null,
+          attempts: 1,
+        };
+        await config.onProgress(evidence);
+        throw new Ga4IngestionPending(evidence);
+      },
+    },
+  );
+  assert.equal(pending.status, 'pending');
+  assert.equal(pending.verified, false);
+  const saved = await readFile(output, 'utf8');
+  assert.equal(JSON.parse(saved).verified, false);
+  assert.equal(saved.includes('not-for-evidence'), false);
+  assert.match(await readFile(summary, 'utf8'), /ingestion pending/);
 });
 
 test('network failures and request timeouts retry inside the deadline', async () => {
