@@ -147,7 +147,7 @@ jobs:
 
           Deployment: $PRODUCTION_DEPLOYMENT
 
-          Run marker: $PLAYWRIGHT_RUN_ID (source playwright-ci, medium testing, campaign production-checks).
+          Workflow marker: $PLAYWRIGHT_RUN_ID. Browser markers append -d (desktop Chromium) or -m (mobile Safari), with source playwright-ci, medium testing, campaign production-checks.
 
           The browser uses the deployed Google tag after consent. Reports attach Cloudflare response IDs and Google collection responses. Testing an existing deployment does not attest that this workflow's source revision was deployed.
           EOF

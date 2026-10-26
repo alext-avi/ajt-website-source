@@ -12,25 +12,36 @@ import { setTimeout as delay } from 'node:timers/promises';
 const names = [
   'customUser:ci_run_id',
   'streamId',
-  'deviceCategory',
+  'eventName',
   'unifiedScreenName',
 ];
 
 export function realtimeRequest(runId, streamId) {
   return {
     dimensions: names.map((name) => ({ name })),
-    metrics: [{ name: 'screenPageViews' }],
+    metrics: [{ name: 'eventCount' }],
     dimensionFilter: {
       andGroup: {
         expressions: [
-          ['customUser:ci_run_id', runId],
-          ['streamId', streamId],
-        ].map(([fieldName, value]) => ({
-          filter: {
-            fieldName,
-            stringFilter: { matchType: 'EXACT', value, caseSensitive: true },
+          {
+            filter: {
+              fieldName: 'customUser:ci_run_id',
+              inListFilter: {
+                values: [runId + '-d', runId + '-m'],
+                caseSensitive: true,
+              },
+            },
           },
-        })),
+          ...[
+            ['streamId', streamId],
+            ['eventName', 'page_view'],
+          ].map(([fieldName, value]) => ({
+            filter: {
+              fieldName,
+              stringFilter: { matchType: 'EXACT', value, caseSensitive: true },
+            },
+          })),
+        ],
       },
     },
     limit: '100',
@@ -60,7 +71,10 @@ export async function loadExpectedViews(
     ['live-mobile-safari', 'mobile'],
   ]) {
     const matches = evidence.filter(
-      (item) => item.project === project && item.runId === runId,
+      (item) =>
+        item.project === project &&
+        item.workflowRunId === runId &&
+        item.runId === runId + (device === 'desktop' ? '-d' : '-m'),
     );
     if (
       matches.length !== 1 ||
@@ -83,7 +97,12 @@ export async function loadExpectedViews(
         new URL(view.path, target).origin !== target
       )
         throw new Error('Invalid expected page view in live journey evidence.');
-      expected.push({ device, path: view.path, title: view.title });
+      expected.push({
+        device,
+        runId: matches[0].runId,
+        path: view.path,
+        title: view.title,
+      });
     }
   }
   return expected;
@@ -95,7 +114,7 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   if (
     data.kind !== 'analyticsData#runRealtimeReport' ||
     !names.every((name) => dimensions?.includes(name)) ||
-    !metrics?.includes('screenPageViews') ||
+    !metrics?.includes('eventCount') ||
     (data.rows !== undefined && !Array.isArray(data.rows))
   )
     throw new Error('Unexpected GA4 Realtime API response schema.');
@@ -103,16 +122,21 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
   for (const row of data.rows || []) {
     const value = (name) =>
       row.dimensionValues?.[dimensions.indexOf(name)]?.value;
-    const count = row.metricValues?.[metrics.indexOf('screenPageViews')]?.value;
+    const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
+    const browserRunId = value('customUser:ci_run_id');
     if (
-      value('customUser:ci_run_id') !== runId ||
-      value('streamId') !== streamId
+      ![runId + '-d', runId + '-m'].includes(browserRunId) ||
+      value('streamId') !== streamId ||
+      value('eventName') !== 'page_view'
     )
-      throw new Error('GA4 returned rows outside the requested run or stream.');
+      throw new Error(
+        'GA4 returned rows outside the requested run, stream, or page_view event.',
+      );
     if (!/^[0-9]+$/.test(count) || !Number.isSafeInteger(Number(count)))
       throw new Error('GA4 returned an invalid page-view count.');
     rows.push({
-      device: value('deviceCategory'),
+      runId: browserRunId,
+      device: browserRunId === runId + '-d' ? 'desktop' : 'mobile',
       title: value('unifiedScreenName'),
       pageViews: Number(count),
     });
@@ -122,6 +146,7 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
       !rows.some(
         (row) =>
           row.device === view.device &&
+          row.runId === view.runId &&
           row.title === view.title &&
           row.pageViews > 0,
       ),
@@ -250,7 +275,7 @@ export async function main(env = process.env) {
       !/^[0-9]+$/.test(propertyId || '') ||
       !/^[0-9]+$/.test(streamId || '') ||
       !runId ||
-      runId.length > 36 ||
+      runId.length > 34 ||
       !/^(gha-[0-9]+-[0-9]+|local-[a-z0-9][a-z0-9._-]*)$/.test(runId) ||
       !/^G-[A-Z0-9]+$/.test(measurementId || '') ||
       !env.GA4_ACCESS_TOKEN

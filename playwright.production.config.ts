@@ -21,14 +21,13 @@ const runId =
   process.env.PLAYWRIGHT_RUN_ID ||
   'local-' + new Date().toISOString().replace(/[^0-9]/g, '');
 if (
-  runId.length > 36 ||
+  runId.length > 34 ||
   !/^(gha-[0-9]+-[0-9]+|local-[a-z0-9][a-z0-9._-]*)$/.test(runId)
 )
   throw new Error(
-    'PLAYWRIGHT_RUN_ID must start with gha- or local- and fit GA4’s 36-character user-property limit.',
+    'PLAYWRIGHT_RUN_ID must start with gha- or local- and leave two characters for the browser marker within GA4’s 36-character limit.',
   );
 
-const userAgentSuffix = ' AJT-Playwright/1.0';
 export default defineConfig({
   testDir: './tests/production',
   fullyParallel: false,
@@ -71,7 +70,6 @@ export default defineConfig({
       testMatch: '**/*.browser.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
-        userAgent: devices['Desktop Chrome'].userAgent + userAgentSuffix,
       },
     },
     {
@@ -79,7 +77,6 @@ export default defineConfig({
       testMatch: '**/*.browser.spec.ts',
       use: {
         ...devices['iPhone 13'],
-        userAgent: devices['iPhone 13'].userAgent + userAgentSuffix,
       },
     },
     {

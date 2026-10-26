@@ -9,7 +9,7 @@ test('the CI run property starts after consent, follows navigation, and clears o
       body: '/* Local test tag. */',
     }),
   );
-  const runId = 'local-browser-check';
+  const runId = 'gha-12345-1-d';
   const storedRun = () =>
     page.evaluate(() => sessionStorage.getItem('ajt.analytics-ci-run.v1'));
   const config = () =>

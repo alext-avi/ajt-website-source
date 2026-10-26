@@ -15,6 +15,7 @@ const streamId = '16200089700';
 const expectedViews = ['desktop', 'mobile'].flatMap((device) =>
   Array.from({ length: 8 }, (_, i) => ({
     device,
+    runId: runId + (device === 'desktop' ? '-d' : '-m'),
     path: '/page-' + i,
     title: 'Page ' + i,
   })),
@@ -24,14 +25,14 @@ function report(views = expectedViews) {
   return {
     kind: 'analyticsData#runRealtimeReport',
     dimensionHeaders: [
-      { name: 'deviceCategory' },
+      { name: 'eventName' },
       { name: 'unifiedScreenName' },
       { name: 'customUser:ci_run_id' },
       { name: 'streamId' },
     ],
-    metricHeaders: [{ name: 'screenPageViews' }],
+    metricHeaders: [{ name: 'eventCount' }],
     rows: views.map((view) => ({
-      dimensionValues: [view.device, view.title, runId, streamId].map(
+      dimensionValues: ['page_view', view.title, view.runId, streamId].map(
         (value) => ({ value }),
       ),
       metricValues: [{ value: '1' }],
@@ -40,24 +41,35 @@ function report(views = expectedViews) {
 }
 const ok = (data) => ({ ok: true, status: 200, json: async () => data });
 
-test('the API request uses the page-view metric within the total dimension limit', () => {
+test('the API request verifies exact page_view events within the total dimension limit', () => {
   const request = realtimeRequest(runId, streamId);
   assert.equal(request.dimensions.length, 4);
   assert.deepEqual(
     request.dimensions.map(({ name }) => name),
-    ['customUser:ci_run_id', 'streamId', 'deviceCategory', 'unifiedScreenName'],
+    ['customUser:ci_run_id', 'streamId', 'eventName', 'unifiedScreenName'],
   );
   assert.deepEqual(
     Object.fromEntries(
-      request.dimensionFilter.andGroup.expressions.map(({ filter }) => {
-        assert.equal(filter.stringFilter.matchType, 'EXACT');
-        assert.equal(filter.stringFilter.caseSensitive, true);
-        return [filter.fieldName, filter.stringFilter.value];
-      }),
+      request.dimensionFilter.andGroup.expressions
+        .slice(1)
+        .map(({ filter }) => {
+          assert.equal(filter.stringFilter.matchType, 'EXACT');
+          assert.equal(filter.stringFilter.caseSensitive, true);
+          return [filter.fieldName, filter.stringFilter.value];
+        }),
     ),
-    { 'customUser:ci_run_id': runId, streamId },
+    { streamId, eventName: 'page_view' },
   );
-  assert.deepEqual(request.metrics, [{ name: 'screenPageViews' }]);
+  assert.deepEqual(request.dimensionFilter.andGroup.expressions[0], {
+    filter: {
+      fieldName: 'customUser:ci_run_id',
+      inListFilter: {
+        values: [runId + '-d', runId + '-m'],
+        caseSensitive: true,
+      },
+    },
+  });
+  assert.deepEqual(request.metrics, [{ name: 'eventCount' }]);
   const referencedDimensions = new Set([
     ...request.dimensions.map(({ name }) => name),
     ...request.dimensionFilter.andGroup.expressions.map(
@@ -78,10 +90,11 @@ test('API read-back verifies both devices and all pages using the returned heade
   assert.ok(partial.missing.every((view) => view.device === 'mobile'));
 });
 
-test('unrelated runs, streams, or malformed counts cannot satisfy ingestion', () => {
+test('unrelated runs, streams, screen_view events, or malformed counts cannot satisfy ingestion', () => {
   for (const [index, value] of [
     [2, 'gha-old-1'],
     [3, 'another-stream'],
+    [0, 'screen_view'],
   ]) {
     const data = report();
     data.rows[0].dimensionValues[index].value = value;
@@ -204,7 +217,8 @@ test('only complete live journey manifests from this run and target can be used'
     project,
     deviceCategory: device,
     journeyVerified: true,
-    runId,
+    workflowRunId: runId,
+    runId: runId + (device === 'desktop' ? '-d' : '-m'),
     target,
     measurementId,
     expectedPageViews: expectedViews.filter((view) => view.device === device),
