@@ -220,3 +220,52 @@ test('only complete live journey manifests from this run and target can be used'
     );
   }
 });
+
+test('network failures and request timeouts retry inside the deadline', async () => {
+  let calls = 0;
+  let clock = 0;
+  const progress = [];
+  const result = await pollIngestion({
+    ...options,
+    propertyId: '560723382',
+    token: 'test',
+    now: () => clock,
+    wait: async (ms) => {
+      clock += ms;
+    },
+    fetchImpl: async () => {
+      calls++;
+      if (calls === 1) throw new TypeError('fetch failed');
+      if (calls === 2)
+        throw new DOMException('request timed out', 'TimeoutError');
+      return ok(report());
+    },
+    onProgress: async (item) => progress.push(item),
+  });
+  assert.equal(result.verified, true);
+  assert.equal(calls, 3);
+  assert.equal(progress[0].lastHttpStatus, null);
+  assert.equal(progress[1].transportError, 'request-failed');
+  clock = 0;
+  calls = 0;
+  await assert.rejects(
+    pollIngestion({
+      ...options,
+      propertyId: '560723382',
+      token: 'test',
+      timeoutMs: 100,
+      intervalMs: 50,
+      now: () => clock,
+      wait: async (ms) => {
+        clock += ms;
+      },
+      fetchImpl: async () => {
+        calls++;
+        throw new TypeError('connection reset');
+      },
+    }),
+    /not confirmed before the deadline/,
+  );
+  assert.equal(clock, 100);
+  assert.equal(calls, 2);
+});

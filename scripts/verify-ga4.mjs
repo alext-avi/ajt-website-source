@@ -154,28 +154,47 @@ export async function pollIngestion({
   let attempts = 0;
   let result = { verified: false, rows: [], missing: expectedViews };
   while (true) {
+    if (attempts > 0 && now() >= deadline)
+      throw new Error('GA4 ingestion was not confirmed before the deadline.');
     attempts++;
-    const response = await fetchImpl(
-      'https://analyticsdata.googleapis.com/v1beta/properties/' +
-        propertyId +
-        ':runRealtimeReport',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json',
+    let response;
+    try {
+      response = await fetchImpl(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' +
+          propertyId +
+          ':runRealtimeReport',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(request),
+          signal: AbortSignal.timeout(
+            Math.max(1, Math.min(15_000, deadline - now())),
+          ),
         },
-        body: JSON.stringify(request),
-        signal: AbortSignal.timeout(15_000),
-      },
-    );
+      );
+    } catch (error) {
+      if (
+        !(error instanceof TypeError) &&
+        error?.name !== 'AbortError' &&
+        error?.name !== 'TimeoutError'
+      )
+        throw error;
+      response = { ok: false, status: 0 };
+    }
     if (response.ok) {
       result = evaluateReport(await response.json(), {
         runId,
         streamId,
         expectedViews,
       });
-    } else if (response.status !== 429 && response.status < 500) {
+    } else if (
+      response.status !== 0 &&
+      response.status !== 429 &&
+      response.status < 500
+    ) {
       throw new Error(
         'GA4 Data API returned HTTP ' +
           response.status +
@@ -192,7 +211,8 @@ export async function pollIngestion({
       request,
       expectedViews,
       ...result,
-      lastHttpStatus: response.status,
+      lastHttpStatus: response.status || null,
+      transportError: response.status === 0 ? 'request-failed' : null,
     };
     await onProgress(evidence);
     if (result.verified) return evidence;
