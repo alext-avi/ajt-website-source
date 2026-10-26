@@ -14,6 +14,9 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    container:
+      # Match @playwright/test; includes browsers and their system libraries.
+      image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -23,8 +26,6 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Install test browsers
-        run: npx --no-install playwright install --with-deps chromium webkit
       - name: Verify types, browser flows, and content contracts
         run: npm run test:ci
       - name: Save Playwright report and failure traces

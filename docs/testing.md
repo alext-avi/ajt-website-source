@@ -8,7 +8,7 @@ npx --no-install playwright install chromium webkit
 npm run test:ci
 ```
 
-On Linux, use `playwright install --with-deps chromium webkit` to install the browsers' system libraries as CI does.
+On Linux, use `playwright install --with-deps chromium webkit` to install the browsers' system libraries. CI uses Microsoft's digest-pinned Playwright container with browsers and libraries preinstalled, avoiding a fresh Ubuntu package download on every run. Keep the image version and digest in `.github/workflows/verify.yml` aligned with `@playwright/test` when upgrading.
 
 ## Integration coverage
 
