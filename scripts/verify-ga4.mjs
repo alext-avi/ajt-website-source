@@ -158,6 +158,7 @@ export async function pollIngestion({
       throw new Error('GA4 ingestion was not confirmed before the deadline.');
     attempts++;
     let response;
+    let data;
     try {
       response = await fetchImpl(
         'https://analyticsdata.googleapis.com/v1beta/properties/' +
@@ -175,6 +176,7 @@ export async function pollIngestion({
           ),
         },
       );
+      if (response.ok) data = await response.json();
     } catch (error) {
       if (
         !(error instanceof TypeError) &&
@@ -185,7 +187,7 @@ export async function pollIngestion({
       response = { ok: false, status: 0 };
     }
     if (response.ok) {
-      result = evaluateReport(await response.json(), {
+      result = evaluateReport(data, {
         runId,
         streamId,
         expectedViews,

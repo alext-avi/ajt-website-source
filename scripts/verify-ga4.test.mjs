@@ -269,3 +269,47 @@ test('network failures and request timeouts retry inside the deadline', async ()
   assert.equal(clock, 100);
   assert.equal(calls, 2);
 });
+
+test('body transport failures retry, while malformed JSON fails immediately', async () => {
+  let calls = 0;
+  const result = await pollIngestion({
+    ...options,
+    propertyId: '560723382',
+    token: 'test',
+    wait: async () => {},
+    fetchImpl: async () => {
+      calls++;
+      if (calls === 1)
+        return {
+          ok: true,
+          status: 200,
+          json: async () => {
+            throw new DOMException('body timed out', 'TimeoutError');
+          },
+        };
+      return ok(report());
+    },
+  });
+  assert.equal(result.verified, true);
+  assert.equal(calls, 2);
+  calls = 0;
+  await assert.rejects(
+    pollIngestion({
+      ...options,
+      propertyId: '560723382',
+      token: 'test',
+      fetchImpl: async () => {
+        calls++;
+        return {
+          ok: true,
+          status: 200,
+          json: async () => {
+            throw new SyntaxError('invalid JSON');
+          },
+        };
+      },
+    }),
+    SyntaxError,
+  );
+  assert.equal(calls, 1);
+});
