@@ -157,10 +157,19 @@ test('permission errors fail immediately, while transient quota errors can recov
       token: 'test',
       fetchImpl: async () => {
         calls++;
-        return { ok: false, status: 403 };
+        return {
+          ok: false,
+          status: 403,
+          json: async () => ({ error: { message: 'Access denied for test' } }),
+        };
       },
     }),
-    /HTTP 403/,
+    (error) => {
+      assert.match(error.message, /HTTP 403/);
+      assert.match(error.message, /Access denied for \[redacted\]/);
+      assert.ok(!error.message.includes('test'));
+      return true;
+    },
   );
   assert.equal(calls, 1);
   calls = 0;

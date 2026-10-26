@@ -197,10 +197,23 @@ export async function pollIngestion({
       response.status !== 429 &&
       response.status < 500
     ) {
+      let detail = '';
+      try {
+        const failure = await response.json();
+        if (typeof failure?.error?.message === 'string')
+          detail =
+            ' ' +
+            failure.error.message
+              .replaceAll(token, '[redacted]')
+              .slice(0, 1000);
+      } catch {
+        /* The HTTP status remains actionable when an error body is unavailable. */
+      }
       throw new Error(
         'GA4 Data API returned HTTP ' +
           response.status +
-          '. Check API enablement, property Viewer access, and the registered User-scoped ci_run_id dimension.',
+          '. Check API enablement, property Viewer access, and the registered User-scoped ci_run_id dimension.' +
+          detail,
       );
     }
     const evidence = {
