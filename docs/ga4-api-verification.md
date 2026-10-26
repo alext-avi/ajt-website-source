@@ -34,6 +34,8 @@ Each completed browser journey writes a JSON manifest under test-results-product
 
 The API request filters page_view events by the exact ci_run_id and stream ID. It requires a positive event count for every expected page title on both desktop and mobile, rather than relying on aggregate traffic counts. It polls for up to three minutes for reporting latency; authentication/schema errors fail immediately. Missing rows at the deadline fail the step.
 
+Realtime limits each request to four output dimensions. The query returns the run ID, stream ID, device category, and page title; eventName remains an exact page_view filter without consuming an output column.
+
 The production-playwright-results artifact retains the manifests, the API query, selected returned rows and counts, missing page/device pairs, attempt count, and timestamps for seven days. Authentication headers, cookies, and client/session IDs are not written to the JSON evidence. Failure traces can contain the test browser's anonymous network and storage state.
 
 The job summary explicitly says whether API ingestion was verified. Missing credentials, unavailable custom dimensions, permission errors, or reporting delays are failures, not successful round trips. Testing the current live site still does not prove that this workflow's source revision was deployed when the Cloudflare deployment token is absent.

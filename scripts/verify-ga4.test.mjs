@@ -25,20 +25,15 @@ function report(views = expectedViews) {
     kind: 'analyticsData#runRealtimeReport',
     dimensionHeaders: [
       { name: 'deviceCategory' },
-      { name: 'eventName' },
       { name: 'unifiedScreenName' },
       { name: 'customUser:ci_run_id' },
       { name: 'streamId' },
     ],
     metricHeaders: [{ name: 'eventCount' }],
     rows: views.map((view) => ({
-      dimensionValues: [
-        view.device,
-        'page_view',
-        view.title,
-        runId,
-        streamId,
-      ].map((value) => ({ value })),
+      dimensionValues: [view.device, view.title, runId, streamId].map(
+        (value) => ({ value }),
+      ),
       metricValues: [{ value: '1' }],
     })),
   };
@@ -47,6 +42,11 @@ const ok = (data) => ({ ok: true, status: 200, json: async () => data });
 
 test('the API request filters the exact run, stream, and real page-view events', () => {
   const request = realtimeRequest(runId, streamId);
+  assert.equal(request.dimensions.length, 4);
+  assert.deepEqual(
+    request.dimensions.map(({ name }) => name),
+    ['customUser:ci_run_id', 'streamId', 'deviceCategory', 'unifiedScreenName'],
+  );
   assert.deepEqual(
     Object.fromEntries(
       request.dimensionFilter.andGroup.expressions.map(({ filter }) => {
@@ -70,11 +70,10 @@ test('API read-back verifies both devices and all pages using the returned heade
   assert.ok(partial.missing.every((view) => view.device === 'mobile'));
 });
 
-test('unrelated runs, streams, events, or malformed counts cannot satisfy ingestion', () => {
+test('unrelated runs, streams, or malformed counts cannot satisfy ingestion', () => {
   for (const [index, value] of [
-    [3, 'gha-old-1'],
-    [4, 'another-stream'],
-    [1, 'click'],
+    [2, 'gha-old-1'],
+    [3, 'another-stream'],
   ]) {
     const data = report();
     data.rows[0].dimensionValues[index].value = value;

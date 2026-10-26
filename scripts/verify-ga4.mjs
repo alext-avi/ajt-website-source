@@ -12,7 +12,6 @@ import { setTimeout as delay } from 'node:timers/promises';
 const names = [
   'customUser:ci_run_id',
   'streamId',
-  'eventName',
   'deviceCategory',
   'unifiedScreenName',
 ];
@@ -26,6 +25,7 @@ export function realtimeRequest(runId, streamId) {
         expressions: [
           ['customUser:ci_run_id', runId],
           ['streamId', streamId],
+          // Keep eventName filter-only to fit Realtime's four-dimension limit.
           ['eventName', 'page_view'],
         ].map(([fieldName, value]) => ({
           filter: {
@@ -108,12 +108,9 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
     const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
     if (
       value('customUser:ci_run_id') !== runId ||
-      value('streamId') !== streamId ||
-      value('eventName') !== 'page_view'
+      value('streamId') !== streamId
     )
-      throw new Error(
-        'GA4 returned rows outside the requested run, stream, or event.',
-      );
+      throw new Error('GA4 returned rows outside the requested run or stream.');
     if (!/^[0-9]+$/.test(count) || !Number.isSafeInteger(Number(count)))
       throw new Error('GA4 returned an invalid event count.');
     rows.push({
