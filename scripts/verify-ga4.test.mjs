@@ -8,8 +8,6 @@ import {
   evaluateReport,
   pollIngestion,
   loadExpectedViews,
-  realtimeEventRequest,
-  evaluateEventReport,
   evaluateIngestionProbe,
   Ga4IngestionPending,
   isReportingDelay,
@@ -46,7 +44,7 @@ function report(views = expectedViews) {
 }
 const ok = (data) => ({ ok: true, status: 200, json: async () => data });
 
-test('page and event queries use compatible dimension sets within the total limit', () => {
+test('the run-level Views query uses the supported dimension set within the total limit', () => {
   const request = realtimeRequest(runId, streamId);
   assert.equal(request.dimensions.length, 3);
   assert.deepEqual(
@@ -75,21 +73,6 @@ test('page and event queries use compatible dimension sets within the total limi
     },
   });
   assert.deepEqual(request.metrics, [{ name: 'screenPageViews' }]);
-  const events = realtimeEventRequest(runId, streamId);
-  assert.deepEqual(
-    events.dimensions.map(({ name }) => name),
-    ['customUser:ci_run_id', 'streamId', 'eventName'],
-  );
-  assert.deepEqual(events.metrics, [{ name: 'eventCount' }]);
-  assert.deepEqual(events.dimensionFilter.andGroup.expressions.at(-1), {
-    filter: {
-      fieldName: 'eventName',
-      inListFilter: {
-        values: ['page_view', 'screen_view'],
-        caseSensitive: true,
-      },
-    },
-  });
   const referencedDimensions = new Set([
     ...request.dimensions.map(({ name }) => name),
     ...request.dimensionFilter.andGroup.expressions.map(
@@ -138,78 +121,6 @@ test('unrelated runs, streams, or malformed counts cannot satisfy ingestion', ()
   const zero = report();
   zero.rows[0].metricValues[0].value = '0';
   assert.equal(evaluateReport(zero, options).verified, false);
-});
-
-test('independent event totals require page_view ingestion and reject screen_view substitutes', async () => {
-  const pageRows = evaluateReport(report(), options).rows;
-  const events = {
-    kind: 'analyticsData#runRealtimeReport',
-    dimensionHeaders: ['eventName', 'streamId', 'customUser:ci_run_id'].map(
-      (name) => ({ name }),
-    ),
-    metricHeaders: [{ name: 'eventCount' }],
-    rows: ['-d', '-m'].map((suffix) => ({
-      dimensionValues: ['page_view', streamId, runId + suffix].map((value) => ({
-        value,
-      })),
-      metricValues: [{ value: '8' }],
-    })),
-  };
-  const config = { ...options, pageRows };
-  assert.equal(evaluateEventReport(events, config).verified, true);
-  assert.throws(
-    () =>
-      evaluateEventReport(
-        { ...events, rowCount: events.rows.length + 1 },
-        config,
-      ),
-    /Incomplete GA4 event report/,
-  );
-  const incomplete = structuredClone(events);
-  incomplete.rows[1].metricValues[0].value = '7';
-  assert.equal(evaluateEventReport(incomplete, config).verified, false);
-  const screens = structuredClone(events);
-  screens.rows.push({
-    dimensionValues: ['screen_view', streamId, runId + '-m'].map((value) => ({
-      value,
-    })),
-    metricValues: [{ value: '1' }],
-  });
-  assert.equal(evaluateEventReport(screens, config).verified, false);
-  const desktopProbe = {
-    ...config,
-    expectedViews: config.expectedViews.filter(
-      (view) => view.device === 'desktop',
-    ),
-  };
-  const unexpectedMobileScreen = evaluateEventReport(screens, desktopProbe);
-  assert.equal(unexpectedMobileScreen.verified, false);
-  assert.equal(
-    isReportingDelay(
-      new Ga4IngestionPending({
-        ...unexpectedMobileScreen,
-        expectedViews: desktopProbe.expectedViews,
-        lastHttpStatus: 200,
-      }),
-    ),
-    false,
-  );
-  screens.rows[1].dimensionValues[0].value = 'screen_view';
-  assert.equal(evaluateEventReport(screens, config).verified, false);
-  assert.equal(
-    (
-      await pollIngestion({
-        ...options,
-        propertyId: '560723382',
-        token: 'test',
-        query: realtimeEventRequest(runId, streamId),
-        evaluate: (data, base) =>
-          evaluateEventReport(data, { ...base, pageRows }),
-        fetchImpl: async () => ok(events),
-      })
-    ).verified,
-    true,
-  );
 });
 
 test('polling waits for processed rows and never saves the access token in evidence', async () => {
@@ -282,21 +193,6 @@ test('empty GA4 reports time out without a false success', async () => {
       new Ga4IngestionPending({
         ...progress.at(-1),
         transportError: 'request-failed',
-      }),
-    ),
-    false,
-  );
-  assert.equal(
-    isReportingDelay(
-      new Ga4IngestionPending({
-        ...progress.at(-1),
-        rows: [
-          {
-            runId: expectedViews[0].runId,
-            event: 'screen_view',
-            eventCount: 1,
-          },
-        ],
       }),
     ),
     false,
@@ -388,40 +284,67 @@ test('only complete live journey manifests from this run and target can be used'
   const output = join(directory, 'api-evidence.json');
   const summary = join(directory, 'summary.md');
   const log = t.mock.method(console, 'log', () => {});
-  const pending = await main(
-    {
-      GA4_PROPERTY_ID: '560723382',
-      GA4_STREAM_ID: streamId,
-      PLAYWRIGHT_RUN_ID: runId,
-      PLAYWRIGHT_PRODUCTION_URL: target,
-      PLAYWRIGHT_GA4_MEASUREMENT_ID: measurementId,
-      GA4_ACCESS_TOKEN: 'not-for-evidence',
-      GA4_EVIDENCE_DIRECTORY: directory,
-      GA4_READBACK_OUTPUT: output,
-      GITHUB_STEP_SUMMARY: summary,
+  const env = {
+    GA4_PROPERTY_ID: '560723382',
+    GA4_STREAM_ID: streamId,
+    PLAYWRIGHT_RUN_ID: runId,
+    PLAYWRIGHT_PRODUCTION_URL: target,
+    PLAYWRIGHT_GA4_MEASUREMENT_ID: measurementId,
+    GA4_ACCESS_TOKEN: 'not-for-evidence',
+    GA4_EVIDENCE_DIRECTORY: directory,
+    GA4_READBACK_OUTPUT: output,
+    GITHUB_STEP_SUMMARY: summary,
+  };
+  const pending = await main(env, {
+    poll: async (config) => {
+      const evidence = {
+        rows: [],
+        expectedViews: config.expectedViews,
+        missing: config.expectedViews,
+        verified: false,
+        lastHttpStatus: 200,
+        transportError: null,
+        attempts: 1,
+      };
+      await config.onProgress(evidence);
+      throw new Ga4IngestionPending(evidence);
     },
-    {
-      poll: async (config) => {
-        const evidence = {
-          rows: [],
-          expectedViews: config.expectedViews,
-          missing: config.expectedViews,
-          verified: false,
-          lastHttpStatus: 200,
-          transportError: null,
-          attempts: 1,
-        };
-        await config.onProgress(evidence);
-        throw new Ga4IngestionPending(evidence);
-      },
-    },
-  );
+  });
   assert.equal(pending.status, 'pending');
   assert.equal(pending.verified, false);
   const saved = await readFile(output, 'utf8');
   assert.equal(JSON.parse(saved).verified, false);
   assert.equal(saved.includes('not-for-evidence'), false);
   assert.match(await readFile(summary, 'utf8'), /ingestion pending/);
+  let positiveQueries = 0;
+  const confirmed = await main(env, {
+    poll: async (config) => {
+      positiveQueries++;
+      const evidence = {
+        ...evaluateIngestionProbe(report([expectedViews[3]]), config),
+        lastHttpStatus: 200,
+        attempts: 1,
+      };
+      await config.onProgress(evidence);
+      return evidence;
+    },
+  });
+  assert.equal(positiveQueries, 1);
+  assert.equal(confirmed.status, 'verified');
+  assert.equal(confirmed.reportingCoverage.observed, 1);
+  assert.equal(confirmed.reportingCoverage.complete, false);
+  const verifiedFile = JSON.parse(await readFile(output, 'utf8'));
+  assert.equal(verifiedFile.verified, true);
+  assert.equal(verifiedFile.apiMetric, 'screenPageViews');
+  assert.equal(
+    JSON.stringify(verifiedFile).includes('not-for-evidence'),
+    false,
+  );
+  assert.match(
+    await readFile(summary, 'utf8'),
+    /metric combines page_view and screen_view/,
+  );
+
   assert.ok(
     log.mock.calls.some((call) =>
       call.arguments[0].includes(
