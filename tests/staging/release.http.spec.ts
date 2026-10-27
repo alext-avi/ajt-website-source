@@ -39,9 +39,11 @@ test('staging serves the exact release and noindex headers on pages, assets, err
 test('the staged release serves every approved R2 asset with matching bytes and video ranges', async ({
   request,
 }) => {
-  test.setTimeout(120_000);
   const expected = JSON.parse(
     await fs.readFile('dist/media-manifest.json', 'utf8'),
+  );
+  test.setTimeout(
+    Math.min(600_000, Math.max(120_000, expected.files.length * 30_000)),
   );
   const response = await request.get('/media-manifest.json');
   expect(response.status()).toBe(200);

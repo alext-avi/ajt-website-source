@@ -31,6 +31,8 @@ New uploads need no Git commits or CI upload permission. CI reads the published 
 
 See [r2-media.md](r2-media.md) for subscription, bucket setup, permissions, and cost limits.
 
+New R2 uploads reserve storage against a shared 8 GB ceiling before the upload starts. Authoring also stops at 5,000 upload attempts or 10,000 uncached downloads per UTC month. Limits fail closed, and agents cannot reset them. Apply the additive `0002_media_budget.sql` migration before remote uploads. These checks are application limits, not a provider-level spending cap.
+
 ## Local MCP setup
 
 Use Node 24 LTS and `npm ci`. Launch the stdio server directly so npm banners do not enter its JSON-RPC output:

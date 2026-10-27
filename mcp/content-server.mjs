@@ -43,6 +43,7 @@ const fields =
 export async function createStore({ remote = false, database, localR2 } = {}) {
   if (remote && localR2)
     throw new Error('Local R2 cannot be combined with remote D1');
+  if (localR2) localR2 = path.resolve(localR2);
   if (remote) {
     return {
       identity: 'remote:CONTENT_DB',
@@ -104,6 +105,12 @@ export async function createStore({ remote = false, database, localR2 } = {}) {
       await fs.readFile(path.join(root, 'migrations/0001_content.sql'), 'utf8'),
     );
   }
+  db.exec(
+    await fs.readFile(
+      path.join(root, 'migrations/0002_media_budget.sql'),
+      'utf8',
+    ),
+  );
   return {
     identity: 'sqlite:' + path.resolve(database),
     media: localR2 ? r2MediaStorage({ localState: localR2 }) : undefined,
@@ -267,7 +274,7 @@ export function createContentServer(store) {
       .strict(),
     true,
     async ({ query, limit }) => ({
-      media: (await listMedia(store))
+      media: (await listMedia(store, query))
         .filter((file) =>
           ((file.name || '') + ' ' + file.url)
             .toLowerCase()

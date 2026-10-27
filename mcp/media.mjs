@@ -6,6 +6,7 @@ import { sqlText } from '../scripts/lib/d1-content.mjs';
 import { mediaPath } from '../src/lib/media.ts';
 import { constants } from 'node:fs';
 import { verifyMediaBytes } from './r2-media.mjs';
+import { reserveMediaStorage, reserveMediaOperation } from './media-budget.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const mediaDirectory = () =>
@@ -67,7 +68,9 @@ export async function saveMedia(bytes, store, originalName = '') {
   const filename =
     createHash('sha256').update(bytes).digest('hex') + '.' + extension;
   if (store?.media) {
+    await reserveMediaStorage(store, filename, bytes.length);
     const file = await cacheFile(filename, bytes);
+    await reserveMediaOperation(store, 'put');
     await store.media.command('put', filename, file, contentType);
     const url = '/media/' + filename;
     const metadata = {
@@ -174,6 +177,7 @@ async function r2Asset(url, store, refresh) {
   const temporary = await fs.mkdtemp(path.join(cacheDirectory(), 'download-'));
   try {
     const target = path.join(temporary, filename);
+    await reserveMediaOperation(store, 'get');
     await store.media.command('get', filename, target);
     const stat = await fs.stat(target);
     if (stat.size > maximumMediaBytes || stat.size !== metadata.bytes)
@@ -241,7 +245,7 @@ export async function materializeMedia(urls, store) {
     await fs.copyFile(source, path.join(destination, name));
   }
 }
-export async function listMedia(store) {
+export async function listMedia(store, query = '') {
   const files = [];
   async function walk(directory, prefix, pending = false) {
     let entries;
@@ -284,8 +288,9 @@ export async function listMedia(store) {
   for (const prefix of ['images', 'uploads', 'videos'])
     await walk(path.join(root, 'public', prefix), '/' + prefix + '/');
   if (store?.media) {
+    const search = sqlText('%' + query + '%');
     const rows = await store.query(
-      "SELECT url,kind,metadata_json FROM media_assets WHERE json_extract(metadata_json,'$.storage')='r2' ORDER BY created_at DESC LIMIT 200;",
+      `SELECT url,kind,metadata_json FROM media_assets WHERE json_extract(metadata_json,'$.storage')='r2' AND (url LIKE ${search} OR json_extract(metadata_json,'$.name') LIKE ${search}) ORDER BY created_at DESC LIMIT 200;`,
     );
     const published = await store.query(
       'SELECT metadata_json,body_markdown FROM content_items WHERE is_draft=0;',

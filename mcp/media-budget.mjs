@@ -1,0 +1,43 @@
+import { mediaFilename } from '../src/lib/media.ts';
+import { sqlText } from '../scripts/lib/d1-content.mjs';
+
+export const mediaStorageCeiling = 8_000_000_000;
+export const mediaOperationCeilings = { put: 5_000, get: 10_000 };
+
+export async function reserveMediaStorage(store, filename, bytes) {
+  if (
+    !mediaFilename.test(filename) ||
+    !Number.isSafeInteger(bytes) ||
+    bytes < 1 ||
+    bytes > 100 * 1024 * 1024
+  )
+    throw new Error('Invalid media storage reservation');
+  try {
+    await store.query(
+      `INSERT INTO media_storage_reservations(filename,bytes) VALUES(${sqlText(filename)},${bytes}) ON CONFLICT(filename) DO NOTHING RETURNING filename;`,
+    );
+    const existing = (
+      await store.query(
+        `SELECT bytes FROM media_storage_reservations WHERE filename=${sqlText(filename)};`,
+      )
+    )[0];
+    if (existing?.bytes !== bytes) throw new Error();
+  } catch {
+    throw new Error(
+      'Media storage safety check failed or the 8 GB ceiling was reached. No R2 upload was attempted. Check the media-budget migration and reservations before retrying.',
+    );
+  }
+}
+
+export async function reserveMediaOperation(store, operation) {
+  const ceiling = mediaOperationCeilings[operation];
+  if (!Number.isSafeInteger(ceiling))
+    throw new Error('Unsupported media operation');
+  const rows = await store.query(
+    `INSERT INTO media_operation_budget(month,operation,attempts) VALUES(strftime('%Y-%m','now'),${sqlText(operation)},1) ON CONFLICT(month,operation) DO UPDATE SET attempts=attempts+1 WHERE attempts<${ceiling} RETURNING attempts;`,
+  );
+  if (!rows.length)
+    throw new Error(
+      `Media ${operation === 'put' ? 'upload' : 'download'} safety limit reached for this UTC calendar month. No R2 operation was attempted.`,
+    );
+}
