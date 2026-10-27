@@ -14,6 +14,14 @@ import {
 } from '../mcp/reviews.mjs';
 import { saveMedia, resolveAsset } from '../mcp/media.mjs';
 import { writeEntrySQL } from './lib/d1-content.mjs';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import {
+  acquirePublication,
+  releasePublication,
+  publicationStatus,
+  trackPublicationChild,
+} from '../mcp/publication-lock.mjs';
 
 test('rendered drafts reject active HTML and unsafe links while preserving ordinary code examples', async () => {
   for (const body of [
@@ -186,6 +194,19 @@ test('uploaded media stays outside public assets and rejects executable uploads 
   assert.equal(video.kind, 'video');
   assert(video.url.startsWith('/videos/'));
   assert((await resolveAsset(video.url)).startsWith(temporary));
+  for (const brand of [
+    'heic',
+    'heix',
+    'mif1',
+    'avif',
+    'qt  ',
+    '3gp5',
+    'M4A ',
+  ]) {
+    const other = Buffer.from(mp4);
+    other.write(brand, 8, 'latin1');
+    await assert.rejects(saveMedia(other), /not accepted/);
+  }
   await assert.rejects(fs.access(path.join('public', media.url)), /ENOENT/);
   await assert.rejects(
     saveMedia(Buffer.from('<svg onload="alert(1)"></svg>')),
@@ -195,4 +216,83 @@ test('uploaded media stays outside public assets and rejects executable uploads 
     resolveAsset('/uploads/../../.env'),
     /Invalid media asset/,
   );
+});
+
+test('publication locks recover dead owners, retain live child deployments, and expose interrupted reviews for human recovery', async (t) => {
+  const temporary = await fs.mkdtemp(
+    path.join(os.tmpdir(), 'ajt-publication-lock-'),
+  );
+  const previous = process.env.AJT_REVIEW_DIR;
+  process.env.AJT_REVIEW_DIR = temporary;
+  const store = await createStore({
+    database: path.join(temporary, 'content.sqlite'),
+  });
+  let child;
+  t.after(async () => {
+    if (child?.exitCode === null && child?.signalCode === null) child.kill();
+    store.close();
+    if (previous === undefined) delete process.env.AJT_REVIEW_DIR;
+    else process.env.AJT_REVIEW_DIR = previous;
+    await fs.rm(temporary, { recursive: true, force: true });
+  });
+  const exited = spawn(process.execPath, ['-e', 'process.exit(0)']);
+  await once(exited, 'exit');
+  const old = acquirePublication(temporary, 'interrupted', exited.pid);
+  assert.equal(publicationStatus(temporary).active, false);
+  child = spawn(
+    process.execPath,
+    ['-e', "console.log('ready');setInterval(()=>{},1000)"],
+    { detached: true, stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+  await once(child.stdout, 'data');
+  trackPublicationChild(temporary, old, child.pid);
+  assert.equal(publicationStatus(temporary).active, true);
+  assert.throws(
+    () => acquirePublication(temporary, 'second'),
+    /Another publication/,
+  );
+  const stopped = once(child, 'exit');
+  child.kill();
+  await stopped;
+  const next = acquirePublication(temporary, 'second');
+  releasePublication(temporary, old);
+  assert.equal(publicationStatus(temporary).lock.token, next);
+  releasePublication(temporary, next);
+
+  await store.query(
+    writeEntrySQL({
+      collection: 'posts',
+      slug: 'interrupted-review',
+      data: {
+        title: 'An interrupted publication',
+        summary:
+          'A complete summary for recovery after a local publishing process stops.',
+        date: '2026-10-27',
+        category: 'Architecture',
+        draft: true,
+      },
+      body: 'The exact draft remains available for human review.',
+    }).replace(/;$/, ' RETURNING slug;'),
+  );
+  const submitted = await createReview(
+    await getPost(store, 'interrupted-review'),
+    store.identity,
+  );
+  const review = await readReview(submitted.id);
+  await fs.writeFile(
+    path.join(temporary, review.id + '.json'),
+    JSON.stringify({
+      ...review,
+      status: 'publishing',
+      approvedAt: new Date().toISOString(),
+    }),
+  );
+  acquirePublication(temporary, review.id, exited.pid);
+  const interrupted = await reviewState(store, review.id);
+  assert.equal(interrupted.review.status, 'failed');
+  assert.match(interrupted.review.error, /outcome is unknown/);
+  assert.equal(interrupted.stale, false);
+  await publishReview(store, review.id, review.csrf);
+  assert.equal((await readReview(review.id)).status, 'approved-local');
+  assert.equal(publicationStatus(temporary).active, false);
 });

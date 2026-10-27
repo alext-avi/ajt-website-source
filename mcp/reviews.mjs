@@ -7,6 +7,12 @@ import { createSatteriMarkdownProcessor } from '@astrojs/markdown-satteri';
 import { parseFragment } from 'parse5';
 import { sqlText, validateEntry } from '../scripts/lib/d1-content.mjs';
 import { materializeMedia } from './media.mjs';
+import {
+  acquirePublication,
+  releasePublication,
+  publicationStatus,
+  trackPublicationChild,
+} from './publication-lock.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const renderer = createSatteriMarkdownProcessor({
@@ -240,7 +246,7 @@ export async function listReviews() {
   const reviews = [];
   for (const file of await fs.readdir(directory())) {
     if (!file.endsWith('.json') || !idPattern.test(file.slice(0, -5))) continue;
-    const review = await readReview(file.slice(0, -5));
+    const review = interruptedReview(await readReview(file.slice(0, -5)));
     reviews.push({
       id: review.id,
       title: review.post.metadata.title,
@@ -268,7 +274,7 @@ async function currentPost(store, slug) {
 }
 
 export async function reviewState(store, id) {
-  const review = await readReview(id);
+  const review = interruptedReview(await readReview(id));
   if (review.backend !== store.identity)
     throw new Error('This review belongs to another database');
   const current = await currentPost(store, review.post.slug);
@@ -285,6 +291,18 @@ export async function reviewState(store, id) {
     (['publishing', 'failed'].includes(review.status) &&
       currentDigest === review.digest);
   return { review, stale: !valid, current };
+}
+
+function interruptedReview(review) {
+  if (review.status !== 'publishing') return review;
+  const status = publicationStatus(directory());
+  if (status.active && status.lock.review === review.id) return review;
+  return {
+    ...review,
+    status: 'failed',
+    error:
+      'Publication was interrupted. Its deployment outcome is unknown. Inspect the local publishing log before retrying or returning to draft.',
+  };
 }
 
 export async function publishReview(
@@ -305,22 +323,8 @@ export async function publishReview(
     throw new Error(
       'This post has a future date. Revise the date before publishing.',
     );
-  let lock;
+  const lock = acquirePublication(directory(), id);
   try {
-    lock = await fs.open(path.join(directory(), 'publish.lock'), 'wx', 0o600);
-  } catch {
-    throw new Error(
-      'Another publication is running. Wait for it to finish before publishing.',
-    );
-  }
-  try {
-    await lock.writeFile(
-      JSON.stringify({
-        pid: process.pid,
-        review: id,
-        startedAt: new Date().toISOString(),
-      }),
-    );
     const fresh = await reviewState(store, id);
     if (fresh.stale) throw new Error('The draft changed before publication');
     if (['published', 'approved-local'].includes(fresh.review.status))
@@ -345,7 +349,7 @@ export async function publishReview(
       if (postDigest(retry) !== postDigest(approved))
         throw new Error('Revision conflict during approval');
     }
-    await publisher(review, store);
+    await publisher(review, store, lock);
     review.status = store.identity.startsWith('sqlite:')
       ? 'approved-local'
       : 'published';
@@ -360,8 +364,7 @@ export async function publishReview(
     await saveReview(review);
     throw error;
   } finally {
-    await lock.close();
-    await fs.rm(path.join(directory(), 'publish.lock'), { force: true });
+    releasePublication(directory(), lock);
   }
 }
 
@@ -402,7 +405,7 @@ export async function reopenReview(store, id, csrf) {
   );
 }
 
-async function deployWebsite(review, store) {
+async function deployWebsite(review, store, lock) {
   // Local mode performs real SQLite approval/history writes, never a remote deployment.
   if (store.identity.startsWith('sqlite:')) return;
   try {
@@ -421,6 +424,7 @@ async function deployWebsite(review, store) {
     await new Promise((resolve, reject) => {
       const child = spawn('npm', ['run', 'deploy'], {
         cwd: root,
+        detached: true,
         env: {
           ...process.env,
           PATH:
@@ -447,6 +451,19 @@ async function deployWebsite(review, store) {
               ),
             ),
       );
+      if (child.pid) {
+        try {
+          trackPublicationChild(directory(), lock, child.pid);
+        } catch (error) {
+          try {
+            process.kill(
+              process.platform === 'win32' ? child.pid : -child.pid,
+              'SIGTERM',
+            );
+          } catch {}
+          reject(error);
+        }
+      }
     });
   } finally {
     await log.close();

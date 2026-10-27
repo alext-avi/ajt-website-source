@@ -10,6 +10,8 @@ This clean source release contains the website implementation and its already-pu
 
 ## Run locally
 
+The package manager is recorded as npm 11.19.0, matching the verified CI toolchain. Regenerate dependency locks with that version so platform-specific native package selectors are retained.
+
 Use Node 24 LTS (`.nvmrc`). Astro 7 requires Node 22.23.4 or newer; the older Node 22.22.1 installation on this machine is insufficient.
 
 ```sh

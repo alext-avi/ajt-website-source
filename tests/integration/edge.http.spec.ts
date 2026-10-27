@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { publishedPosts, publishedTalks } from '../published-content';
 
 test('the actual Worker handles new referral channels without registration or cookies', async ({
   request,
@@ -49,28 +50,30 @@ test('invalid referrals and unpublished routes return real 404 responses', async
 test('public slide links serve PDFs and the consulting session exposes no slide download', async ({
   request,
 }) => {
-  for (const [slug, filename] of [
-    ['the-agent-surface', 'the-agent-surface.pdf'],
-    ['your-next-power-user', 'your-next-power-user.pdf'],
-    ['ai-agents-for-the-rest-of-us', 'ai-agents-in-practice.pdf'],
-  ]) {
-    const talk = await request.get(`/speaking/${slug}/`);
+  for (const entry of publishedTalks.filter((talk) => talk.data.slides)) {
+    const talk = await request.get(`/speaking/${entry.slug}/`);
     expect(talk.status()).toBe(200);
-    expect(await talk.text()).toContain(`href="/slides/${filename}"`);
-    const slides = await request.get(`/slides/${filename}`);
+    expect(await talk.text()).toContain(`href="${entry.data.slides}"`);
+    const slides = await request.get(entry.data.slides!);
     expect(slides.status()).toBe(200);
     expect(slides.headers()['content-type']).toContain('application/pdf');
     expect((await slides.body()).subarray(0, 5).toString()).toBe('%PDF-');
   }
-  const consulting = await request.get('/speaking/the-agentic-sdlc/');
-  expect(consulting.status()).toBe(200);
-  expect(await consulting.text()).not.toMatch(/href="\/slides\//);
+  for (const entry of publishedTalks.filter(
+    (talk) => talk.data.event === 'Enterprise consulting',
+  )) {
+    const consulting = await request.get(`/speaking/${entry.slug}/`);
+    expect(consulting.status()).toBe(200);
+    expect(await consulting.text()).not.toMatch(/href="\/slides\//);
+  }
 });
 
 test('hosted video is served as MP4 through the static asset runtime', async ({
   request,
 }) => {
-  const response = await request.get('/videos/go-plant.mp4');
+  const video = publishedPosts.find((post) => post.data.video);
+  test.skip(!video, 'This publication snapshot has no hosted video');
+  const response = await request.get(video!.data.video!);
   expect(response.status()).toBe(200);
   expect(response.headers()['content-type']).toContain('video/mp4');
   const bytes = await response.body();

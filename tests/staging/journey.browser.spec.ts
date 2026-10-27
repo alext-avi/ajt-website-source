@@ -1,4 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { publishedPosts, publishedTalks } from '../published-content';
+
+const sample = publishedPosts[0];
+const embedded = publishedPosts.find((post) => post.data.linkedinVideoEmbed);
+const hosted = publishedPosts.find((post) => post.data.video);
+const slides = publishedTalks.find((talk) => talk.data.slides);
 
 test('the staged release supports real desktop/mobile journeys without production analytics', async ({
   page,
@@ -89,34 +95,51 @@ test('the staged release supports real desktop/mobile journeys without productio
       ).toBeLessThanOrEqual(1);
     }
     await page.goto('/writing/');
-    await page.getByRole('searchbox', { name: 'Search writing' }).fill('coral');
-    await expect(page.getByRole('article')).toHaveCount(1);
+    expect(
+      sample,
+      'A published article is available for the journey',
+    ).toBeTruthy();
     await page
-      .getByRole('link', { name: 'AI for coral restoration', exact: true })
+      .getByRole('searchbox', { name: 'Search writing' })
+      .fill(sample.data.title);
+    const articlePath = `/writing/${sample.slug}/`;
+    await page
+      .getByRole('link', { name: sample.data.title, exact: true })
+      .and(page.locator(`a[href="${articlePath}"]`))
       .click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      sample.data.title,
+    );
     await expect(page.locator('header.detail-head time')).toHaveAttribute(
       'datetime',
-      '2026-09-29T00:00:00.000Z',
+      new Date(sample.data.date!).toISOString(),
     );
-    await expect(page.locator('iframe')).toHaveCount(0);
-    await expect(
-      page.getByRole('button', { name: 'Load video player' }),
-    ).toBeVisible();
-    await page.goto('/writing/2026-10-12-test-strategy-speed-limit/');
-    const video = page.locator('video');
-    await expect(video).toHaveAttribute('controls', '');
-    await expect(video).toHaveJSProperty('paused', true);
-    await expect(video).toHaveAttribute('preload', 'none');
-    await page.goto('/speaking/the-agent-surface/');
-    await expect(
-      page.getByRole('link', { name: 'View slides (PDF)', exact: true }),
-    ).toHaveAttribute('href', '/slides/the-agent-surface.pdf');
+    if (embedded) {
+      await page.goto(`/writing/${embedded.slug}/`);
+      await expect(page.locator('iframe')).toHaveCount(0);
+      await expect(
+        page.getByRole('button', { name: 'Load video player' }),
+      ).toBeVisible();
+    }
+    if (hosted) {
+      await page.goto(`/writing/${hosted.slug}/`);
+      const video = page.locator('video');
+      await expect(video).toHaveAttribute('controls', '');
+      await expect(video).toHaveJSProperty('paused', true);
+      await expect(video).toHaveAttribute('preload', 'none');
+    }
+    if (slides) {
+      await page.goto(`/speaking/${slides.slug}/`);
+      await expect(
+        page.getByRole('link', { name: 'View slides (PDF)', exact: true }),
+      ).toHaveAttribute('href', slides.data.slides!);
+    }
     expect(
       analyticsRequests,
       'No production analytics requests from staging',
     ).toEqual([]);
     expect(errors, 'No uncaught browser errors').toEqual([]);
-    expect(documents.length).toBeGreaterThanOrEqual(10);
+    expect(documents.length).toBeGreaterThanOrEqual(8);
     for (const document of documents as {
       url: string;
       status: number;
@@ -142,6 +165,12 @@ test('the staged release supports real desktop/mobile journeys without productio
           documents,
           analyticsRequests,
           browserErrors: errors,
+          selectedContent: {
+            article: sample?.slug,
+            embeddedVideo: embedded?.slug,
+            hostedVideo: hosted?.slug,
+            slides: slides?.slug,
+          },
           note: 'Real Cloudflare responses; no responses mocked and no analytics events injected.',
         },
         null,

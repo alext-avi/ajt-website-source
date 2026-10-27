@@ -23,7 +23,13 @@ export function mediaType(bytes) {
     bytes.subarray(8, 12).toString() === 'WEBP'
   )
     return ['webp', 'image/webp', 'image'];
-  if (bytes.subarray(4, 8).toString() === 'ftyp')
+  if (
+    bytes.length >= 16 &&
+    bytes.subarray(4, 8).toString() === 'ftyp' &&
+    /^(isom|iso[2-9]|mp41|mp42|avc1|M4V |dash)$/.test(
+      bytes.subarray(8, 12).toString('latin1'),
+    )
+  )
     return ['mp4', 'video/mp4', 'video'];
   if (bytes.subarray(0, 5).toString() === '%PDF-')
     return ['pdf', 'application/pdf', 'document'];
