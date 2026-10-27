@@ -70,7 +70,7 @@ Failed browser tests retain screenshots and traces; CI uploads the HTML report a
 
 ## Pull request reviews
 
-[CodeRabbit](https://www.coderabbit.ai/oss) provides free automated reviews for public repositories. The GitHub App must be installed on this repository; no API key or Actions secret is needed. Review settings live in [`.coderabbit.yaml`](.coderabbit.yaml): balanced feedback, automatic reviews of ready pull requests and subsequent commits, and no automatic approvals. Draft pull requests are skipped.
+[CodeRabbit](https://www.coderabbit.ai/oss) provides free automated reviews for public repositories. The GitHub App must be installed on this repository; no API key or Actions secret is needed. Review settings live in [`.coderabbit.yaml`](.coderabbit.yaml): assertive feedback, automatic reviews of ready pull requests and subsequent commits, and no automatic approvals. Draft pull requests are skipped. The npm lockfile is explicitly included in dependency reviews.
 
 The review guidance protects original publication text and dates, private consulting details, database revision safety, and production deployment guards. CodeRabbit feedback supplements the existing verification workflow. It does not publish content or deploy the website.
 
@@ -132,6 +132,8 @@ The design uses self-hosted fonts, a midnight-blue background, white headings, w
 SEO includes canonical URLs, Open Graph and Twitter metadata, a local social image, Person and BlogPosting structured data, sitemap, RSS, and configurable indexing. Accessibility includes a skip link, visible keyboard focus, labeled inputs, meaningful headings, descriptive image alternatives, mobile navigation with Escape support, and reduced-motion behavior.
 
 The `undici` override in `package.json` keeps Cloudflare’s development tooling on a patched compatible release. Recheck its need when upgrading Wrangler; do not resolve advisory reports by downgrading to an obsolete framework tool or forcing incompatible peer dependencies.
+
+Dependabot checks npm packages and GitHub Actions weekly. TypeScript 7.x is temporarily excluded because `@astrojs/check` only supports TypeScript 5/6; TypeScript 6 updates remain enabled. Remove the exclusion when the checker supports TypeScript 7, as tracked in [the compatibility issue](https://github.com/alext-avi/ajt-website-source/issues/10), and validate a clean install, type checks, and integration tests. This exclusion also prevents a security update available only in 7.x, so review TypeScript security alerts manually during the hold.
 
 ## License
 

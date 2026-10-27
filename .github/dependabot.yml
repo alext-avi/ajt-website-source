@@ -8,6 +8,12 @@ updates:
       time: '09:00'
       timezone: America/New_York
     open-pull-requests-limit: 3
+    # @astrojs/check currently supports TypeScript 5/6 only; npm ci rejects 7.
+    # Remove this compatibility hold when the checker supports TypeScript 7:
+    # https://github.com/alext-avi/ajt-website-source/issues/10
+    ignore:
+      - dependency-name: typescript
+        versions: ['>=7.0.0 <8.0.0']
     groups:
       npm-minor-and-patch:
         applies-to: version-updates

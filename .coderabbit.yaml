@@ -3,7 +3,7 @@ language: en-US
 early_access: false
 enable_free_tier: true
 reviews:
-  profile: chill
+  profile: assertive
   high_level_summary: true
   high_level_summary_in_walkthrough: true
   in_progress_fortune: false
@@ -15,7 +15,21 @@ reviews:
     auto_incremental_review: true
     auto_pause_after_reviewed_commits: 0
     drafts: false
+  # Exact override of the default lockfile exclusion; other files stay eligible.
+  path_filters:
+    - "**/package-lock.json"
   path_instructions:
+    - path: "{package.json,package-lock.json}"
+      instructions: >-
+        Check dependency peer requirements, Node engine compatibility, and
+        lockfile consistency. Keep @playwright/test aligned with the pinned CI
+        browser container. Do not bypass incompatible peers or remove type
+        checks to make an upgrade pass.
+    - path: ".github/dependabot.yml"
+      instructions: >-
+        Keep dependency deferrals narrow, explained, and linked to a follow-up
+        issue with a removal condition. Flag exclusions that could suppress
+        security fixes and require that limitation to be documented.
     - path: "src/content/**"
       instructions: >-
         Preserve original author text, LinkedIn source links, and original post
