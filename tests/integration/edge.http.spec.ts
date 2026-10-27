@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { publishedPosts, publishedTalks } from '../published-content';
+import { anchorHrefs } from '../lib/html';
 
 test('the actual Worker handles new referral channels without registration or cookies', async ({
   request,
@@ -53,7 +54,7 @@ test('public slide links serve PDFs and the consulting session exposes no slide 
   for (const entry of publishedTalks.filter((talk) => talk.data.slides)) {
     const talk = await request.get(`/speaking/${entry.slug}/`);
     expect(talk.status()).toBe(200);
-    expect(await talk.text()).toContain(`href="${entry.data.slides}"`);
+    expect(anchorHrefs(await talk.text())).toContain(entry.data.slides);
     if (entry.data.slides!.startsWith('/slides/')) {
       const slides = await request.get(entry.data.slides!);
       expect(slides.status()).toBe(200);
