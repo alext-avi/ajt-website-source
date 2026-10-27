@@ -18,7 +18,7 @@ A separate HTTP project exercises the actual Worker and static asset server: ref
 
 The Playwright web-server configuration builds the production site from the committed D1 publication snapshot and serves it through local Wrangler at **https://127.0.0.1:8794**. It starts its own server and fails if that port is occupied, preventing an old development server from satisfying the tests. Local database state is kept under ignored `.wrangler/integration`; no remote D1 access or Cloudflare credentials are required.
 
-HTTPS preserves the production `upgrade-insecure-requests` security header, including Safari behavior. Certificate errors are ignored only for this loopback test server's generated certificate. The test build uses `https://website.test` and the synthetic GA4 ID `G-E2E000000`. Tests send no real Google Analytics events, and CI does not deploy this test build. Production deployment rebuilds using its own configuration and retains the existing repository, branch, event, and credential guards.
+HTTPS preserves the production `upgrade-insecure-requests` security header, including Safari behavior. Certificate errors are ignored only for this loopback test server's generated certificate. The test build uses its loopback HTTPS origin as its canonical origin and the synthetic GA4 ID `G-E2E000000`. Tests send no real Google Analytics events, and CI does not deploy this test build. Production deployment rebuilds using its own configuration and retains the existing repository, branch, event, and credential guards.
 
 ## Commands and diagnostics
 
@@ -32,6 +32,18 @@ npx --no-install playwright show-trace path/to/trace.zip
 ```
 
 `npm run test:ci` runs type checking, builds and tests the site through Playwright, and runs the existing Node content/database/referral checks against that build. Every test gets a fresh browser context. CI retries a failed integration test once and rejects accidentally focused tests (`test.only`). Screenshots and traces are retained on failure; HTML reports and failure artifacts are uploaded by GitHub Actions for seven days. Local reports and test results are Git-ignored.
+
+## Deployed staging gate
+
+`npm run stage` refreshes published D1 content, verifies and builds the production artifact, stamps its source revision and SHA-256 identity, deploys it to `https://alexander-thomas-staging.alexander-jt.workers.dev`, and runs `playwright.staging.config.ts`. `npm run deploy` performs the same sequence and only then uploads the tested assets to production. CI uses that same entry point. The stage-only command never promotes to production.
+
+Seven tests make real HTTPS requests with normal certificate validation and no response mocks: two desktop/mobile browser journeys plus five HTTP tests. They cover navigation, theme persistence, search, original post dates, wildcard referrals, media markup, PDFs/video delivery, private-route exclusions, staging response headers, and the expected release manifest. Browser evidence records actual Cloudflare Ray IDs and release IDs; failures retain screenshots/traces. CI saves `staging-playwright-results` for seven days.
+
+Staging serves the production build's canonical URLs. Its Worker adds `X-Robots-Tag: noindex, nofollow` to every response and has no database binding. The Google tag only runs when the browser origin matches the build's canonical origin. Staging tests deliberately start with analytics consent already allowed and require no production analytics requests. They do not replace the separate real production Google collection/API round trip.
+
+`dist/release.json` identifies the source revision and hashes all static assets plus Worker/referral source and Wrangler configuration. The deployment command verifies the local artifact and the currently served staging identity after tests, without rebuilding, then rechecks the latest `main` before promotion in CI. Any test failure, changed build, mismatched staging release, or failed identity check prevents production upload. The workflow serializes releases. Local operators must avoid simultaneous manual production deployments.
+
+To rerun tests on an already prepared candidate, set `PLAYWRIGHT_STAGING_URL`, `EXPECTED_RELEASE_ID`, `EXPECTED_SOURCE_REVISION`, and `EXPECTED_CANONICAL_ORIGIN`, then run `npm run test:staging`. Use the recorded candidate identity, not values copied from an arbitrary current response.
 
 ## Live production tests
 
@@ -50,6 +62,10 @@ Each browser starts at /r/playwright-ci/production-checks with medium testing an
 The HTML report at playwright-report-production/index.html attaches the tested URL, run marker, CI link, source revision, document statuses, Cloudflare Ray IDs, and successful Google collection responses. Only selected collection fields are saved in the JSON evidence, without cookies or client/session IDs. The live suite makes normal TLS checks, runs one worker with no retries, and requires explicit configuration to prevent accidental live traffic.
 
 On private production main, the production-checks CI job runs after successful verification and the deploy stage. It tests the current live site when deployment credentials are absent, and labels that as existing-production-deployment rather than claiming the workflow's revision was deployed. It runs after an actual successful upload when credentials are configured. Failed deployments and outdated queued uploads do not start live checks. Pull requests and the public source repository never automatically run production tests. Reports and network evidence are retained for seven days.
+
+## Draft editor and media
+
+`npm run test:review` starts a separate local Astro review server and isolated SQLite database. It exercises the real MCP protocol, browser editing, private image upload/replacement, refreshed rendering, and human publication controls. Only the local test backend is approved; tests never publish remote posts. Stale revisions and cross-origin mutations are rejected. This suite runs in `npm run test:ci`; its HTML report and preview screenshot are saved with the CI artifacts. See [the workflow](content-mcp.md).
 
 ## Interactive test authoring with MCP
 

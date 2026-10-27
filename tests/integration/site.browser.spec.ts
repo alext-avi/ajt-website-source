@@ -115,6 +115,30 @@ test('writing filters support shared links, article navigation, browser back, an
   expect(await page.getByRole('article').count()).toBeGreaterThan(1);
 });
 
+test('writing waits for hydration before accepting a search query', async ({
+  page,
+}) => {
+  let release!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/_astro/WritingExplorer*.js', async (route) => {
+    await ready;
+    await route.continue();
+  });
+  try {
+    await page.goto('/writing/', { waitUntil: 'domcontentloaded' });
+    const search = page.getByRole('searchbox', { name: 'Search writing' });
+    await expect(search).toBeDisabled();
+    release();
+    await search.fill('coral');
+    await expect(page.getByRole('article')).toHaveCount(1);
+    await expect(page).toHaveURL(/q=coral/);
+  } finally {
+    release();
+  }
+});
+
 test('wildcard referral links bring a visitor home with the channel and campaign intact', async ({
   page,
   baseURL,

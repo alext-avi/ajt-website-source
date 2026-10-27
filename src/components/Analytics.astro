@@ -9,6 +9,7 @@ const { measurementId } = Astro.props;
   id="analytics-notice"
   class="analytics-notice"
   data-measurement-id={measurementId}
+  data-analytics-origin={Astro.site?.origin}
   aria-label="Analytics choices"
   hidden
 >

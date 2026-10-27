@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "npm@11.19.0",
   "engines": {
     "node": ">=22.23.4"
   },
@@ -13,12 +14,9 @@
     "build": "astro build",
     "preview": "astro preview --host 127.0.0.1",
     "test": "node --test scripts/*.test.mjs",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:live": "playwright test --config=playwright.production.config.ts",
-    "test:ci": "npm run check && npm run test:e2e && npm test",
     "verify": "npm run check && npm run build && npm test",
-    "deploy": "npm run db:pull -- --remote && npm run verify && node scripts/check-deploy.mjs && wrangler deploy",
+    "deploy": "node scripts/deploy.mjs",
+    "stage": "node scripts/deploy.mjs --staging-only",
     "cf:preview": "npm run build && wrangler dev",
     "cf:dry-run": "npm run build && wrangler deploy --dry-run --outdir .wrangler/dry-run",
     "db:migrate:local": "wrangler d1 migrations apply CONTENT_DB --local",
@@ -26,7 +24,16 @@
     "db:seed": "node scripts/content-db.mjs seed",
     "db:pull": "node scripts/content-db.mjs pull",
     "db:push": "node scripts/content-db.mjs push",
-    "ga4:verify": "node scripts/verify-ga4.mjs"
+    "mcp:content:local": "node mcp/content-server.mjs --local --database .wrangler/content-mcp.sqlite",
+    "mcp:content:remote": "node mcp/content-server.mjs --remote",
+    "content:review": "AJT_REVIEW_ENABLED=1 astro dev --ignore-lock --host 127.0.0.1 --port 4330",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:review": "playwright test --config=playwright.review.config.ts",
+    "test:live": "playwright test --config=playwright.production.config.ts",
+    "test:staging": "playwright test --config=playwright.staging.config.ts",
+    "ga4:verify": "node scripts/verify-ga4.mjs",
+    "test:ci": "npm run check && npm run test:e2e && npm test && npm run test:review"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.5",
@@ -47,19 +54,22 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/server": "2.4.0",
     "@playwright/test": "1.64.1",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "parse5": "8.0.1",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.2",
     "typescript": "^6.0.3",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.152.0",
+    "zod": "4.6.7"
   },
   "overrides": {
     "miniflare@5.20261019.2-beta": {
       "undici": "7.30.1"
     }
-  },
-  "license": "MIT"
+  }
 }

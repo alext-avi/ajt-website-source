@@ -1,0 +1,54 @@
+---
+import Base from '../src/layouts/Base.astro';
+import { listReviews, reviewStore } from './reviews.mjs';
+export const prerender = false;
+if (Astro.url.hostname !== '127.0.0.1')
+  return new Response('Not found', { status: 404 });
+await reviewStore();
+const reviews = await listReviews();
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('Referrer-Policy', 'no-referrer');
+Astro.response.headers.set('X-Frame-Options', 'DENY');
+Astro.response.headers.set('Content-Security-Policy', "frame-ancestors 'none'");
+---
+
+<Base title="Draft reviews" noindex>
+  <header class="shell detail-head">
+    <p class="eyebrow">Your publishing desk</p>
+    <h1>Draft reviews</h1>
+    <p class="lede">
+      Edit a draft, check its rendered preview, then publish when you’re ready.
+    </p>
+  </header>
+  <section class="shell page-body">
+    {reviews.length ? (
+      <ul>
+        {reviews.map((review) => (
+          <li class="review-item">
+            <a href={`/review/${review.id}`}>{review.title}</a>
+            <span>
+              Revision {review.revision} · {review.status.replace('-', ' ')}
+            </span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>
+        No drafts are waiting for review. Ask the content MCP to submit a draft.
+      </p>
+    )}
+  </section>
+</Base>
+<style>
+  .review-item {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .review-item span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+</style>

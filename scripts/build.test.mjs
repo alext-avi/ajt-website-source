@@ -79,7 +79,7 @@ test('every internal page link, asset, and anchor resolves', () => {
 test('production excludes draft content, editor API, and resume files', () => {
   assert.ok(
     !files.some((f) =>
-      /resource-planning|keystatic|(^|\/)api\/|resume.*\.pdf/i.test(f),
+      /resource-planning|keystatic|(^|\/)review(?:\/|-health)|(^|\/)api\/|resume.*\.pdf/i.test(f),
     ),
   );
   for (const file of htmlFiles)

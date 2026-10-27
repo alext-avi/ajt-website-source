@@ -1,0 +1,67 @@
+---
+import Base from '../src/layouts/Base.astro';
+import PostVideo from '../src/components/PostVideo.astro';
+import { formatDate, readingTime } from '../src/lib/content';
+import { postSchema } from '../src/lib/content-schemas';
+import { reviewStore, reviewState, renderPost } from './reviews.mjs';
+export const prerender = false;
+if (Astro.url.hostname !== '127.0.0.1')
+  return new Response('Not found', { status: 404 });
+let state;
+try {
+  state = await reviewState(await reviewStore(), Astro.params.ticket);
+} catch {
+  return new Response('Review not found', { status: 404 });
+}
+const saved = state.review.post;
+const post = {
+  id: saved.slug,
+  collection: 'posts' as const,
+  data: postSchema.parse(saved.metadata),
+  body: saved.body,
+};
+const html = await renderPost(post.body);
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('Referrer-Policy', 'no-referrer');
+Astro.response.headers.set(
+  'Content-Security-Policy',
+  "script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
+);
+---
+
+<Base title={post.data.title} description={post.data.summary} noindex>
+  <header class="shell detail-head">
+    <p class="eyebrow">{post.data.category}</p>
+    <h1>{post.data.title}</h1>
+    <p class="lede">{post.data.summary}</p>
+    <div class="article-meta">
+      <span>By Alexander Thomas</span>
+      <span class="dot"></span>
+      <time datetime={post.data.date.toISOString()}>
+        {formatDate(post.data.date)}
+      </time>
+      <span class="dot"></span>
+      <span>{readingTime(post.body)} min read</span>
+    </div>
+  </header>
+  <div class="shell page-body article-grid">
+    <div class="article-body">
+      {post.data.image && (
+        <img
+          src={post.data.image}
+          alt={post.data.imageAlt || ''}
+          class="article-cover mb-8 rounded"
+          width="800"
+          height="450"
+        />
+      )}
+      <article class="prose" set:html={html} />
+      <PostVideo post={post} />
+      <div class="article-tags">
+        {post.data.tags.map((tag) => (
+          <span>{tag}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+</Base>
