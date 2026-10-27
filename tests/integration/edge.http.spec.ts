@@ -54,17 +54,28 @@ test('public slide links serve PDFs and the consulting session exposes no slide 
     const talk = await request.get(`/speaking/${entry.slug}/`);
     expect(talk.status()).toBe(200);
     expect(await talk.text()).toContain(`href="${entry.data.slides}"`);
-    const slides = await request.get(entry.data.slides!);
-    expect(slides.status()).toBe(200);
-    expect(slides.headers()['content-type']).toContain('application/pdf');
-    expect((await slides.body()).subarray(0, 5).toString()).toBe('%PDF-');
+    if (entry.data.slides!.startsWith('/slides/')) {
+      const slides = await request.get(entry.data.slides!);
+      expect(slides.status()).toBe(200);
+      expect(slides.headers()['content-type']).toContain('application/pdf');
+      expect((await slides.body()).subarray(0, 5).toString()).toBe('%PDF-');
+    } else {
+      // External presentation pages need not be PDFs or allow automated clients.
+      expect(new URL(entry.data.slides!).protocol).toMatch(/^https?:$/);
+    }
   }
   for (const entry of publishedTalks.filter(
     (talk) => talk.data.event === 'Enterprise consulting',
   )) {
+    expect(
+      entry.data.slides,
+      'Consulting slide materials remain private',
+    ).toBeUndefined();
     const consulting = await request.get(`/speaking/${entry.slug}/`);
     expect(consulting.status()).toBe(200);
-    expect(await consulting.text()).not.toMatch(/href="\/slides\//);
+    expect(await consulting.text()).not.toMatch(
+      /href="\/slides\/|>\s*View slides(?:\s|\()/,
+    );
   }
 });
 

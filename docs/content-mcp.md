@@ -14,7 +14,7 @@ Saving or submitting a review never changes the live site. An edit made after a 
 
 An approval changes the D1 record to publication-ready before deployment. If staging or upload fails, that approval remains in D1 and the desk reports failure; it does not claim that the post is live. Inspect the local publishing log before retrying an uncertain upload. A failed staging test prevents production upload. Logs and review records stay in ignored `.wrangler/content-review/`.
 
-If the review server stops during publication, a private SQLite lock tracks both its owner and the detached deployment process group. An active deployment keeps the lock. Once both have stopped, the desk shows an interrupted publication with an unknown outcome, allowing an explicit retry or return to draft after inspecting the log. Lock acquisition and stale-owner replacement are transactional; recovery never publishes automatically.
+If the review server stops during publication, a private SQLite lock tracks its owner and the deployment child. On macOS/Linux it also tracks the child's process group; on Windows only the direct child PID is tracked, so recovery does not guarantee detection of surviving grandchildren. An active tracked process keeps the lock. Once the tracked processes have stopped, the desk shows an interrupted publication with an unknown outcome, allowing an explicit retry or return to draft after inspecting the log. Lock acquisition and stale-owner replacement are transactional; recovery never publishes automatically.
 
 ## Media
 
