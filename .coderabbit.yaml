@@ -15,6 +15,9 @@ reviews:
     auto_incremental_review: true
     auto_pause_after_reviewed_commits: 0
     drafts: false
+  # Exact override of the default lockfile exclusion; other files stay eligible.
+  path_filters:
+    - "**/package-lock.json"
   path_instructions:
     - path: "{package.json,package-lock.json}"
       instructions: >-

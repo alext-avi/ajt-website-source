@@ -70,7 +70,7 @@ Failed browser tests retain screenshots and traces; CI uploads the HTML report a
 
 ## Pull request reviews
 
-[CodeRabbit](https://www.coderabbit.ai/oss) provides free automated reviews for public repositories. The GitHub App must be installed on this repository; no API key or Actions secret is needed. Review settings live in [`.coderabbit.yaml`](.coderabbit.yaml): balanced feedback, automatic reviews of ready pull requests and subsequent commits, and no automatic approvals. Draft pull requests are skipped.
+[CodeRabbit](https://www.coderabbit.ai/oss) provides free automated reviews for public repositories. The GitHub App must be installed on this repository; no API key or Actions secret is needed. Review settings live in [`.coderabbit.yaml`](.coderabbit.yaml): assertive feedback, automatic reviews of ready pull requests and subsequent commits, and no automatic approvals. Draft pull requests are skipped. The npm lockfile is explicitly included in dependency reviews.
 
 The review guidance protects original publication text and dates, private consulting details, database revision safety, and production deployment guards. CodeRabbit feedback supplements the existing verification workflow. It does not publish content or deploy the website.
 
