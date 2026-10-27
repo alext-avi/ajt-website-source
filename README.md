@@ -133,6 +133,8 @@ SEO includes canonical URLs, Open Graph and Twitter metadata, a local social ima
 
 The `undici` override in `package.json` keeps Cloudflare’s development tooling on a patched compatible release. Recheck its need when upgrading Wrangler; do not resolve advisory reports by downgrading to an obsolete framework tool or forcing incompatible peer dependencies.
 
+Dependabot checks npm packages and GitHub Actions weekly. TypeScript 7.x is temporarily excluded because `@astrojs/check` only supports TypeScript 5/6; TypeScript 6 updates remain enabled. Remove the exclusion when the checker supports TypeScript 7, as tracked in [the compatibility issue](https://github.com/alext-avi/ajt-website-source/issues/10), and validate a clean install, type checks, and integration tests. This exclusion also prevents a security update available only in 7.x, so review TypeScript security alerts manually during the hold.
+
 ## License
 
 The website implementation is MIT licensed. Personal content and media are excluded from that grant; see [CONTENT-LICENSE.md](CONTENT-LICENSE.md). Preserve [third-party notices](NOTICE.md).
