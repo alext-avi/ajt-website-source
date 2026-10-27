@@ -21,10 +21,7 @@ export function isReportingDelay(error) {
   return (
     error instanceof Ga4IngestionPending &&
     error.evidence?.lastHttpStatus === 200 &&
-    !error.evidence.transportError &&
-    !error.evidence.rows?.some(
-      (row) => row.event === 'screen_view' && row.eventCount > 0,
-    )
+    !error.evidence.transportError
   );
 }
 
@@ -56,33 +53,6 @@ export function realtimeRequest(runId, streamId) {
       },
     },
     limit: '100',
-  };
-}
-
-export function realtimeEventRequest(runId, streamId) {
-  const request = realtimeRequest(runId, streamId);
-  return {
-    ...request,
-    dimensions: ['customUser:ci_run_id', 'streamId', 'eventName'].map(
-      (name) => ({ name }),
-    ),
-    metrics: [{ name: 'eventCount' }],
-    dimensionFilter: {
-      andGroup: {
-        expressions: [
-          ...request.dimensionFilter.andGroup.expressions,
-          {
-            filter: {
-              fieldName: 'eventName',
-              inListFilter: {
-                values: ['page_view', 'screen_view'],
-                caseSensitive: true,
-              },
-            },
-          },
-        ],
-      },
-    },
   };
 }
 
@@ -186,74 +156,6 @@ export function evaluateReport(data, { runId, streamId, expectedViews }) {
           row.pageViews > 0,
       ),
   );
-  return { verified: missing.length === 0, rows, missing };
-}
-
-export function evaluateEventReport(
-  data,
-  { runId, streamId, expectedViews, pageRows },
-) {
-  const dimensions = data.dimensionHeaders?.map((header) => header.name);
-  const metrics = data.metricHeaders?.map((header) => header.name);
-  if (
-    data.rowCount !== undefined &&
-    (!Number.isSafeInteger(data.rowCount) ||
-      data.rowCount < 0 ||
-      data.rowCount > (data.rows || []).length)
-  )
-    throw new Error(
-      'Incomplete GA4 event report; refusing to infer absent event types.',
-    );
-  if (
-    data.kind !== 'analyticsData#runRealtimeReport' ||
-    !['customUser:ci_run_id', 'streamId', 'eventName'].every((name) =>
-      dimensions?.includes(name),
-    ) ||
-    !metrics?.includes('eventCount') ||
-    (data.rows !== undefined && !Array.isArray(data.rows))
-  )
-    throw new Error('Unexpected GA4 event report schema.');
-  const rows = (data.rows || []).map((row) => {
-    const value = (name) =>
-      row.dimensionValues?.[dimensions.indexOf(name)]?.value;
-    const browserRunId = value('customUser:ci_run_id');
-    const count = row.metricValues?.[metrics.indexOf('eventCount')]?.value;
-    if (
-      ![runId + '-d', runId + '-m'].includes(browserRunId) ||
-      value('streamId') !== streamId
-    )
-      throw new Error(
-        'GA4 returned event rows outside the requested run or stream.',
-      );
-    if (
-      typeof value('eventName') !== 'string' ||
-      !/^[0-9]+$/.test(count) ||
-      !Number.isSafeInteger(Number(count))
-    )
-      throw new Error('GA4 returned an invalid event count.');
-    return {
-      runId: browserRunId,
-      event: value('eventName'),
-      eventCount: Number(count),
-    };
-  });
-  const screenViewsObserved = rows.some(
-    (row) => row.event === 'screen_view' && row.eventCount > 0,
-  );
-  const missing = expectedViews.filter((view) => {
-    const reportedViews = pageRows
-      .filter((row) => row.runId === view.runId)
-      .reduce((sum, row) => sum + row.pageViews, 0);
-    const eventCount = (name) =>
-      rows
-        .filter((row) => row.runId === view.runId && row.event === name)
-        .reduce((sum, row) => sum + row.eventCount, 0);
-    return (
-      reportedViews <= 0 ||
-      eventCount('page_view') < reportedViews ||
-      screenViewsObserved
-    );
-  });
   return { verified: missing.length === 0, rows, missing };
 }
 
@@ -459,35 +361,6 @@ export async function main(env = process.env, { poll = pollIngestion } = {}) {
         );
       },
     });
-    const eventVerification = await poll({
-      propertyId,
-      streamId,
-      runId,
-      expectedViews: [pages.ingestionProbe],
-      token: env.GA4_ACCESS_TOKEN,
-      query: realtimeEventRequest(runId, streamId),
-      evaluate: (data, config) =>
-        evaluateEventReport(data, { ...config, pageRows: pages.rows }),
-      onProgress: async (evidence) => {
-        await save({
-          ...pages,
-          journeyExpectedViews,
-          reportingCoverage: coverage(pages.rows),
-          verificationScope: 'run-ingestion',
-          status: evidence.verified ? 'verified' : 'events-pending',
-          verified: evidence.verified,
-          eventVerification: evidence,
-        });
-        console.log(
-          'GA4 event-type attempt ' +
-            evidence.attempts +
-            ': ' +
-            (evidence.verified
-              ? 'page_view totals confirmed; no screen_view events.'
-              : 'waiting for matching page_view totals without screen_view events.'),
-        );
-      },
-    });
     const result = {
       ...pages,
       journeyExpectedViews,
@@ -495,15 +368,16 @@ export async function main(env = process.env, { poll = pollIngestion } = {}) {
       verificationScope: 'run-ingestion',
       status: 'verified',
       verified: true,
-      eventVerification,
+      apiMetric: 'screenPageViews',
     };
+    await save(result);
     if (env.GITHUB_STEP_SUMMARY)
       await appendFile(
         env.GITHUB_STEP_SUMMARY,
         '\n### GA4 API ingestion verified\n\nRun: ' +
           runId +
           '\n\n' +
-          'A visited page from this run was confirmed by the page and event reports. Probe: ' +
+          'GA4 Views reporting contains a visited page from this run. Probe: ' +
           pages.ingestionProbe.device +
           ' ' +
           pages.ingestionProbe.path +
@@ -511,7 +385,7 @@ export async function main(env = process.env, { poll = pollIngestion } = {}) {
           coverage(pages.rows).observed +
           '/' +
           journeyExpectedViews.length +
-          ' journey page/browser pairs. This is an ingestion smoke check; it does not attest complete analytics capture of every automated visit.\n',
+          ' journey page/browser pairs. This is an ingestion smoke check; it does not attest complete analytics capture of every automated visit. The API metric combines page_view and screen_view. Exact page_view delivery is verified independently in the browser collection evidence.\n',
       );
     return result;
   } catch (error) {
