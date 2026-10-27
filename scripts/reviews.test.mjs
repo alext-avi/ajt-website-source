@@ -114,6 +114,59 @@ test('human approval is bound to a reviewed revision, retains history, and suppo
   );
 });
 
+test('failed database approval retains a usable review and can return to an editable draft', async (t) => {
+  const temporary = await fs.mkdtemp(
+    path.join(os.tmpdir(), 'ajt-approval-failure-'),
+  );
+  const previous = process.env.AJT_REVIEW_DIR;
+  process.env.AJT_REVIEW_DIR = path.join(temporary, 'tickets');
+  const store = await createStore({
+    database: path.join(temporary, 'content.sqlite'),
+  });
+  t.after(async () => {
+    store.close();
+    if (previous === undefined) delete process.env.AJT_REVIEW_DIR;
+    else process.env.AJT_REVIEW_DIR = previous;
+    await fs.rm(temporary, { recursive: true, force: true });
+  });
+  await store.query(
+    writeEntrySQL({
+      collection: 'posts',
+      slug: 'approval-failure',
+      data: {
+        title: 'A recoverable draft approval',
+        summary: 'A complete summary for a database failure before approval.',
+        date: '2026-10-27',
+        category: 'Architecture',
+        draft: true,
+      },
+      body: 'Reviewed content before an interrupted database write.',
+    }).replace(/;$/, ' RETURNING slug;'),
+  );
+  const submitted = await createReview(
+    await getPost(store, 'approval-failure'),
+    store.identity,
+  );
+  const ticket = await readReview(submitted.id);
+  const unavailable = {
+    ...store,
+    query: async (sql) => {
+      if (sql.startsWith('UPDATE '))
+        throw new Error('Database temporarily unavailable');
+      return store.query(sql);
+    },
+  };
+  await assert.rejects(
+    publishReview(unavailable, ticket.id, ticket.csrf),
+    /temporarily unavailable/,
+  );
+  assert.equal((await reviewState(store, ticket.id)).stale, false);
+  assert.equal((await getPost(store, 'approval-failure')).metadata.draft, true);
+  const reopened = await reopenReview(store, ticket.id, ticket.csrf);
+  assert.equal((await readReview(reopened.id)).status, 'review');
+  assert.equal((await getPost(store, 'approval-failure')).revision, 2);
+});
+
 test('uploaded media stays outside public assets and rejects executable uploads and traversal paths', async (t) => {
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'ajt-media-'));
   const previous = process.env.AJT_MEDIA_DIR;

@@ -282,8 +282,9 @@ export async function reviewState(store, id) {
   const currentDigest = postDigest(current);
   const valid =
     currentDigest === postDigest(expected) ||
-    (review.status === 'publishing' && currentDigest === review.digest);
-  return { review, stale: !valid };
+    (['publishing', 'failed'].includes(review.status) &&
+      currentDigest === review.digest);
+  return { review, stale: !valid, current };
 }
 
 export async function publishReview(
@@ -383,7 +384,7 @@ export async function failReview(id, error) {
 }
 
 export async function reopenReview(store, id, csrf) {
-  const { review, stale } = await reviewState(store, id);
+  const { review, stale, current } = await reviewState(store, id);
   checkConfirmation(review, csrf);
   if (stale || review.status !== 'failed' || !review.approvedAt)
     throw new Error(
@@ -391,7 +392,7 @@ export async function reopenReview(store, id, csrf) {
     );
   const metadata = { ...review.post.metadata, draft: true };
   const rows = await store.query(
-    `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-editor',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection='posts' AND slug=${sqlText(review.post.slug)} AND revision=${review.post.revision + 1} AND is_draft=0 RETURNING revision;`,
+    `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-editor',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection='posts' AND slug=${sqlText(review.post.slug)} AND revision=${current.revision} AND is_draft=${current.metadata.draft ? 1 : 0} RETURNING revision;`,
   );
   if (!rows.length)
     throw new Error('Revision conflict; refresh before editing');

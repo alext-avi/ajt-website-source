@@ -41,6 +41,7 @@ const Arrow = () => (
 export default function WritingExplorer({ posts }: { posts: Post[] }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     const read = () => {
       const params = new URLSearchParams(window.location.search);
@@ -49,6 +50,7 @@ export default function WritingExplorer({ posts }: { posts: Post[] }) {
       setCategory(selected && categories.includes(selected) ? selected : 'All');
     };
     read();
+    setReady(true);
     window.addEventListener('popstate', read);
     return () => window.removeEventListener('popstate', read);
   }, []);
@@ -88,6 +90,7 @@ export default function WritingExplorer({ posts }: { posts: Post[] }) {
             <button
               key={c}
               type="button"
+              disabled={!ready}
               aria-pressed={category === c}
               onClick={() => update(query, c)}
             >
@@ -102,6 +105,7 @@ export default function WritingExplorer({ posts }: { posts: Post[] }) {
           <input
             id="writing-search"
             type="search"
+            disabled={!ready}
             placeholder="Search the writing…"
             value={query}
             onChange={(e) => update(e.target.value, category)}
