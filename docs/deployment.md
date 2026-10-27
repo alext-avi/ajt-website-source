@@ -16,10 +16,12 @@ After the deploy stage, the production-checks job exercises the public website a
 
 ## One-time authorization
 
+First complete [private R2 media setup](r2-media.md). Both Workers require the existing `ajt-website-media` bucket. New uploads live there rather than in Git; the staging gate verifies every referenced R2 object's hash before promotion. The local publisher and CI both refresh published content directly from D1, so a clean runner needs neither the author's media cache nor manually copied uploads.
+
 Wrangler's local OAuth login cannot authenticate a GitHub-hosted runner. Use a separate account-owned Cloudflare API token for CI:
 
 1. In the Cloudflare account containing `alexander-thomas`, open **Manage account → Account API tokens → Create Token**.
-2. Name the token `ajt-website-github-actions`. Grant **Workers → Editor** access scoped to the existing **alexander-thomas** and **alexander-thomas-staging** Workers and **D1 → Read** for the content database. CI reads content but does not apply migrations, seed records, or edit drafts. Do not grant account administration, API-token management, DNS, billing, or access to unrelated products. Cloudflare's granular permissions allow an Editor to deploy existing Workers without permission to create/delete Workers. If that scope is unavailable in the dashboard, review the actual alternative before granting broader access.
+2. Name the token `ajt-website-github-actions`. Grant **Workers → Editor** access scoped to the existing **alexander-thomas** and **alexander-thomas-staging** Workers and **D1 → Read** for the content database. Confirm permission to attach the existing media bucket binding; CI does not need to upload objects or create buckets. CI reads content but does not apply migrations, seed records, or edit drafts. Do not grant account administration, API-token management, DNS, billing, or access to unrelated products. Cloudflare's granular permissions allow an Editor to deploy existing Workers without permission to create/delete Workers. If that scope is unavailable in the dashboard, review the actual alternative before granting broader access.
 3. Copy the token directly into the repository's **Settings → Secrets and variables → Actions → New repository secret**, named **CLOUDFLARE_API_TOKEN**. Do not put it in an issue, chat, workflow file, command history, or `.env.example`.
 4. Set repository Actions variables:
    - `SITE_URL`: `https://alexander-thomas.alexander-jt.workers.dev`
@@ -35,7 +37,7 @@ If the secret is missing, the workflow still verifies the website and explicitly
 
 Production main workflows share a concurrency group across verification, staging, deployment, and live checks, and do not interrupt a run already in progress. A later deployment cannot replace staging or production while an earlier run is checking it. PRs and the public source repo use independent groups. The deployment script checks its commit against the current `main` tip before staging upload and again after staging passes. An outdated queued release skips promotion, so it cannot replace a newer build. Avoid running manual deployments concurrently with a CI release; release identity checks fail closed if staging is replaced.
 
-To retry a transient failure, re-run the workflow for the current `main` commit or use **Run workflow** on `main`. To roll back site content through this pipeline, revert the relevant commit and push the revert to `main`. A manual run from an old commit is intentionally skipped once `main` has moved forward.
+To retry a transient failure, re-run the workflow for the current `main` commit or use **Run workflow** on `main`. To roll back code, revert the relevant commit and push the revert to `main`. Content requires a separately reviewed restoration of its D1 revision: every deployment pulls D1 again, so a Git revert alone does not undo database publication. A manual run from an old commit is intentionally skipped once `main` has moved forward. Retain historical R2 objects so a rollback's referenced bytes remain available.
 
 GitHub environments and private branch protection are unavailable on this repository's current GitHub plan. Deployment therefore uses a repository secret and explicit repository/event/branch conditions. If the repository becomes public, branch protection and a production environment can be configured then. Contributors should submit pull requests; only trusted maintainers should have write access to `main` or workflows.
 

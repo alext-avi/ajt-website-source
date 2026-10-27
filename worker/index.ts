@@ -1,9 +1,11 @@
 import { referralDestination } from '../src/lib/referrals.ts';
+import { serveMedia, type MediaBucket } from './media.ts';
 
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   DEPLOYMENT_ENVIRONMENT?: string;
   RELEASE_ID?: string;
+  MEDIA_BUCKET?: MediaBucket;
   // Bound for future content tools; published pages are built from a D1 snapshot.
   // No public database write endpoint or visitor logging is introduced here.
   CONTENT_DB?: {
@@ -28,6 +30,8 @@ export default {
 
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  if (url.pathname === '/media' || url.pathname.startsWith('/media/'))
+    return serveMedia(request, env);
   const destination = referralDestination(url);
   if (!destination) {
     if (url.pathname.startsWith('/r/')) {

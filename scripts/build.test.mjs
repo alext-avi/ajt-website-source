@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv } from 'vite';
+import { mediaPath } from '../src/lib/media.ts';
 const env = {
   ...loadEnv('production', process.cwd(), 'PUBLIC_'),
   ...process.env,
@@ -15,6 +16,7 @@ const root = path.resolve('dist');
 const files = fs.readdirSync(root, { recursive: true }).map(String);
 const htmlFiles = files.filter((f) => f.endsWith('.html'));
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+const uploadedMedia = new Set(JSON.parse(read('media-manifest.json')).files);
 const pagePath = (href) => {
   const pathname = decodeURIComponent(
     new URL(href, 'https://site.test').pathname,
@@ -57,6 +59,8 @@ test('every internal page link, asset, and anchor resolves', () => {
       )
         continue;
       const url = new URL(raw, currentURL);
+      const media = mediaPath.exec(url.pathname);
+      if (media && uploadedMedia.has(media[1])) continue;
       const target = pagePath(url.href);
       if (!fs.existsSync(target)) {
         issues.push(`${file}: ${raw}`);
@@ -79,7 +83,9 @@ test('every internal page link, asset, and anchor resolves', () => {
 test('production excludes draft content, editor API, and resume files', () => {
   assert.ok(
     !files.some((f) =>
-      /resource-planning|keystatic|(^|\/)review(?:\/|-health)|(^|\/)api\/|resume.*\.pdf/i.test(f),
+      /resource-planning|keystatic|(^|\/)review(?:\/|-health)|(^|\/)api\/|resume.*\.pdf/i.test(
+        f,
+      ),
     ),
   );
   for (const file of htmlFiles)

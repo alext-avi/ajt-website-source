@@ -6,6 +6,9 @@
   "workers_dev": true,
   "preview_urls": false,
   "main": "./worker/index.ts",
+  "r2_buckets": [
+    { "binding": "MEDIA_BUCKET", "bucket_name": "ajt-website-media" },
+  ],
   "d1_databases": [
     {
       "binding": "CONTENT_DB",
@@ -17,13 +20,16 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/r/*"],
+    "run_worker_first": ["/r/*", "/media", "/media/*"],
     "not_found_handling": "404-page",
   },
   "env": {
     "staging": {
       "name": "alexander-thomas-staging",
       "d1_databases": [],
+      "r2_buckets": [
+        { "binding": "MEDIA_BUCKET", "bucket_name": "ajt-website-media" },
+      ],
       "vars": { "DEPLOYMENT_ENVIRONMENT": "staging" },
       "assets": {
         "directory": "./dist",

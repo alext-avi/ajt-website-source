@@ -77,9 +77,9 @@ export async function postMedia(post) {
     for (const attribute of node.attrs || [])
       if (
         ['href', 'src'].includes(attribute.name) &&
-        /^\/(uploads|videos)\//.test(attribute.value)
+        /^\/(uploads|videos|media)\//.test(attribute.value)
       )
-        urls.push(attribute.value);
+        urls.push(new URL(attribute.value, 'https://content.test').pathname);
     for (const child of node.childNodes || []) visit(child);
   }
   visit(parseFragment(await renderPost(post.body)));
@@ -205,6 +205,7 @@ export async function ensureReviewServer(store) {
           AJT_REVIEW_DATABASE: store.identity.startsWith('sqlite:')
             ? store.identity.slice(7)
             : '',
+          AJT_REVIEW_R2_LOCAL_STATE: store.localR2 || '',
           ASTRO_TELEMETRY_DISABLED: '1',
         },
       },
@@ -310,6 +311,7 @@ export async function publishReview(
   id,
   csrf,
   publisher = deployWebsite,
+  { onStarted } = {},
 ) {
   const { review, stale } = await reviewState(store, id);
   checkConfirmation(review, csrf);
@@ -332,9 +334,10 @@ export async function publishReview(
     review.status = 'publishing';
     review.approvedAt ||= new Date().toISOString();
     await saveReview(review);
+    onStarted?.();
     await renderPost(review.post.body);
-    if (!store.identity.startsWith('sqlite:'))
-      await materializeMedia(await postMedia(review.post));
+    if (store.media || !store.identity.startsWith('sqlite:'))
+      await materializeMedia(await postMedia(review.post), store);
     const metadata = { ...review.post.metadata, draft: false };
     const rows = await store.query(
       `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-review',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection='posts' AND slug=${sqlText(review.post.slug)} AND revision=${review.post.revision} AND is_draft=1 RETURNING revision;`,
@@ -477,6 +480,10 @@ export async function reviewStore() {
       createStore({
         remote: process.env.AJT_REVIEW_TARGET !== 'local',
         database: process.env.AJT_REVIEW_DATABASE,
+        localR2:
+          process.env.AJT_REVIEW_TARGET === 'local'
+            ? process.env.AJT_REVIEW_R2_LOCAL_STATE || undefined
+            : undefined,
       }),
     );
   return storePromise;

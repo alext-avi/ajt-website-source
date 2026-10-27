@@ -55,7 +55,7 @@ test('public slide links serve PDFs and the consulting session exposes no slide 
     const talk = await request.get(`/speaking/${entry.slug}/`);
     expect(talk.status()).toBe(200);
     expect(anchorHrefs(await talk.text())).toContain(entry.data.slides);
-    if (entry.data.slides!.startsWith('/slides/')) {
+    if (/^\/(slides|media)\//.test(entry.data.slides!)) {
       const slides = await request.get(entry.data.slides!);
       expect(slides.status()).toBe(200);
       expect(slides.headers()['content-type']).toContain('application/pdf');

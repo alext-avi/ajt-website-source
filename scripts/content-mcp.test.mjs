@@ -57,9 +57,11 @@ test(
       'create_post_draft',
       'get_post',
       'get_post_history',
+      'list_media',
       'list_posts',
       'submit_post_for_review',
       'update_post_draft',
+      'upload_media',
     ]);
     const call = (name, args) => client.callTool({ name, arguments: args });
     const value = (result) => {

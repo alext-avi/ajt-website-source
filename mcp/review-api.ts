@@ -61,7 +61,16 @@ export const POST: APIRoute = async ({ request, params, redirect }) => {
       const file = form.get('file');
       if (!(file instanceof File))
         return new Response('Choose a media file', { status: 400 });
-      const media = await saveMedia(Buffer.from(await file.arrayBuffer()));
+      if (file.size > 25 * 1024 * 1024)
+        return new Response(
+          'Browser uploads are limited to 25 MiB; use the MCP for files up to 100 MiB',
+          { status: 413 },
+        );
+      const media = await saveMedia(
+        Buffer.from(await file.arrayBuffer()),
+        store,
+        file.name,
+      );
       return Response.json(media, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (action === 'save') {
@@ -99,10 +108,19 @@ export const POST: APIRoute = async ({ request, params, redirect }) => {
     }
     if (action !== 'publish')
       return new Response('Unknown review action', { status: 400 });
-    const job = publishReview(store, id, String(form.get('csrf')))
+    let acknowledge!: () => void;
+    const started = new Promise<void>((resolve) => {
+      acknowledge = resolve;
+    });
+    const job = publishReview(store, id, String(form.get('csrf')), undefined, {
+      onStarted: acknowledge,
+    })
       .catch((error) => failReview(id, error))
       .finally(() => jobs.delete(id));
     jobs.set(id, job);
+    // A retry must persist its new publishing state before the browser loads.
+    // Otherwise it can render the previous failure without enabling refresh.
+    await Promise.race([started, job]);
     return redirect('/review/' + id + '?pending=1', 303);
   } catch (error) {
     return new Response(

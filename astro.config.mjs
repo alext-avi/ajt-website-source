@@ -6,6 +6,8 @@ import keystatic from '@keystatic/astro';
 import tailwindcss from '@tailwindcss/vite';
 import { loadEnv } from 'vite';
 import { satteri } from '@astrojs/markdown-satteri';
+import { buildMediaManifest } from './scripts/lib/media-manifest.mjs';
+import { fileURLToPath } from 'node:url';
 
 const env = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), '');
 const site = process.env.SITE_URL || env.SITE_URL || 'http://localhost:4321';
@@ -18,6 +20,14 @@ export default defineConfig({
     mdx(),
     react(),
     sitemap(),
+    {
+      name: 'published-media-manifest',
+      hooks: {
+        'astro:build:done': async ({ dir }) => {
+          await buildMediaManifest(fileURLToPath(dir));
+        },
+      },
+    },
     {
       name: 'development-only-keystatic',
       hooks: {
@@ -54,6 +64,10 @@ export default defineConfig({
               });
               options.injectRoute({
                 pattern: '/videos/[filename]',
+                entrypoint: './mcp/media-api.ts',
+              });
+              options.injectRoute({
+                pattern: '/media/[filename]',
                 entrypoint: './mcp/media-api.ts',
               });
             }

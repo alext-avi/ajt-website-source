@@ -18,6 +18,8 @@ test('release verification refuses changes to the tested assets, Worker, or rele
     'dist/index.html',
     'dist/app.js',
     'worker/index.ts',
+    'worker/media.ts',
+    'src/lib/media.ts',
     'src/lib/referrals.ts',
     'wrangler.jsonc',
   ]) {
@@ -26,7 +28,13 @@ test('release verification refuses changes to the tested assets, Worker, or rele
   }
   const release = await prepareRelease(root, 'a'.repeat(40));
   await verifyRelease(root, release);
-  for (const file of ['dist/app.js', 'worker/index.ts', 'wrangler.jsonc']) {
+  for (const file of [
+    'dist/app.js',
+    'worker/index.ts',
+    'worker/media.ts',
+    'src/lib/media.ts',
+    'wrangler.jsonc',
+  ]) {
     const original = await fs.readFile(path.join(root, file));
     await fs.writeFile(path.join(root, file), 'changed');
     await assert.rejects(

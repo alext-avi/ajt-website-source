@@ -2,7 +2,10 @@ import { z } from 'astro/zod';
 
 const localImage = z
   .string()
-  .regex(/^\/images\/|^\/uploads\//, 'Use a local /images/ or /uploads/ asset')
+  .regex(
+    /^\/images\/|^\/uploads\/|^\/media\/[a-f0-9]{64}\.(png|jpg|gif|webp)$/,
+    'Use a local image asset or uploaded /media/ image',
+  )
   .optional();
 const common = {
   title: z.string().min(5),
@@ -34,7 +37,7 @@ export const postSchema = z.object({
   linkedinVideo: z.boolean().default(false),
   video: z
     .string()
-    .regex(/^\/videos\/[a-z0-9-]+\.mp4$/)
+    .regex(/^\/videos\/[a-z0-9-]+\.mp4$|^\/media\/[a-f0-9]{64}\.mp4$/)
     .optional(),
   videoPoster: localImage,
   videoWidth: z.number().int().positive().default(1280),
@@ -72,7 +75,12 @@ export const talkSchema = z
     audience: z.string(),
     status: z.enum(['proposed', 'upcoming', 'past']),
     slides: z
-      .union([z.url(), z.string().regex(/^\/slides\/[a-z0-9-]+\.pdf$/)])
+      .union([
+        z.url(),
+        z
+          .string()
+          .regex(/^\/slides\/[a-z0-9-]+\.pdf$|^\/media\/[a-f0-9]{64}\.pdf$/),
+      ])
       .optional(),
     video: z.url().optional(),
     resources: z.array(resource).default([]),

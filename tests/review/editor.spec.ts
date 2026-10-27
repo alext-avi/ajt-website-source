@@ -24,6 +24,8 @@ test.beforeAll(async () => {
         '--local',
         '--database',
         path.join(state, 'content.sqlite'),
+        '--local-r2',
+        path.join(state, 'r2'),
       ],
       cwd: process.cwd(),
       env: {

@@ -6,14 +6,15 @@ export const prerender = false;
 if (Astro.url.hostname !== '127.0.0.1')
   return new Response('Not found', { status: 404 });
 let state;
+const store = await reviewStore();
 try {
-  state = await reviewState(await reviewStore(), Astro.params.ticket);
+  state = await reviewState(store, Astro.params.ticket);
 } catch {
   return new Response('Review not found', { status: 404 });
 }
 const { review, stale } = state;
 const post = review.post;
-const media = await listMedia();
+const media = await listMedia(store);
 const complete = ['published', 'approved-local'].includes(review.status);
 const waiting =
   review.status === 'publishing' ||
