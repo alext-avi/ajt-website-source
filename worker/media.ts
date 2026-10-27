@@ -4,6 +4,7 @@ import {
   mediaManifestPath,
   mediaTypes,
 } from '../src/lib/media.ts';
+import { b2MediaBucket, type B2Env } from './b2-media.ts';
 
 interface ObjectInfo {
   size: number;
@@ -15,9 +16,18 @@ export interface MediaBucket {
     options?: { range: { offset: number; length: number } },
   ): Promise<(ObjectInfo & { body: ReadableStream }) | null>;
 }
-interface MediaEnv {
+export interface MediaEnv extends B2Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   MEDIA_BUCKET?: MediaBucket;
+  MEDIA_PROVIDER?: string;
+}
+export interface MediaCache {
+  match(request: Request): Promise<Response | undefined>;
+  put(request: Request, response: Response): Promise<void>;
+}
+export interface MediaContext {
+  cache?: MediaCache;
+  waitUntil?(promise: Promise<unknown>): void;
 }
 const error = (status: number, headers = {}) =>
   new Response(null, {
@@ -29,10 +39,11 @@ const error = (status: number, headers = {}) =>
     },
   });
 
-// Only GET/HEAD are exposed. R2 itself has neither a public URL nor a write route.
+// Storage stays private. Only release-approved GET/HEAD requests reach it.
 export async function serveMedia(
   request: Request,
   env: MediaEnv,
+  context: MediaContext = {},
 ): Promise<Response> {
   const url = new URL(request.url);
   const filename = mediaPath.exec(url.pathname)?.[1];
@@ -56,13 +67,46 @@ export async function serveMedia(
       )
     )
       return error(503);
-    // Absence from this release fails closed, even if the object exists in R2.
+    // ALWAYS check this release before the edge cache: drafts and removed files
+    // cannot be exposed by an old cache entry or a guessed immutable URL.
     if (!manifest.files.includes(filename)) return error(404);
-    if (!env.MEDIA_BUCKET) return error(503);
-    const key = 'assets/' + filename;
-    const info = await env.MEDIA_BUCKET.head(key);
-    if (!info) return error(404);
+    const cache = context.cache;
+    const cacheKey = new Request(new URL('/media/' + filename, url));
+    const cacheableRequest =
+      !!cache && !request.headers.has('range') && !filename.endsWith('.mp4');
     const etag = '"' + filename.split('.')[0] + '"';
+    const matches = request.headers
+      .get('if-none-match')
+      ?.split(',')
+      .map((value) => value.trim().replace(/^W\//, ''));
+    function conditional(response: Response) {
+      const headers = new Headers(response.headers);
+      if (matches?.includes(etag) || matches?.includes('*')) {
+        headers.delete('Content-Length');
+        return new Response(null, { status: 304, headers });
+      }
+      return request.method === 'HEAD'
+        ? new Response(null, { headers })
+        : response;
+    }
+    if (cacheableRequest) {
+      try {
+        const hit = await cache.match(cacheKey);
+        if (hit?.status === 200 && hit.headers.get('etag') === etag) {
+          const headers = new Headers(hit.headers);
+          headers.set('X-AJT-Media-Cache', 'HIT');
+          return conditional(new Response(hit.body, { headers }));
+        }
+      } catch {
+        /* Cache availability must not prevent origin delivery. */
+      }
+    }
+    const bucket =
+      env.MEDIA_PROVIDER === 'b2' ? b2MediaBucket(env) : env.MEDIA_BUCKET;
+    if (!bucket) return error(503);
+    const key = 'assets/' + filename;
+    const info = await bucket.head(key);
+    if (!info) return error(404);
     const headers = new Headers({
       'Content-Type': mediaTypes[filename.split('.').at(-1)!],
       'Content-Length': String(info.size),
@@ -71,17 +115,14 @@ export async function serveMedia(
       'Content-Security-Policy': "default-src 'none'; sandbox",
       'Accept-Ranges': 'bytes',
       ETag: etag,
+      'X-AJT-Media-Cache': cacheableRequest ? 'MISS' : 'BYPASS',
     });
-    const matches = request.headers
-      .get('if-none-match')
-      ?.split(',')
-      .map((value) => value.trim().replace(/^W\//, ''));
     if (matches?.includes(etag) || matches?.includes('*')) {
       headers.delete('Content-Length');
       return new Response(null, { status: 304, headers });
     }
     if (request.method === 'HEAD') return new Response(null, { headers });
-    let range;
+    let range: { offset: number; length: number } | undefined;
     const requested = request.headers.get('range');
     const ifRange = request.headers.get('if-range');
     if (requested && (!ifRange || ifRange === etag)) {
@@ -106,12 +147,19 @@ export async function serveMedia(
       headers.set('Content-Range', `bytes ${start}-${end}/${info.size}`);
       headers.set('Content-Length', String(range.length));
     }
-    const object = await env.MEDIA_BUCKET.get(
-      key,
-      range ? { range } : undefined,
-    );
+    const object = await bucket.get(key, range ? { range } : undefined);
     if (!object) return error(404);
-    return new Response(object.body, { status: range ? 206 : 200, headers });
+    if (object.size !== info.size) return error(503);
+    const result = new Response(object.body, {
+      status: range ? 206 : 200,
+      headers,
+    });
+    if (cacheableRequest && !range && info.size <= 10 * 1024 * 1024) {
+      const write = cache!.put(cacheKey, result.clone()).catch(() => {});
+      if (context.waitUntil) context.waitUntil(write);
+      else await write;
+    }
+    return result;
   } catch {
     return error(503);
   }

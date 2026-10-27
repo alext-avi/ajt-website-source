@@ -27,7 +27,8 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   timeout: 90_000,
-  globalTimeout: 6 * 60_000,
+  // Leave room for the media gate's ten-minute maximum plus browser/HTTP checks.
+  globalTimeout: 15 * 60_000,
   expect: { timeout: 15_000 },
   reporter: [
     ['list'],

@@ -206,6 +206,7 @@ export async function ensureReviewServer(store) {
             ? store.identity.slice(7)
             : '',
           AJT_REVIEW_R2_LOCAL_STATE: store.localR2 || '',
+          AJT_REVIEW_B2_LOCAL_CONFIG: store.localB2 || '',
           ASTRO_TELEMETRY_DISABLED: '1',
         },
       },
@@ -483,6 +484,10 @@ export async function reviewStore() {
         localR2:
           process.env.AJT_REVIEW_TARGET === 'local'
             ? process.env.AJT_REVIEW_R2_LOCAL_STATE || undefined
+            : undefined,
+        localB2:
+          process.env.AJT_REVIEW_TARGET === 'local'
+            ? process.env.AJT_REVIEW_B2_LOCAL_CONFIG || undefined
             : undefined,
       }),
     );

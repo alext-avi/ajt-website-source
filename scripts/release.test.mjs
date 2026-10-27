@@ -19,9 +19,13 @@ test('release verification refuses changes to the tested assets, Worker, or rele
     'dist/app.js',
     'worker/index.ts',
     'worker/media.ts',
+    'worker/b2-media.ts',
+    'src/lib/b2.ts',
     'src/lib/media.ts',
     'src/lib/referrals.ts',
     'wrangler.jsonc',
+    'package.json',
+    'package-lock.json',
   ]) {
     await fs.mkdir(path.dirname(path.join(root, file)), { recursive: true });
     await fs.writeFile(path.join(root, file), file);
@@ -32,8 +36,12 @@ test('release verification refuses changes to the tested assets, Worker, or rele
     'dist/app.js',
     'worker/index.ts',
     'worker/media.ts',
+    'worker/b2-media.ts',
+    'src/lib/b2.ts',
     'src/lib/media.ts',
     'wrangler.jsonc',
+    'package.json',
+    'package-lock.json',
   ]) {
     const original = await fs.readFile(path.join(root, file));
     await fs.writeFile(path.join(root, file), 'changed');

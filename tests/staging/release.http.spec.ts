@@ -36,7 +36,7 @@ test('staging serves the exact release and noindex headers on pages, assets, err
   }
 });
 
-test('the staged release serves every approved R2 asset with matching bytes and video ranges', async ({
+test('the staged release serves every approved media asset with matching bytes and video ranges', async ({
   request,
 }) => {
   const expected = JSON.parse(

@@ -13,6 +13,7 @@ import { sqlText, validateEntry } from '../scripts/lib/d1-content.mjs';
 import { createReview, postMedia, ensureReviewServer } from './reviews.mjs';
 import { resolveAsset, uploadMediaFile, listMedia } from './media.mjs';
 import { r2MediaStorage } from './r2-media.mjs';
+import { b2MediaStorage } from './b2-media.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const execFileAsync = promisify(execFile);
@@ -40,14 +41,25 @@ const metadataPatchSchema = z
 const fields =
   'slug,metadata_json,body_markdown,revision,updated_by,updated_at';
 
-export async function createStore({ remote = false, database, localR2 } = {}) {
-  if (remote && localR2)
-    throw new Error('Local R2 cannot be combined with remote D1');
+export async function createStore({
+  remote = false,
+  database,
+  localR2,
+  localB2,
+} = {}) {
+  if ((remote && (localR2 || localB2)) || (localR2 && localB2))
+    throw new Error(
+      'Local media backends cannot be combined with remote D1 or each other',
+    );
   if (localR2) localR2 = path.resolve(localR2);
+  if (localB2) localB2 = path.resolve(localB2);
   if (remote) {
     return {
       identity: 'remote:CONTENT_DB',
-      media: r2MediaStorage(),
+      media:
+        process.env.AJT_MEDIA_PROVIDER === 'r2'
+          ? r2MediaStorage()
+          : b2MediaStorage(),
       async query(sql) {
         if (Buffer.byteLength(sql) > 100_000)
           throw new Error('Content exceeds the database command limit');
@@ -113,8 +125,13 @@ export async function createStore({ remote = false, database, localR2 } = {}) {
   );
   return {
     identity: 'sqlite:' + path.resolve(database),
-    media: localR2 ? r2MediaStorage({ localState: localR2 }) : undefined,
+    media: localR2
+      ? r2MediaStorage({ localState: localR2 })
+      : localB2
+        ? b2MediaStorage({ configPath: localB2, localTest: true })
+        : undefined,
     localR2,
+    localB2,
     async query(sql) {
       return db.prepare(sql).all();
     },
@@ -415,17 +432,20 @@ if (
       local: { type: 'boolean' },
       database: { type: 'string' },
       'local-r2': { type: 'string' },
+      'local-b2': { type: 'string' },
     },
   });
   if (
     !!values.remote === !!values.local ||
-    (values.remote && (values.database || values['local-r2']))
+    (values.remote &&
+      (values.database || values['local-r2'] || values['local-b2']))
   )
     throw new Error('Choose --remote or --local --database <path>');
   const store = await createStore({
     remote: values.remote,
     database: values.database,
     localR2: values['local-r2'],
+    localB2: values['local-b2'],
   });
   const handle = serveStdio(() => createContentServer(store), {
     onerror: () => console.error('Content MCP protocol error'),

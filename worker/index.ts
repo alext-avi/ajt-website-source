@@ -1,11 +1,15 @@
 import { referralDestination } from '../src/lib/referrals.ts';
-import { serveMedia, type MediaBucket } from './media.ts';
+import {
+  serveMedia,
+  type MediaEnv,
+  type MediaContext,
+  type MediaCache,
+} from './media.ts';
 
-interface Env {
+interface Env extends MediaEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
   DEPLOYMENT_ENVIRONMENT?: string;
   RELEASE_ID?: string;
-  MEDIA_BUCKET?: MediaBucket;
   // Bound for future content tools; published pages are built from a D1 snapshot.
   // No public database write endpoint or visitor logging is introduced here.
   CONTENT_DB?: {
@@ -16,8 +20,21 @@ interface Env {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const response = await route(request, env);
+  async fetch(
+    request: Request,
+    env: Env,
+    context?: MediaContext,
+  ): Promise<Response> {
+    const edgeCache =
+      typeof caches === 'undefined'
+        ? undefined
+        : (caches as CacheStorage & { default?: MediaCache }).default;
+    const response = await route(request, env, {
+      cache: context?.cache || edgeCache,
+      waitUntil: context?.waitUntil
+        ? (promise) => context.waitUntil!(promise)
+        : undefined,
+    });
     if (env.DEPLOYMENT_ENVIRONMENT !== 'staging') return response;
     const staged = new Response(response.body, response);
     staged.headers.set('X-Robots-Tag', 'noindex, nofollow');
@@ -28,10 +45,14 @@ export default {
   },
 };
 
-async function route(request: Request, env: Env): Promise<Response> {
+async function route(
+  request: Request,
+  env: Env,
+  context?: MediaContext,
+): Promise<Response> {
   const url = new URL(request.url);
   if (url.pathname === '/media' || url.pathname.startsWith('/media/'))
-    return serveMedia(request, env);
+    return serveMedia(request, env, context);
   const destination = referralDestination(url);
   if (!destination) {
     if (url.pathname.startsWith('/r/')) {

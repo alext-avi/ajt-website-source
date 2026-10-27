@@ -15,7 +15,7 @@ export const mediaDirectory = () =>
   );
 const pendingName = /^[a-f0-9]{64}\.(png|jpg|gif|webp|mp4|pdf)$/;
 export const maximumMediaBytes = 100 * 1024 * 1024;
-const cacheDirectory = () => path.join(mediaDirectory(), 'r2-cache');
+const cacheDirectory = () => path.join(mediaDirectory(), 'object-cache');
 async function cacheFile(filename, bytes) {
   await fs.mkdir(cacheDirectory(), { recursive: true, mode: 0o700 });
   const temporary = await fs.mkdtemp(path.join(cacheDirectory(), 'write-'));
@@ -68,13 +68,17 @@ export async function saveMedia(bytes, store, originalName = '') {
   const filename =
     createHash('sha256').update(bytes).digest('hex') + '.' + extension;
   if (store?.media) {
-    await reserveMediaStorage(store, filename, bytes.length);
+    if (store.media.provider !== 'b2')
+      await reserveMediaStorage(store, filename, bytes.length);
     const file = await cacheFile(filename, bytes);
     await reserveMediaOperation(store, 'put');
-    await store.media.command('put', filename, file, contentType);
+    await store.media.command('put', filename, file, contentType, {
+      beforePut: () =>
+        reserveMediaStorage(store, filename, bytes.length, { version: true }),
+    });
     const url = '/media/' + filename;
     const metadata = {
-      storage: 'r2',
+      storage: store.media.provider,
       contentType,
       bytes: bytes.length,
       name: path.basename(originalName).slice(0, 200),
@@ -142,7 +146,7 @@ export async function uploadMediaFile(filename, store) {
   }
 }
 
-async function r2Asset(url, store, refresh) {
+async function objectAsset(url, store, refresh) {
   const filename = mediaPath.exec(url)?.[1];
   if (!filename || !store?.media)
     throw new Error(
@@ -150,7 +154,7 @@ async function r2Asset(url, store, refresh) {
     );
   const row = (
     await store.query(
-      `SELECT metadata_json FROM media_assets WHERE url=${sqlText(url)} AND json_extract(metadata_json,'$.storage')='r2';`,
+      `SELECT metadata_json FROM media_assets WHERE url=${sqlText(url)} AND json_extract(metadata_json,'$.storage')=${sqlText(store.media.provider)};`,
     )
   )[0];
   if (!row)
@@ -170,7 +174,7 @@ async function r2Asset(url, store, refresh) {
         throw new Error();
       return cached;
     } catch {
-      /* Missing or corrupt local caches are reconstructed from R2. */
+      /* Missing or corrupt local caches are reconstructed from durable storage. */
     }
   }
   await fs.mkdir(cacheDirectory(), { recursive: true, mode: 0o700 });
@@ -197,7 +201,7 @@ export async function pendingMedia(filename) {
   return { bytes, contentType: mediaType(bytes)[1] };
 }
 export async function resolveAsset(url, store, { refresh = false } = {}) {
-  if (url.startsWith('/media/')) return r2Asset(url, store, refresh);
+  if (url.startsWith('/media/')) return objectAsset(url, store, refresh);
   if (
     !/^\/(images|uploads|videos)\/[a-zA-Z0-9/_().-]+$/.test(url) ||
     url.split('/').some((part) => part === '.' || part === '..')
@@ -215,7 +219,7 @@ export async function resolveAsset(url, store, { refresh = false } = {}) {
   } catch {
     if (store?.media)
       throw new Error(
-        'This asset is not in the deployment checkout. Upload it through the content MCP to store it in R2.',
+        'This asset is not in the deployment checkout. Upload it through the content MCP to store it privately.',
       );
     const name = url.split('/').at(-1);
     if (
@@ -290,7 +294,7 @@ export async function listMedia(store, query = '') {
   if (store?.media) {
     const search = sqlText('%' + query + '%');
     const rows = await store.query(
-      `SELECT url,kind,metadata_json FROM media_assets WHERE json_extract(metadata_json,'$.storage')='r2' AND (url LIKE ${search} OR json_extract(metadata_json,'$.name') LIKE ${search}) ORDER BY created_at DESC LIMIT 200;`,
+      `SELECT url,kind,metadata_json FROM media_assets WHERE json_extract(metadata_json,'$.storage')=${sqlText(store.media.provider)} AND (url LIKE ${search} OR json_extract(metadata_json,'$.name') LIKE ${search}) ORDER BY created_at DESC LIMIT 200;`,
     );
     const published = await store.query(
       'SELECT metadata_json,body_markdown FROM content_items WHERE is_draft=0;',
@@ -312,6 +316,8 @@ export async function listMedia(store, query = '') {
     }
   } else await walk(mediaDirectory(), '/uploads/', true);
   return [...new Map(files.map((file) => [file.url, file])).values()].sort(
-    (a, b) => a.url.localeCompare(b.url),
+    (a, b) =>
+      Number(mediaPath.test(b.url)) - Number(mediaPath.test(a.url)) ||
+      a.url.localeCompare(b.url),
   );
 }

@@ -1,4 +1,6 @@
-# Private R2 media storage
+# Optional R2 media storage
+
+**Inactive alternative:** the website now defaults to Backblaze B2; see [b2-media.md](b2-media.md). R2 has not been activated. Its adapter and isolated tests remain available, but the production/staging Wrangler configuration has no R2 bindings. Using this alternative requires explicitly restoring those bindings and setting `AJT_MEDIA_PROVIDER=r2` for authoring. Do not enable a usage-billed subscription under the current free-only requirement.
 
 New media lives in Cloudflare R2, independent of Git and the author's computer. Authoring uploads happen through the local `ajt-content` MCP (or Alex's loopback editor). The public website has no upload, overwrite, delete, or approval endpoint. R2's own public URL must remain disabled.
 
@@ -8,7 +10,7 @@ New media lives in Cloudflare R2, independent of Git and the author's computer. 
 2. With authorized R2 access, create the private Standard bucket: `npx wrangler r2 bucket create ajt-website-media`. Keep public development URL/custom-domain access disabled. No paid media transformation or streaming service is required for this implementation.
 3. Authoring requires object read/write access to this bucket, in addition to existing D1 authoring permissions. Use local Wrangler authorization; if additional permission is required, request only R2 while preserving existing permissions. Do not put credentials in MCP arguments, source, logs, or chat. The MCP exposes no bucket administration tool. The same OS user's direct shell/credential access is outside the MCP's interface boundary.
    Apply `migrations/0002_media_budget.sql` with the normal authenticated D1 migration command before remote uploads. Local SQLite authoring initializes it automatically. This is additive metadata; it does not publish or modify content.
-4. Both existing Worker environments bind this bucket as `MEDIA_BUCKET`. Deployment must be authorized to attach that binding. CI does not upload media, edit the media catalog, create buckets, enable subscriptions, or receive R2 object-write credentials. Review the actual Cloudflare permission requirements before granting the deployment credential; do not silently expand account access.
+4. Both Worker environments would need this bucket bound as `MEDIA_BUCKET`. Deployment must be authorized to attach that binding. CI does not upload media, edit the media catalog, create buckets, enable subscriptions, or receive R2 object-write credentials. Review the actual Cloudflare permission requirements before granting the deployment credential; do not silently expand account access.
 5. Run `npm run verify`, `npm run test:e2e`, and `npm run test:review`. Then `npm run stage` tests a release on the real staging server, including its approved R2 files. Only the normal staging-gated release can update production.
 6. For the first live content trial, Alex supplies/approves an actual media file, the MCP uploads it privately, and Alex reviews and presses Publish. Verify a second clean checkout can resolve the asset using only D1/R2, and verify production bytes after promotion. Never create or publish a production test post automatically.
 

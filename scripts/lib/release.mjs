@@ -5,9 +5,13 @@ import { createHash } from 'node:crypto';
 const runtimeFiles = [
   'worker/index.ts',
   'worker/media.ts',
+  'worker/b2-media.ts',
+  'src/lib/b2.ts',
   'src/lib/media.ts',
   'src/lib/referrals.ts',
   'wrangler.jsonc',
+  'package.json',
+  'package-lock.json',
 ];
 
 export async function artifactHash(root) {

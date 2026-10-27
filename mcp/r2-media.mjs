@@ -11,6 +11,7 @@ export const mediaBucketName = 'ajt-website-media';
 
 export function r2MediaStorage({ localState } = {}) {
   return {
+    provider: 'r2',
     // Local test mode can never fall back to remote R2.
     mode: localState ? 'local-r2' : 'remote-r2',
     async command(operation, filename, file, contentType) {
