@@ -151,7 +151,13 @@ test('stale reviews and cross-origin requests cannot publish a changed draft', a
   request,
 }) => {
   const review = await draft('stale-editor-test');
-  await page.goto('/review/' + review.id);
+  const response = await page.goto('/review/' + review.id);
+  expect(response!.headers()['content-security-policy']).toContain(
+    "frame-ancestors 'none'",
+  );
+  expect(response!.headers()['x-frame-options']).toBe('DENY');
+  const index = await request.get('/review');
+  expect(index.headers()['x-frame-options']).toBe('DENY');
   const csrf = await page.locator('[data-csrf]').getAttribute('data-csrf');
   const denied = await request.post('/api/review/' + review.id, {
     form: { csrf: csrf!, action: 'publish' },

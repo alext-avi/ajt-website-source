@@ -22,6 +22,8 @@ const locked = stale || waiting || complete || !!review.approvedAt;
 const action = `/api/review/${review.id}`;
 Astro.response.headers.set('Cache-Control', 'no-store');
 Astro.response.headers.set('Referrer-Policy', 'same-origin');
+Astro.response.headers.set('X-Frame-Options', 'DENY');
+Astro.response.headers.set('Content-Security-Policy', "frame-ancestors 'none'");
 ---
 
 <Base title={`Review: ${post.metadata.title}`} noindex>
