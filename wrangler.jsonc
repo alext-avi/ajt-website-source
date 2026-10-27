@@ -20,4 +20,17 @@
     "run_worker_first": ["/r/*"],
     "not_found_handling": "404-page",
   },
+  "env": {
+    "staging": {
+      "name": "alexander-thomas-staging",
+      "d1_databases": [],
+      "vars": { "DEPLOYMENT_ENVIRONMENT": "staging" },
+      "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "run_worker_first": true,
+        "not_found_handling": "404-page",
+      },
+    },
+  },
 }

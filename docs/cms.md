@@ -1,5 +1,7 @@
 # Keystatic decision
 
+For new website posts, use the [MCP draft editor and human publishing desk](content-mcp.md). It includes rendered review and private media upload/replacement. The maintenance tools below do not replace Alex's publication approval.
+
 Reviewed October 24, 2026 against current upstream documentation and installed package peer requirements.
 
 ## Implemented

@@ -7,11 +7,14 @@ dist/
 !.env.example
 .DS_Store
 coverage/
+artifacts/
+data/content.next.json
 playwright-report/
 test-results/
 playwright-report-production/
 test-results-production/
-artifacts/
-data/content.next.json
-
+playwright-report-review/
+test-results-review/
+playwright-report-staging/
+test-results-staging/
 gha-creds-*.json

@@ -4,6 +4,8 @@ A personal professional website built with Astro, TypeScript, Tailwind CSS, and 
 
 Production origin: https://alexander-thomas.alexander-jt.workers.dev
 
+Staging origin: https://alexander-thomas-staging.alexander-jt.workers.dev
+
 This clean source release contains the website implementation and its already-published reference content. Private development history, unpublished drafts, and research/source notes are excluded.
 
 ## Run locally
@@ -25,6 +27,8 @@ npm run verify       # Typecheck, static build, production contract tests
 npm run preview      # Inspect the actual static production build
 npm run cf:preview   # Build and serve with the Cloudflare local runtime
 npm run cf:dry-run   # Validate Cloudflare deployment packaging without uploading
+npm run stage        # Deploy staging and run real browser/HTTP tests
+npm run deploy       # Stage and test, then promote the same assets
 ```
 
 ## Site settings
@@ -40,6 +44,8 @@ Approved public business contact defaults are in `src/lib/site.ts`:
 Environment overrides are optional. Empty email or LinkedIn overrides fall back to those approved values. Invalid overrides hide the affected link. No resume PDF is included or linked, following Alex’s instruction to use it only as source material.
 
 ## Content
+
+New website posts can be drafted through the local `ajt-content` MCP and edited in the publishing desk, with a rendered preview and private media uploads/replacements. Alex presses Publish; the MCP has no publishing tool. See [draft, review, and publish](docs/content-mcp.md).
 
 | Collection | Source                       | Public route        |
 | ---------- | ---------------------------- | ------------------- |
@@ -67,6 +73,8 @@ npm run test:ci
 ```
 
 Failed browser tests retain screenshots and traces; CI uploads the HTML report and failure artifacts for seven days. See [the testing guide](docs/testing.md) for coverage, debugging commands, and optional Playwright MCP setup.
+
+Production publication first deploys a separate staging Worker and requires seven real server tests before promoting the same assets. Staging has no D1 binding and sends no production analytics. See [staging and deployment](docs/deployment.md).
 
 ## Pull request reviews
 

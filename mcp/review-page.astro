@@ -1,0 +1,578 @@
+---
+import Base from '../src/layouts/Base.astro';
+import { reviewStore, reviewState } from './reviews.mjs';
+import { listMedia } from './media.mjs';
+export const prerender = false;
+if (Astro.url.hostname !== '127.0.0.1')
+  return new Response('Not found', { status: 404 });
+let state;
+try {
+  state = await reviewState(await reviewStore(), Astro.params.ticket);
+} catch {
+  return new Response('Review not found', { status: 404 });
+}
+const { review, stale } = state;
+const post = review.post;
+const media = await listMedia();
+const complete = ['published', 'approved-local'].includes(review.status);
+const waiting =
+  review.status === 'publishing' ||
+  (Astro.url.searchParams.has('pending') && review.status === 'review');
+const locked = stale || waiting || complete || !!review.approvedAt;
+const action = `/api/review/${review.id}`;
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('Referrer-Policy', 'same-origin');
+---
+
+<Base title={`Review: ${post.metadata.title}`} noindex>
+  {waiting && <meta slot="head" http-equiv="refresh" content="2" />}
+  <section
+    class="review-desk"
+    data-review-id={review.id}
+    data-csrf={review.csrf}
+    data-endpoint={action}
+  >
+    <header class="desk-header">
+      <div>
+        <a href="/review">← All drafts</a>
+        <p class="eyebrow">Your publishing desk</p>
+        <h1>Review and publish</h1>
+        <p>
+          Revision {post.revision} · {post.metadata.title}
+        </p>
+      </div>
+      <form method="post" action={action} id="publish-form">
+        <input type="hidden" name="csrf" value={review.csrf} />
+        <input type="hidden" name="action" value="publish" />
+        <button
+          class="publish-button"
+          type="submit"
+          disabled={stale || waiting || complete}
+        >
+          {review.status === 'failed' ? 'Retry publishing' : 'Publish'}
+        </button>
+      </form>
+    </header>
+    <div role="status" id="review-status" class="desk-status">
+      {stale
+        ? 'This draft has changed. Submit its latest revision for a new review before publishing.'
+        : waiting
+          ? 'Publishing: running the release checks. This page will update when they finish.'
+          : review.status === 'published'
+            ? 'Published. Your approved post is now on the website.'
+            : review.status === 'approved-local'
+              ? 'Approved in the local test database. No remote content or deployment was changed.'
+              : review.status === 'failed'
+                ? review.error
+                : 'Edit and save changes, check the rendered preview, then press Publish.'}
+    </div>
+    {review.status === 'failed' && review.approvedAt && !stale && (
+      <form method="post" action={action}>
+        <input type="hidden" name="csrf" value={review.csrf} />
+        <input type="hidden" name="action" value="reopen" />
+        <button type="submit" class="quiet-button">
+          Return to draft to edit
+        </button>
+      </form>
+    )}
+    {review.backend.startsWith('sqlite:') && (
+      <p class="local-note">
+        Local test mode. This page cannot deploy to the live website.
+      </p>
+    )}
+    <div class="desk-grid">
+      <div class="editor-panel">
+        <form method="post" action={action} id="editor-form">
+          <input type="hidden" name="csrf" value={review.csrf} />
+          <input type="hidden" name="action" value="save" />
+          <fieldset disabled={locked}>
+            <legend>Post editor</legend>
+            <label>
+              Title
+              <input
+                name="title"
+                required
+                minlength="5"
+                value={post.metadata.title}
+              />
+            </label>
+            <label>
+              Summary
+              <textarea
+                name="summary"
+                required
+                minlength="20"
+                maxlength="300"
+                rows="3"
+              >{post.metadata.summary}</textarea>
+            </label>
+            <div class="field-row">
+              <label>
+                Publication date
+                <input
+                  name="date"
+                  type="date"
+                  required
+                  value={post.metadata.date.slice(0, 10)}
+                />
+              </label>
+              <label>
+                Category
+                <select name="category">
+                  {[
+                    'Applied AI',
+                    'Engineering leadership',
+                    'Architecture',
+                    'Developer tools',
+                    'Events & reflections',
+                  ].map((category) => (
+                    <option selected={post.metadata.category === category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label>
+              Tags
+              <input
+                name="tags"
+                value={post.metadata.tags.join(', ')}
+                placeholder="Separate tags with commas"
+              />
+            </label>
+            <label>
+              Post body (Markdown)
+              <textarea
+                name="body"
+                id="post-body"
+                rows="20"
+                required
+              >{post.body}</textarea>
+            </label>
+            <details open>
+              <summary>Media</summary>
+              <p class="media-help">
+                Choose an existing asset or upload a replacement. New uploads
+                stay private until you publish.
+              </p>
+              {[
+                ['image', 'Cover image', 'image/*'],
+                ['video', 'Video', 'video/mp4'],
+                ['videoPoster', 'Video poster', 'image/*'],
+              ].map(([field, label, accept]) => (
+                <div class="media-field">
+                  <label>
+                    {label}
+                    <input
+                      name={field}
+                      id={`media-${field}`}
+                      value={post.metadata[field] || ''}
+                      list={`library-${field}`}
+                      placeholder="Choose a file below or enter an asset path"
+                    />
+                  </label>
+                  <datalist id={`library-${field}`}>
+                    {media
+                      .filter(
+                        (file) =>
+                          file.kind === (field === 'video' ? 'video' : 'image'),
+                      )
+                      .map((file) => (
+                        <option value={file.url}>
+                          {file.pending ? 'Pending upload' : 'Published asset'}
+                        </option>
+                      ))}
+                  </datalist>
+                  <div class="media-actions">
+                    <label class="upload-control">
+                      Upload / replace
+                      <input
+                        type="file"
+                        accept={accept}
+                        data-upload-field={field}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      class="quiet-button"
+                      data-clear-media={field}
+                    >
+                      Remove from draft
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <label>
+                Cover image description
+                <input
+                  name="imageAlt"
+                  value={post.metadata.imageAlt || ''}
+                  placeholder="Describe the image for readers using assistive technology"
+                />
+              </label>
+              <label class="upload-control">
+                Add an inline image or PDF
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif,image/webp,application/pdf"
+                  data-upload-field="inline"
+                />
+              </label>
+              <details>
+                <summary>Browse media library ({media.length})</summary>
+                <div class="media-library">
+                  {media.map((file) => (
+                    <div class="media-item">
+                      {file.kind === 'image' && (
+                        <img src={file.url} alt="" loading="lazy" />
+                      )}
+                      <span>{file.url.split('/').at(-1)}</span>
+                      <small>
+                        {file.kind} · {Math.ceil(file.bytes / 1024)} KB
+                        {file.pending ? ' · pending' : ''}
+                      </small>
+                      <button
+                        type="button"
+                        class="quiet-button"
+                        data-pick-media={file.url}
+                        data-kind={file.kind}
+                      >
+                        Use {file.kind}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </details>
+              <p class="media-help" id="upload-status" aria-live="polite"></p>
+            </details>
+            <button class="save-button" type="submit">
+              Save changes and refresh preview
+            </button>
+          </fieldset>
+        </form>
+      </div>
+      <section class="preview-panel" aria-label="Rendered draft preview">
+        <div class="preview-label">
+          <h2>Rendered preview</h2>
+          <span>Saved revision {post.revision}</span>
+        </div>
+        <iframe
+          title="Rendered draft"
+          src={`/review/${review.id}/preview`}
+          sandbox="allow-same-origin"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </section>
+    </div>
+  </section>
+</Base>
+<script>
+  const desk = document.querySelector<HTMLElement>('.review-desk');
+  const editor = document.querySelector<HTMLFormElement>('#editor-form');
+  const publish = document.querySelector<HTMLButtonElement>(
+    '#publish-form button',
+  );
+  const status = document.querySelector<HTMLElement>('#review-status');
+  const uploads = document.querySelector<HTMLElement>('#upload-status');
+  let dirty = false;
+  let uploading = 0;
+  function changed() {
+    dirty = true;
+    if (publish) publish.disabled = true;
+    if (status)
+      status.textContent =
+        'Unsaved changes. Save to refresh the preview before publishing.';
+  }
+  editor?.addEventListener('input', changed);
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-clear-media]')
+    .forEach((button) =>
+      button.addEventListener('click', () => {
+        const input = document.querySelector<HTMLInputElement>(
+          '#media-' + button.dataset.clearMedia,
+        );
+        if (input) input.value = '';
+        changed();
+      }),
+    );
+  function useMedia(url: string, kind: string, field?: string) {
+    if (field === 'inline' || kind === 'document') {
+      const body = document.querySelector<HTMLTextAreaElement>('#post-body')!;
+      const text =
+        kind === 'document'
+          ? `[View document](${url})`
+          : `![Describe this image](${url})`;
+      body.setRangeText(
+        '\n\n' + text + '\n',
+        body.selectionStart,
+        body.selectionEnd,
+        'end',
+      );
+    } else {
+      const input = document.querySelector<HTMLInputElement>(
+        '#media-' + (field || (kind === 'video' ? 'video' : 'image')),
+      );
+      if (input) input.value = url;
+    }
+    changed();
+  }
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-pick-media]')
+    .forEach((button) =>
+      button.addEventListener('click', () =>
+        useMedia(button.dataset.pickMedia!, button.dataset.kind!),
+      ),
+    );
+  document
+    .querySelectorAll<HTMLInputElement>('[data-upload-field]')
+    .forEach((input) =>
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file || !desk) return;
+        uploading++;
+        const save = editor?.querySelector<HTMLButtonElement>('[type=submit]');
+        if (save) save.disabled = true;
+        if (publish) publish.disabled = true;
+        if (uploads) uploads.textContent = 'Uploading…';
+        try {
+          const form = new FormData();
+          form.set('csrf', desk.dataset.csrf!);
+          form.set('action', 'upload');
+          form.set('file', file);
+          const response = await fetch(desk.dataset.endpoint!, {
+            method: 'POST',
+            body: form,
+          });
+          if (!response.ok) throw new Error(await response.text());
+          const media = await response.json();
+          useMedia(media.url, media.kind, input.dataset.uploadField);
+          if (uploads)
+            uploads.textContent =
+              'Upload ready. Save changes to refresh the preview.';
+        } catch (error) {
+          if (uploads)
+            uploads.textContent =
+              error instanceof Error ? error.message : 'Upload failed';
+        } finally {
+          uploading--;
+          if (save) save.disabled = uploading > 0;
+        }
+      }),
+    );
+  editor?.addEventListener('submit', (event) => {
+    if (uploading) event.preventDefault();
+  });
+  document
+    .querySelector('#publish-form')
+    ?.addEventListener('submit', (event) => {
+      if (dirty || uploading) event.preventDefault();
+    });
+</script>
+<style>
+  .review-desk {
+    max-width: 1600px;
+    margin: auto;
+    padding: 2rem 1.5rem 5rem;
+  }
+  .desk-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  .desk-header h1 {
+    font-size: 2rem;
+    margin: 0.4rem 0;
+  }
+  .desk-header p {
+    margin: 0.4rem 0;
+  }
+  .desk-status {
+    padding: 1rem 1.2rem;
+    background: #14253b;
+    border: 1px solid #31455f;
+    border-radius: 0.6rem;
+    margin: 1.5rem 0;
+    color: #f2e4bf;
+  }
+  .local-note {
+    color: #d4b875;
+  }
+  .desk-grid {
+    display: grid;
+    grid-template-columns: minmax(340px, 0.85fr) minmax(0, 1.3fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .editor-panel,
+  .preview-panel {
+    background: #101d2e;
+    border: 1px solid #283c53;
+    border-radius: 0.7rem;
+    overflow: hidden;
+  }
+  .editor-panel {
+    padding: 1.3rem;
+  }
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  legend {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
+    font-size: 0.88rem;
+    color: #d0d7e1;
+    margin-bottom: 1rem;
+  }
+  input,
+  textarea,
+  select {
+    display: block;
+    width: 100%;
+    margin-top: 0.4rem;
+    background: #091321;
+    border: 1px solid #3a4e66;
+    border-radius: 0.35rem;
+    color: #fff;
+    padding: 0.65rem 0.75rem;
+    font: inherit;
+  }
+  textarea {
+    resize: vertical;
+  }
+  #post-body {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .publish-button,
+  .save-button {
+    background: #d4b875;
+    color: #0b1625;
+    border: 0;
+    border-radius: 0.4rem;
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .save-button {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .quiet-button {
+    background: transparent;
+    border: 1px solid #536279;
+    border-radius: 0.35rem;
+    padding: 0.4rem 0.65rem;
+    color: #e1e7ef;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  button:disabled,
+  fieldset:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .preview-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #283c53;
+    gap: 1rem;
+  }
+  .preview-label h2 {
+    font-size: 1rem;
+    margin: 0;
+  }
+  .preview-label span,
+  .media-help {
+    font-size: 0.8rem;
+    color: #a7b7cb;
+  }
+  .preview-panel iframe {
+    display: block;
+    width: 100%;
+    height: 1000px;
+    border: 0;
+    background: #091321;
+  }
+  .media-field {
+    margin: 1.2rem 0;
+    padding-top: 0.8rem;
+    border-top: 1px solid #283c53;
+  }
+  .media-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .upload-control {
+    margin: 0.3rem 0;
+  }
+  .upload-control input {
+    font-size: 0.75rem;
+  }
+  .media-library {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    max-height: 400px;
+    overflow: auto;
+  }
+  .media-item {
+    min-width: 0;
+    border: 1px solid #283c53;
+    border-radius: 0.4rem;
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+  }
+  .media-item img {
+    height: 80px;
+    object-fit: contain;
+  }
+  .media-item small {
+    color: #a7b7cb;
+  }
+  summary {
+    cursor: pointer;
+    padding: 0.4rem 0;
+    color: #e5ce99;
+  }
+  @media (max-width: 950px) {
+    .desk-grid {
+      grid-template-columns: 1fr;
+    }
+    .desk-header {
+      align-items: flex-start;
+    }
+    .review-desk {
+      padding: 1rem;
+    }
+    .field-row {
+      grid-template-columns: 1fr;
+    }
+    .preview-panel iframe {
+      height: 850px;
+    }
+  }
+</style>

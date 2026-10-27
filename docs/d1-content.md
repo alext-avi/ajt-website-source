@@ -68,8 +68,8 @@ npm run verify
 
 Local state lives in ignored `.wrangler/` and is separate from the remote database. Before production deployment, pull from `--remote` again. For backups use D1 Time Travel or `wrangler d1 export CONTENT_DB --remote --output <ignored-backup-path.sql>`. Database backups may include drafts and revision history; keep them out of public assets and Git.
 
-## Future agent
+## Draft authoring through MCP
 
-The database is ready for a later authenticated content tool layer with operations such as `search_content`, `save_draft`, and `attach_media`. Revision checks and history provide the persistence foundation. This setup does not deploy an autonomous agent, expose a public SQL/write endpoint, create agent credentials, or enable personalized referral welcomes yet.
+The local `ajt-content` MCP supports revision-checked post drafts and a rendered human review desk with editing, media upload/replacement, and a Publish button. See [the content workflow](content-mcp.md). New posts must use this approval workflow; the lower-level maintenance commands above are not a substitute for Alex's approval. No public SQL/write endpoint or autonomous publisher is exposed.
 
 References: [D1 migrations](https://developers.cloudflare.com/d1/reference/migrations/), [imports and exports](https://developers.cloudflare.com/d1/best-practices/import-export-data/), [pricing](https://developers.cloudflare.com/d1/platform/pricing/).

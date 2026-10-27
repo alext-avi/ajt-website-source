@@ -7,6 +7,9 @@ import {
 
 const notice = document.querySelector<HTMLElement>('#analytics-notice');
 const measurementId = notice?.dataset.measurementId;
+// A production artifact may be served on staging; keep its GA4 tag on the
+// canonical origin even when consent was previously granted on that browser.
+const originAllowed = notice?.dataset.analyticsOrigin === location.origin;
 const choiceKey = 'ajt.analytics-consent.v1';
 const runKey = 'ajt.analytics-ci-run.v1';
 let active = false;
@@ -50,7 +53,13 @@ function clearAnalyticsCookies() {
   }
 }
 function enableAnalytics() {
-  if (active || !measurementId || !/^G-[A-Z0-9]+$/.test(measurementId)) return;
+  if (
+    active ||
+    !originAllowed ||
+    !measurementId ||
+    !/^G-[A-Z0-9]+$/.test(measurementId)
+  )
+    return;
   active = true;
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () {
@@ -79,7 +88,15 @@ function enableAnalytics() {
   document.head.append(script);
 }
 
-if (notice && measurementId) {
+if (!originAllowed) {
+  document
+    .querySelectorAll<HTMLElement>('[data-open-analytics-preferences]')
+    .forEach((button) => {
+      button.hidden = true;
+    });
+}
+
+if (notice && measurementId && originAllowed) {
   const privacySignal =
     navigator.doNotTrack === '1' ||
     (navigator as Navigator & { globalPrivacyControl?: boolean })

@@ -39,7 +39,7 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 120_000,
     env: {
-      SITE_URL: 'https://website.test',
+      SITE_URL: baseURL,
       PUBLIC_GA4_MEASUREMENT_ID: 'G-E2E000000',
       ASTRO_TELEMETRY_DISABLED: '1',
       WRANGLER_SEND_METRICS: 'false',
