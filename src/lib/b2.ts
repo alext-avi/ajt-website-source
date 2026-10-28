@@ -83,6 +83,9 @@ export function b2Client(
         // Workers supports manual/follow, not Node's redirect:error. Never
         // follow a redirect carrying signed authorization to another host.
         redirect: 'manual',
+        // A cache miss may rewrite HEAD to GET, invalidating its method-bound
+        // SigV4 signature. Cache approved public bytes in the Worker instead.
+        cache: 'no-store',
         signal: AbortSignal.timeout(120_000),
       });
       const response = await fetcher(signed);

@@ -198,6 +198,7 @@ test('B2 credentials only go to the configured HTTPS Backblaze endpoint; local m
     fetcher: async (request) => {
       calls++;
       assert.equal(request.redirect, 'manual');
+      assert.equal(request.cache, 'no-store');
       assert(!request.url.includes('secret'));
       return new Response(null, { status: 503 });
     },
@@ -235,4 +236,25 @@ test('world-readable B2 credential files fail before any storage request', async
   await fs.chmod(path.join(directory, 'b2.json'), 0o644);
   await assert.rejects(saveMedia(bytes, store), /B2 operation failed/);
   assert.equal(server.stats.signed, 0);
+});
+
+test('signed HEAD requests bypass intermediary caches that convert cold HEAD requests into GET', async (t) => {
+  const { directory, server, bytes } = await fixture(t);
+  const filename = createHash('sha256').update(bytes).digest('hex') + '.jpg';
+  await fs.writeFile(path.join(directory, 'objects', filename), bytes);
+  const client = b2Client(server.config, {
+    localTest: true,
+    // Model Cloudflare's documented cold-cache HEAD-to-GET conversion. The
+    // independent S3 fixture rejects the changed method's original signature.
+    fetcher: (request) =>
+      fetch(
+        request.cache === 'no-store'
+          ? request
+          : new Request(request, { method: 'GET' }),
+      ),
+  });
+  const response = await client.request('HEAD', filename);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-length'), String(bytes.length));
+  assert.equal(server.stats.signed, 1);
 });

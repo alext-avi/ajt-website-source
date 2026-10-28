@@ -9,6 +9,24 @@ export interface B2Env {
   DEPLOYMENT_ENVIRONMENT?: string;
 }
 
+export class MediaOriginError extends Error {
+  readonly code: string;
+  constructor(
+    code:
+      | 'head-request'
+      | 'head-status'
+      | 'head-size'
+      | 'get-request'
+      | 'get-status'
+      | 'get-size'
+      | 'get-range',
+    status?: number,
+  ) {
+    super('Media origin unavailable');
+    this.code = code + (status ? '-' + status : '');
+  }
+}
+
 export function b2MediaBucket(env: B2Env): MediaBucket {
   const client = b2Client(
     {
@@ -19,7 +37,7 @@ export function b2MediaBucket(env: B2Env): MediaBucket {
     } as B2Config,
     { localTest: env.DEPLOYMENT_ENVIRONMENT === 'local-test' },
   );
-  function size(response: Response) {
+  function size(response: Response, code: 'head-size' | 'get-size') {
     const length = response.headers.get('Content-Length');
     if (
       !length ||
@@ -28,7 +46,7 @@ export function b2MediaBucket(env: B2Env): MediaBucket {
       Number(length) < 1 ||
       Number(length) > 100 * 1024 * 1024
     )
-      throw new Error('Invalid media response size');
+      throw new MediaOriginError(code);
     return Number(length);
   }
   const filename = (key: string) => {
@@ -37,18 +55,28 @@ export function b2MediaBucket(env: B2Env): MediaBucket {
   };
   return {
     async head(key) {
-      const response = await client.request('HEAD', filename(key));
+      let response;
+      try {
+        response = await client.request('HEAD', filename(key));
+      } catch {
+        throw new MediaOriginError('head-request');
+      }
       if (response.status === 404) return null;
       if (response.status !== 200)
-        throw new Error(`B2 media unavailable (${response.status})`);
-      return { size: size(response) };
+        throw new MediaOriginError('head-status', response.status);
+      return { size: size(response, 'head-size') };
     },
     async get(key, options) {
-      const response = await client.request('GET', filename(key), options);
+      let response;
+      try {
+        response = await client.request('GET', filename(key), options);
+      } catch {
+        throw new MediaOriginError('get-request');
+      }
       if (response.status === 404) return null;
       if (response.status !== (options?.range ? 206 : 200) || !response.body)
-        throw new Error('B2 media unavailable');
-      const length = size(response);
+        throw new MediaOriginError('get-status', response.status);
+      const length = size(response, 'get-size');
       let total = length;
       if (options?.range) {
         const { offset, length: requestedLength } = options.range;
@@ -61,14 +89,14 @@ export function b2MediaBucket(env: B2Env): MediaBucket {
           Number(match[2]) !== offset + requestedLength - 1 ||
           length !== requestedLength
         )
-          throw new Error('Invalid media range response');
+          throw new MediaOriginError('get-range');
         total = Number(match[3]);
         if (
           !Number.isSafeInteger(total) ||
           total < offset + requestedLength ||
           total > 100 * 1024 * 1024
         )
-          throw new Error('Invalid media total size');
+          throw new MediaOriginError('get-size');
       }
       return { size: total, body: response.body };
     },

@@ -33,6 +33,8 @@ The public Worker checks the current release's rendered-media allowlist **before
 
 Images and PDFs up to 10 MiB use the Workers Cache API after approval checks. `X-AJT-Media-Cache` reports `MISS`, `HIT`, or `BYPASS`. Cached bytes are immutable and browser-cacheable for one year. Cache contents are local to a Cloudflare data center and can be evicted; a miss still fetches B2. Video and range requests bypass the edge object cache and stream from B2 with validated range/size headers. Staging's outer response remains `no-store`/`noindex`, including for internally cached media.
 
+Authenticated B2 origin requests use `cache: no-store`. Intermediary caches may convert a cold HEAD request into GET, which invalidates its method-bound SigV4 signature. Only the approved public response is cached by the Worker. Staging 503 responses expose a fixed failure-hop/status code for diagnosis; upstream bodies, error messages, and credentials are never returned. See [Cloudflare HEAD behavior](https://developers.cloudflare.com/cache/concepts/cache-behavior/) and [fetch cache controls](https://developers.cloudflare.com/workers/runtime-apis/fetch/).
+
 B2 is always-hot storage, with no archive restoration step. Actual image latency depends on origin location, file size, network conditions, and caching; local fixture results are not performance evidence for the live provider.
 
 ## Free usage and safety limits

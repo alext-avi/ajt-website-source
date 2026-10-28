@@ -60,3 +60,32 @@ test('the public allowlist comes only from rendered media references and fails c
   );
   assert.equal(response.status, 404);
 });
+
+test('staging identifies a failed media hop without exposing upstream diagnostics', async () => {
+  const filename = 'a'.repeat(64) + '.jpg';
+  const env = {
+    DEPLOYMENT_ENVIRONMENT: 'staging',
+    ASSETS: {
+      fetch: async () => Response.json({ version: 1, files: [filename] }),
+    },
+    MEDIA_BUCKET: {
+      head: async () => {
+        throw new Error('sensitive upstream details');
+      },
+      get: async () => null,
+    },
+  };
+  const response = await worker.fetch(
+    new Request('https://stage.test/media/' + filename),
+    env,
+  );
+  assert.equal(response.status, 503);
+  assert.equal(response.headers.get('x-ajt-media-error'), 'storage-head');
+  assert.equal(await response.text(), '');
+  assert(!JSON.stringify([...response.headers]).includes('sensitive'));
+  const ordinary = await worker.fetch(
+    new Request('https://site.test/media/' + filename),
+    { ...env, DEPLOYMENT_ENVIRONMENT: undefined },
+  );
+  assert.equal(ordinary.headers.get('x-ajt-media-error'), null);
+});

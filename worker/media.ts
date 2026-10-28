@@ -4,7 +4,7 @@ import {
   mediaManifestPath,
   mediaTypes,
 } from '../src/lib/media.ts';
-import { b2MediaBucket, type B2Env } from './b2-media.ts';
+import { b2MediaBucket, MediaOriginError, type B2Env } from './b2-media.ts';
 
 interface ObjectInfo {
   size: number;
@@ -50,11 +50,22 @@ export async function serveMedia(
   if (!filename) return error(404);
   if (!['GET', 'HEAD'].includes(request.method))
     return error(405, { Allow: 'GET, HEAD' });
+  let step = 'manifest-fetch';
+  // Staging diagnostics identify the failed hop without exposing upstream errors,
+  // credentials, object metadata, or account details in public responses.
+  const unavailable = () =>
+    error(
+      503,
+      env.DEPLOYMENT_ENVIRONMENT === 'staging'
+        ? { 'X-AJT-Media-Error': step }
+        : {},
+    );
   try {
     const response = await env.ASSETS.fetch(
       new Request(new URL(mediaManifestPath, url)),
     );
-    if (!response.ok) return error(503);
+    if (!response.ok) return unavailable();
+    step = 'manifest-parse';
     const manifest = (await response.json()) as {
       version?: number;
       files?: string[];
@@ -66,7 +77,7 @@ export async function serveMedia(
         (name) => typeof name !== 'string' || !mediaFilename.test(name),
       )
     )
-      return error(503);
+      return unavailable();
     // ALWAYS check this release before the edge cache: drafts and removed files
     // cannot be exposed by an old cache entry or a guessed immutable URL.
     if (!manifest.files.includes(filename)) return error(404);
@@ -101,10 +112,12 @@ export async function serveMedia(
         /* Cache availability must not prevent origin delivery. */
       }
     }
+    step = 'storage-setup';
     const bucket =
       env.MEDIA_PROVIDER === 'b2' ? b2MediaBucket(env) : env.MEDIA_BUCKET;
-    if (!bucket) return error(503);
+    if (!bucket) return unavailable();
     const key = 'assets/' + filename;
+    step = 'storage-head';
     const info = await bucket.head(key);
     if (!info) return error(404);
     const headers = new Headers({
@@ -147,9 +160,11 @@ export async function serveMedia(
       headers.set('Content-Range', `bytes ${start}-${end}/${info.size}`);
       headers.set('Content-Length', String(range.length));
     }
+    step = 'storage-get';
     const object = await bucket.get(key, range ? { range } : undefined);
     if (!object) return error(404);
-    if (object.size !== info.size) return error(503);
+    step = 'storage-size';
+    if (object.size !== info.size) return unavailable();
     const result = new Response(object.body, {
       status: range ? 206 : 200,
       headers,
@@ -160,7 +175,8 @@ export async function serveMedia(
       else await write;
     }
     return result;
-  } catch {
-    return error(503);
+  } catch (cause) {
+    if (cause instanceof MediaOriginError) step = cause.code;
+    return unavailable();
   }
 }
