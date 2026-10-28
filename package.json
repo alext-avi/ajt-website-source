@@ -17,6 +17,7 @@
     "verify": "npm run check && npm run build && npm test",
     "deploy": "node scripts/deploy.mjs",
     "stage": "node scripts/deploy.mjs --staging-only",
+    "setup:github": "node scripts/setup-github.mjs",
     "cf:preview": "npm run build && wrangler dev",
     "cf:dry-run": "npm run build && wrangler deploy --dry-run --outdir .wrangler/dry-run",
     "db:migrate:local": "wrangler d1 migrations apply CONTENT_DB --local",

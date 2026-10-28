@@ -48,6 +48,7 @@ jobs:
   deploy:
     name: Stage, test, and deploy
     needs: verify
+    environment: production
     outputs:
       deployed: ${{ steps.deploy.outputs.deployed }}
       credentials-configured: ${{ steps.credentials.outputs.configured }}
@@ -69,7 +70,7 @@ jobs:
             echo 'configured=false' >> "$GITHUB_OUTPUT"
             echo '::notice::Deployment skipped: CLOUDFLARE_API_TOKEN is not configured. Verification still runs; the live site is unchanged.'
             echo '### Deployment skipped' >> "$GITHUB_STEP_SUMMARY"
-            echo 'Configure the CLOUDFLARE_API_TOKEN repository secret to enable automatic deployment. See docs/deployment.md. The live site was not changed by this run.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Configure CLOUDFLARE_API_TOKEN in the production environment to enable automatic deployment. See docs/secrets.md. The live site was not changed by this run.' >> "$GITHUB_STEP_SUMMARY"
           else
             echo 'configured=true' >> "$GITHUB_OUTPUT"
           fi

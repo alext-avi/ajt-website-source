@@ -16,7 +16,7 @@ After the deploy stage, the production-checks job exercises the public website a
 
 ## One-time authorization
 
-First complete [private Backblaze B2 setup](b2-media.md). Store the read-only delivery key in the private repository's encrypted Actions secrets `B2_MEDIA_KEY_ID` and `B2_MEDIA_APPLICATION_KEY`; store `B2_MEDIA_ENDPOINT` and `B2_MEDIA_BUCKET` as non-secret Actions variables. The deploy step supplies these as environment variables, and `scripts/deploy.mjs` attaches them to each Worker version through `--secrets-file`. Staging and production receive the same binding values; no separate secret deployment bypasses the staging gate. Local deployment uses an ignored owner-only `.dev.vars` file instead. See [secrets.md](secrets.md) for the full inventory, isolation, and rotation procedure.
+First complete [private Backblaze B2 setup](b2-media.md). Run `npm run setup:github` to audit and `npm run setup:github -- --apply` to configure the private repository's main-only `production` environment and migrate the read-only delivery secrets `B2_MEDIA_KEY_ID` and `B2_MEDIA_APPLICATION_KEY` into it. The script sets `B2_MEDIA_ENDPOINT` and `B2_MEDIA_BUCKET` as non-secret repository Actions variables. The deploy job uses that environment; PRs and the public mirror cannot enter it. `scripts/deploy.mjs` attaches the bindings to each Worker version through `--secrets-file`. Staging and production receive the same binding values; no separate secret deployment bypasses the staging gate. Local deployment uses an ignored owner-only `.dev.vars` file instead. See [secrets.md](secrets.md) for the full inventory, setup, isolation, and rotation procedure.
 
 New uploads live in the private bucket rather than in Git; the staging gate verifies every referenced storage object's hash before promotion. R2 is inactive and no R2 binding or subscription is required. The local publisher and CI both refresh published content directly from D1, so a clean runner needs neither the author's media cache nor manually copied uploads.
 
@@ -24,7 +24,7 @@ Wrangler's local OAuth login cannot authenticate a GitHub-hosted runner. Use a s
 
 1. In the Cloudflare account containing `alexander-thomas`, open **Manage account → Account API tokens → Create Token**.
 2. Name the token `ajt-website-github-actions`. Grant **Workers → Editor** access scoped to the existing **alexander-thomas** and **alexander-thomas-staging** Workers and **D1 → Read** for the content database. CI receives only the read-only B2 delivery key, never the upload key, and needs no R2 binding or permissions. CI reads content but does not apply migrations, seed records, or edit drafts. Do not grant account administration, API-token management, DNS, billing, or access to unrelated products. Cloudflare's granular permissions allow an Editor to deploy existing Workers without permission to create/delete Workers. If that scope is unavailable in the dashboard, review the actual alternative before granting broader access.
-3. Copy the token directly into the repository's **Settings → Secrets and variables → Actions → New repository secret**, named **CLOUDFLARE_API_TOKEN**. Do not put it in an issue, chat, workflow file, command history, or `.env.example`.
+3. Save the token in **Settings → Environments → production → Environment secrets**, named **CLOUDFLARE_API_TOKEN**, or run `npm run setup:github -- --apply --prompt-cloudflare-token` in a terminal and use the hidden GitHub CLI prompt. Do not put it in an issue, chat, workflow file, command history, or `.env.example`.
 4. Set repository Actions variables:
    - `SITE_URL`: `https://alexander-thomas.alexander-jt.workers.dev`
    - `PUBLIC_GA4_MEASUREMENT_ID`: `G-JLX8RLTRH4`
@@ -41,7 +41,7 @@ Production main workflows share a concurrency group across verification, staging
 
 To retry a transient failure, re-run the workflow for the current `main` commit or use **Run workflow** on `main`. To roll back code, revert the relevant commit and push the revert to `main`. Content requires a separately reviewed restoration of its D1 revision: every deployment pulls D1 again, so a Git revert alone does not undo database publication. A manual run from an old commit is intentionally skipped once `main` has moved forward. Retain historical media objects so a rollback's referenced bytes remain available.
 
-No protected GitHub environment is currently configured. Deployment uses private repository secrets and explicit repository/event/branch conditions. If the account plan supports private environments, add a main-only deployment policy as an additional server-enforced boundary; do not upgrade the account merely for this setup. Contributors should submit pull requests; only trusted maintainers should have write access to `main` or workflows.
+Deployment uses private environment secrets, a main-only `production` environment policy, and explicit repository/event/branch conditions. The setup script audits first, preserves existing review protections, refuses unexpected allowed refs, and verifies stored secret names before removing repository-wide duplicates. Contributors should submit pull requests; only trusted maintainers should have write access to `main` or workflows.
 
 ## References
 

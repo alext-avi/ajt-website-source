@@ -126,6 +126,7 @@ test('Actions exposes delivery secrets only in the trusted private-main deployme
     !JSON.stringify(workflow.jobs['production-checks']).includes('B2_MEDIA_'),
   );
   const deploy = workflow.jobs.deploy;
+  assert.equal(deploy.environment, 'production');
   assert.match(deploy.if, /github.repository == 'alext-avi\/ajt-website'/);
   assert.match(deploy.if, /github.ref == 'refs\/heads\/main'/);
   assert.match(deploy.if, /github.event_name == 'push'/);
