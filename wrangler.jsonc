@@ -7,6 +7,14 @@
   "preview_urls": false,
   "main": "./worker/index.ts",
   "vars": { "MEDIA_PROVIDER": "b2" },
+  "secrets": {
+    "required": [
+      "B2_MEDIA_ENDPOINT",
+      "B2_MEDIA_BUCKET",
+      "B2_MEDIA_KEY_ID",
+      "B2_MEDIA_APPLICATION_KEY",
+    ],
+  },
   "d1_databases": [
     {
       "binding": "CONTENT_DB",
@@ -26,6 +34,14 @@
       "name": "alexander-thomas-staging",
       "d1_databases": [],
       "vars": { "DEPLOYMENT_ENVIRONMENT": "staging", "MEDIA_PROVIDER": "b2" },
+      "secrets": {
+        "required": [
+          "B2_MEDIA_ENDPOINT",
+          "B2_MEDIA_BUCKET",
+          "B2_MEDIA_KEY_ID",
+          "B2_MEDIA_APPLICATION_KEY",
+        ],
+      },
       "assets": {
         "directory": "./dist",
         "binding": "ASSETS",

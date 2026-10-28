@@ -3,6 +3,11 @@ import { spawnSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { loadEnv } from 'vite';
 import {
+  loadWorkerSecrets,
+  deploymentEnvironments,
+  withWorkerSecrets,
+} from './lib/deployment-secrets.mjs';
+import {
   prepareRelease,
   verifyRelease,
   verifyStaging,
@@ -44,18 +49,15 @@ if (
     'CI deployment is restricted to production repository main pushes/manual runs',
   );
 }
-const commandEnv = { ...env };
-delete commandEnv.GH_TOKEN;
-delete commandEnv.GITHUB_TOKEN;
-const safeEnv = { ...commandEnv };
-delete safeEnv.CLOUDFLARE_API_TOKEN;
+const mediaSecrets = await loadWorkerSecrets(root, env);
+const { cloudflareEnv, safeEnv } = deploymentEnvironments(env);
 
 function run(command, args, cloudflare = false, extra = {}) {
   console.log(`\nRunning ${command} ${args.join(' ')}`);
   const result = spawnSync(command, args, {
     cwd: root,
     stdio: 'inherit',
-    env: { ...(cloudflare ? commandEnv : safeEnv), ...extra },
+    env: { ...(cloudflare ? cloudflareEnv : safeEnv), ...extra },
   });
   if (result.error) throw result.error;
   if (result.status !== 0)
@@ -100,46 +102,54 @@ if (!(await currentMain())) {
   process.exit(0);
 }
 const wrangler = 'node_modules/wrangler/bin/wrangler.js';
-run(
-  process.execPath,
-  [
-    wrangler,
-    'deploy',
-    '--env',
-    'staging',
-    '--tag',
-    revision,
-    '--var',
-    `RELEASE_ID:${release.artifactSha256}`,
-  ],
-  true,
-);
-await waitForStaging(stagingURL, release);
-run('npm', ['run', 'test:staging'], false, {
-  PLAYWRIGHT_STAGING_URL: stagingURL.origin,
-  EXPECTED_RELEASE_ID: release.artifactSha256,
-  EXPECTED_SOURCE_REVISION: revision,
-  EXPECTED_CANONICAL_ORIGIN: productionURL.origin,
-});
-await verifyRelease(root, release);
-await verifyStaging(stagingURL, release);
-output('staging-tested', 'true');
-if (env.GITHUB_STEP_SUMMARY)
-  fs.appendFileSync(
-    env.GITHUB_STEP_SUMMARY,
-    `\n### Staging passed\n\nTarget: ${stagingURL.origin}\n\nSource: ${revision}\n\nArtifact SHA-256: ${release.artifactSha256}\n\nReal desktop Chromium, mobile WebKit, and HTTP checks passed before production promotion.\n`,
+await withWorkerSecrets(mediaSecrets, async (secretsFile) => {
+  run(
+    process.execPath,
+    [
+      wrangler,
+      'deploy',
+      '--env',
+      'staging',
+      '--tag',
+      revision,
+      '--secrets-file',
+      secretsFile,
+      '--var',
+      `RELEASE_ID:${release.artifactSha256}`,
+    ],
+    true,
   );
-console.log(
-  `Staging verified: ${stagingURL.origin}; artifact ${release.artifactSha256}`,
-);
-if (values['staging-only']) process.exit(0);
-if (!(await currentMain())) {
+  await waitForStaging(stagingURL, release);
+  run('npm', ['run', 'test:staging'], false, {
+    PLAYWRIGHT_STAGING_URL: stagingURL.origin,
+    EXPECTED_RELEASE_ID: release.artifactSha256,
+    EXPECTED_SOURCE_REVISION: revision,
+    EXPECTED_CANONICAL_ORIGIN: productionURL.origin,
+  });
+  await verifyRelease(root, release);
+  await verifyStaging(stagingURL, release);
+  output('staging-tested', 'true');
+  if (env.GITHUB_STEP_SUMMARY)
+    fs.appendFileSync(
+      env.GITHUB_STEP_SUMMARY,
+      `\n### Staging passed\n\nTarget: ${stagingURL.origin}\n\nSource: ${revision}\n\nArtifact SHA-256: ${release.artifactSha256}\n\nReal desktop Chromium, mobile WebKit, and HTTP checks passed before production promotion.\n`,
+    );
   console.log(
-    'A newer main revision arrived during staging tests; skipping production.',
+    `Staging verified: ${stagingURL.origin}; artifact ${release.artifactSha256}`,
   );
-  process.exit(0);
-}
-run(process.execPath, ['scripts/check-deploy.mjs']);
-await verifyRelease(root, release);
-run(process.execPath, [wrangler, 'deploy', '--tag', revision], true);
-output('deployed', 'true');
+  if (values['staging-only']) return;
+  if (!(await currentMain())) {
+    console.log(
+      'A newer main revision arrived during staging tests; skipping production.',
+    );
+    return;
+  }
+  run(process.execPath, ['scripts/check-deploy.mjs']);
+  await verifyRelease(root, release);
+  run(
+    process.execPath,
+    [wrangler, 'deploy', '--tag', revision, '--secrets-file', secretsFile],
+    true,
+  );
+  output('deployed', 'true');
+});

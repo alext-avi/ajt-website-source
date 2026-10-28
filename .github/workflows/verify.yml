@@ -91,6 +91,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           GH_TOKEN: ${{ github.token }}
           STAGING_URL: ${{ vars.STAGING_URL }}
+          B2_MEDIA_ENDPOINT: ${{ vars.B2_MEDIA_ENDPOINT }}
+          B2_MEDIA_BUCKET: ${{ vars.B2_MEDIA_BUCKET }}
+          B2_MEDIA_KEY_ID: ${{ secrets.B2_MEDIA_KEY_ID }}
+          B2_MEDIA_APPLICATION_KEY: ${{ secrets.B2_MEDIA_APPLICATION_KEY }}
         run: npm run deploy
       - name: Save staging browser and server evidence
         if: ${{ !cancelled() && steps.credentials.outputs.configured == 'true' }}

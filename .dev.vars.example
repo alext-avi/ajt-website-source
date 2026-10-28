@@ -1,0 +1,7 @@
+# Local Worker delivery / manual deployment only. Copy to ignored .dev.vars
+# and chmod 600 .dev.vars. Use the read-only bucket/assets-prefix-scoped key.
+# Never put the authoring key or PUBLIC_ variables here.
+B2_MEDIA_ENDPOINT=https://s3.us-east-005.backblazeb2.com
+B2_MEDIA_BUCKET=
+B2_MEDIA_KEY_ID=
+B2_MEDIA_APPLICATION_KEY=

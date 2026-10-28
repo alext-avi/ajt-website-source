@@ -16,12 +16,14 @@ After the deploy stage, the production-checks job exercises the public website a
 
 ## One-time authorization
 
-First complete [private Backblaze B2 setup](b2-media.md). Both Workers require a bucket-scoped read-only B2 key in their own secret stores. New uploads live in that private bucket rather than in Git; the staging gate verifies every referenced storage object's hash before promotion. R2 is inactive and no R2 binding or subscription is required. The local publisher and CI both refresh published content directly from D1, so a clean runner needs neither the author's media cache nor manually copied uploads.
+First complete [private Backblaze B2 setup](b2-media.md). Store the read-only delivery key in the private repository's encrypted Actions secrets `B2_MEDIA_KEY_ID` and `B2_MEDIA_APPLICATION_KEY`; store `B2_MEDIA_ENDPOINT` and `B2_MEDIA_BUCKET` as non-secret Actions variables. The deploy step supplies these as environment variables, and `scripts/deploy.mjs` attaches them to each Worker version through `--secrets-file`. Staging and production receive the same binding values; no separate secret deployment bypasses the staging gate. Local deployment uses an ignored owner-only `.dev.vars` file instead. See [secrets.md](secrets.md) for the full inventory, isolation, and rotation procedure.
+
+New uploads live in the private bucket rather than in Git; the staging gate verifies every referenced storage object's hash before promotion. R2 is inactive and no R2 binding or subscription is required. The local publisher and CI both refresh published content directly from D1, so a clean runner needs neither the author's media cache nor manually copied uploads.
 
 Wrangler's local OAuth login cannot authenticate a GitHub-hosted runner. Use a separate account-owned Cloudflare API token for CI:
 
 1. In the Cloudflare account containing `alexander-thomas`, open **Manage account → Account API tokens → Create Token**.
-2. Name the token `ajt-website-github-actions`. Grant **Workers → Editor** access scoped to the existing **alexander-thomas** and **alexander-thomas-staging** Workers and **D1 → Read** for the content database. CI uses each Worker's existing read-only B2 secrets; it receives no B2 upload key and needs no R2 binding or permissions. CI reads content but does not apply migrations, seed records, or edit drafts. Do not grant account administration, API-token management, DNS, billing, or access to unrelated products. Cloudflare's granular permissions allow an Editor to deploy existing Workers without permission to create/delete Workers. If that scope is unavailable in the dashboard, review the actual alternative before granting broader access.
+2. Name the token `ajt-website-github-actions`. Grant **Workers → Editor** access scoped to the existing **alexander-thomas** and **alexander-thomas-staging** Workers and **D1 → Read** for the content database. CI receives only the read-only B2 delivery key, never the upload key, and needs no R2 binding or permissions. CI reads content but does not apply migrations, seed records, or edit drafts. Do not grant account administration, API-token management, DNS, billing, or access to unrelated products. Cloudflare's granular permissions allow an Editor to deploy existing Workers without permission to create/delete Workers. If that scope is unavailable in the dashboard, review the actual alternative before granting broader access.
 3. Copy the token directly into the repository's **Settings → Secrets and variables → Actions → New repository secret**, named **CLOUDFLARE_API_TOKEN**. Do not put it in an issue, chat, workflow file, command history, or `.env.example`.
 4. Set repository Actions variables:
    - `SITE_URL`: `https://alexander-thomas.alexander-jt.workers.dev`
@@ -29,7 +31,7 @@ Wrangler's local OAuth login cannot authenticate a GitHub-hosted runner. Use a s
    - `STAGING_URL`: `https://alexander-thomas-staging.alexander-jt.workers.dev` (also the deployment script's default)
 5. Run **Verify and deploy website** from the repository's Actions tab on `main`. Check both jobs and the production URL. Future pushes to `main` deploy automatically.
 
-The account ID and Worker name are already in `wrangler.jsonc`; they are configuration, not secret credentials. The token belongs only in GitHub's encrypted Actions secrets. Local deployments continue to use Wrangler's encrypted OAuth credential store.
+The account ID and Worker name are already in `wrangler.jsonc`; they are configuration, not secret credentials. The token belongs only in GitHub's encrypted Actions secrets. Local deployments continue to use Wrangler's protected OAuth credential store and the read-only bindings in `.dev.vars`.
 
 If the secret is missing, the workflow still verifies the website and explicitly skips deployment with a notice and job summary. This avoids repeated failure notifications for an unconfigured deployment. Once the secret exists, pushes deploy automatically. Invalid, expired, or revoked credentials cause a real deployment failure and remain visible; they do not remove the currently deployed site. Rotate the token by replacing the GitHub secret and revoking the old token after a successful deployment.
 
@@ -39,7 +41,7 @@ Production main workflows share a concurrency group across verification, staging
 
 To retry a transient failure, re-run the workflow for the current `main` commit or use **Run workflow** on `main`. To roll back code, revert the relevant commit and push the revert to `main`. Content requires a separately reviewed restoration of its D1 revision: every deployment pulls D1 again, so a Git revert alone does not undo database publication. A manual run from an old commit is intentionally skipped once `main` has moved forward. Retain historical media objects so a rollback's referenced bytes remain available.
 
-GitHub environments and private branch protection are unavailable on this repository's current GitHub plan. Deployment therefore uses a repository secret and explicit repository/event/branch conditions. If the repository becomes public, branch protection and a production environment can be configured then. Contributors should submit pull requests; only trusted maintainers should have write access to `main` or workflows.
+No protected GitHub environment is currently configured. Deployment uses private repository secrets and explicit repository/event/branch conditions. If the account plan supports private environments, add a main-only deployment policy as an additional server-enforced boundary; do not upgrade the account merely for this setup. Contributors should submit pull requests; only trusted maintainers should have write access to `main` or workflows.
 
 ## References
 
