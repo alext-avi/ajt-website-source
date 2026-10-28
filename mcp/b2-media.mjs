@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { b2Client } from '../src/lib/b2.ts';
 import { verifyMediaBytes } from './r2-media.mjs';
+import { MediaBudgetError } from './media-budget.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const b2ConfigPath = () =>
@@ -19,6 +20,10 @@ export function b2MediaStorage({
     provider: 'b2',
     mode: localTest ? 'local-b2' : 'remote-b2',
     async command(operation, filename, file, contentType, { beforePut } = {}) {
+      if (process.platform === 'win32')
+        throw new Error(
+          'B2 media authoring currently requires POSIX file permissions (macOS or Linux). Windows ACL verification is not implemented.',
+        );
       if (!['put', 'get'].includes(operation))
         throw new Error('Unsupported B2 media operation');
       try {
@@ -81,7 +86,8 @@ export function b2MediaStorage({
         const bytes = Buffer.concat(chunks, length);
         verifyMediaBytes(filename, bytes);
         await fs.writeFile(file, bytes, { flag: 'wx', mode: 0o600 });
-      } catch {
+      } catch (error) {
+        if (error instanceof MediaBudgetError) throw error;
         // Never leak application keys, signed requests, account diagnostics, or local paths.
         throw new Error(
           'B2 operation failed. Check the private media configuration, permissions, and free-account caps, then retry. No draft was published.',

@@ -23,6 +23,8 @@ The default remote media provider is B2. The website and D1 remain on Cloudflare
 
 The stdio MCP retains exactly its draft/media tools. Alex reviews and presses Publish in the loopback editor; no agent can publish through the MCP.
 
+B2 authoring currently requires a POSIX host (macOS/Linux). Windows authoring is explicitly rejected until equivalent owner-only ACL verification is implemented; the credential check is never silently bypassed. Public Worker delivery is unaffected by the author's operating system.
+
 ## Delivery and caching
 
 MCP/editor uploads use immutable `/media/<sha256>.<extension>` references. The private B2 key is `assets/<sha256>.<extension>`. The D1 catalog stores provider, MIME type, byte length, and original basename, with no credentials. Local `.wrangler/content-media/object-cache/` is expendable. A clean checkout can rehydrate and verify SHA-256, file signature, and byte length from B2. Human approval always rechecks durable bytes.

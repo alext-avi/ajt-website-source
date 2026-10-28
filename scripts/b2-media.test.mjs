@@ -92,7 +92,7 @@ test('failed and repeated B2 PUT reservations cannot conceal version storage gro
   await store.query(
     `UPDATE media_storage_budget SET reserved_bytes=${mediaStorageCeiling - 1} RETURNING id;`,
   );
-  await assert.rejects(saveMedia(bytes, store), /B2 operation failed/);
+  await assert.rejects(saveMedia(bytes, store), /8 GB ceiling/);
   assert.equal(server.stats.writes, 0);
 });
 

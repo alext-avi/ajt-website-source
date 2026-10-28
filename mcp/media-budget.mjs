@@ -4,6 +4,8 @@ import { randomUUID } from 'node:crypto';
 
 export const mediaStorageCeiling = 8_000_000_000;
 export const mediaOperationCeilings = { put: 5_000, get: 10_000 };
+// Only locally generated, non-sensitive budget diagnostics may cross adapters.
+export class MediaBudgetError extends Error {}
 
 export async function reserveMediaStorage(
   store,
@@ -32,7 +34,7 @@ export async function reserveMediaStorage(
     )[0];
     if (existing?.bytes !== bytes) throw new Error();
   } catch {
-    throw new Error(
+    throw new MediaBudgetError(
       'Media storage safety check failed or the 8 GB ceiling was reached. No upload was attempted. Check the media-budget migration and reservations before retrying.',
     );
   }
