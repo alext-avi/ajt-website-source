@@ -175,6 +175,13 @@ async function preview() {
     expectedRevision: current.revision,
   });
   const doc = new DOMParser().parseFromString(result.html, 'text/html');
+  // Keep attached post videos after the text, as on the final review page.
+  // Also normalize previews from an already-running older MCP renderer.
+  if (collection === 'posts') {
+    const article = doc.querySelector('body > article.prose');
+    const video = doc.querySelector('body > figure.app-video');
+    if (article && video) article.after(video);
+  }
   let warning = '';
   for (const node of [
     ...doc.querySelectorAll('img[src],video[poster],source[src]'),

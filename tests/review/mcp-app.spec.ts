@@ -330,7 +330,7 @@ test('MCP App edits imported post metadata while locking the original text and p
   expect(saved.revision).toBe(2);
 });
 
-test('MCP App plays a private video in situ above the article without leaving the review', async ({
+test('MCP App plays a private video after the post text without leaving the review', async ({
   page,
   request,
 }, testInfo) => {
@@ -361,7 +361,7 @@ test('MCP App plays a private video in situ above the article without leaving th
         },
         body:
           '## A long article\n\n' +
-          'This prepared text appears below the video.\n\n'.repeat(20),
+          'Watch the video below.\n\n'.repeat(20),
       },
     },
   });
@@ -389,7 +389,7 @@ test('MCP App plays a private video in situ above the article without leaving th
   );
   const videoBox = await video.boundingBox();
   const articleBox = await preview.locator('article').boundingBox();
-  expect(videoBox!.y + videoBox!.height).toBeLessThanOrEqual(articleBox!.y);
+  expect(articleBox!.y + articleBox!.height).toBeLessThanOrEqual(videoBox!.y);
   await video.press('Space');
   await expect
     .poll(() =>
