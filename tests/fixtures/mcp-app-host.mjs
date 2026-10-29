@@ -51,7 +51,7 @@ if (
   throw new Error('Unexpected authoring resource network access');
 const appHtml = resource.contents[0].text.replace(
   '<head>',
-  `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; frame-src blob:; connect-src 'none'">`,
+  `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:; frame-src ${uiCsp.frameDomains.join(' ')}; connect-src 'none'">`,
 );
 const server = http.createServer(async (request, response) => {
   response.setHeader('Cache-Control', 'no-store');

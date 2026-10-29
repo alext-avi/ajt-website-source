@@ -2,7 +2,7 @@
 
 Posts and projects are data in D1. The `ajt-content` MCP creates validated drafts,
 retains revisions and submits them to the local publishing desk. Alex reviews
-the rendered draft and presses Publish himself. The MCP cannot publish or deploy.
+the rendered draft and presses Post in the App or Publish in the local desk himself. Model-facing MCP tools cannot publish or deploy.
 
 See [the draft/review workflow](content-mcp.md) for the current authoring tools,
 editor, media library, upload/replacement controls, and revision checks.

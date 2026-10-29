@@ -1,6 +1,6 @@
 # Draft, review, and publish
 
-The `ajt-content` MCP creates website post and project drafts and submits specific revisions to the local publishing desk. Alex edits and approves the rendered draft there. The MCP does not expose arbitrary SQL, approval, publication, deployment, or deletion tools. It does not post to LinkedIn.
+The `ajt-content` MCP creates website post and project drafts and submits specific revisions to the local publishing desk. Alex edits the rendered draft and presses Post directly in the App, or Publish in the local desk. Model-facing tools expose no approval, publication, deployment, arbitrary SQL or deletion operation. It does not post to LinkedIn.
 
 ## Interactive MCP App
 
@@ -14,7 +14,7 @@ can continue using the same draft tools and local review desk.
 
 The agent creates and selects drafts through the MCP tools. The App focuses on
 reviewing that prepared draft: a metadata and Markdown editor, private media
-picker/upload/replacement, saved content preview, and **Open final review**.
+picker/upload/replacement, saved content preview, a primary **Post** button and secondary **Open draft** option.
 It has no draft-library sidebar, URL-name setup or New draft control. Opening it
 without a slug shows a prompt to ask the agent to prepare or open a draft; no
 manual creation form or background draft-list request is offered.
@@ -24,12 +24,16 @@ content is read-only, and imported LinkedIn text/date remain locked. Clear an
 optional media or repository field to remove it; omitted patch fields retain
 their saved values.
 
-The embedded preview is a compact content check. The local desk still supplies
-the final website layout and human Publish control. The App has no Publish
-button and cannot approve or deploy. **Open final review** submits the saved
-revision and asks the host to open its private loopback review link.
+The embedded preview shows the saved content. **Post** publishes that exact revision
+through the existing media verification, publication lock and staging release gate.
+Its ten-minute preview capability is bound to the saved content digest; changed
+revisions are rejected. Publication starts only from a trusted human click, never
+from tool delivery, saving, rendering or polling. Progress and errors appear in the
+App; failed or uncertain jobs are never automatically retried. **Open draft** opens
+the optional local desk. A visible loopback link remains available if the host
+rejects link opening. The model must never call the app-only publication RPC.
 
-Attached MP4 videos play directly in the App preview near the top, with a poster,
+Attached MP4 videos play directly in the App preview after the post text, with a poster,
 native playback controls, inline playback and any saved source credit. They
 start paused. The App shows progress while loading private video bytes through
 MCP; no public draft-media endpoint or external video page is needed. The
@@ -37,13 +41,19 @@ MCP; no public draft-media endpoint or external video page is needed. The
 
 App resources bundle their scripts/styles locally, permit no external network
 connections, and allow only a blob frame for the inert preview. Private media
-arrives through bounded MCP reads, rather than public draft URLs. App-only tools
+arrives through bounded MCP reads and becomes an inline data URL, rather than a
+public draft URL. Tests enforce the declared host policy without silently granting
+blob-media access. App-only tools
 `render_authoring_preview`, `read_authoring_media`, `begin_authoring_upload`,
 `append_authoring_upload` and `finish_authoring_upload` support this interface.
 Browser-selected files use 256 KiB chunks, a 25 MiB file limit, a ten-minute
 upload lifetime and at most four pending sessions per server. The usual file
 signature and storage budget checks still apply. These helpers expose no
-filesystem paths, credentials, publication or SQL capability. App-only visibility
+filesystem paths, credentials or SQL capability. Separate app-only
+`publish_authoring_draft` and `get_authoring_publication_status` support the human
+Post control and read-only polling. A publication capability is session-bound,
+expires before use, and cannot publish a changed draft or start a duplicate job.
+App-only visibility
 is a host routing rule, not an authentication boundary against a custom MCP client.
 
 ## Use the workflow
@@ -130,8 +140,9 @@ and provenance-preserving imports. Lists default to drafts. Writes are limited
 to post/project drafts and revision history, immutable LinkedIn provenance,
 private media/catalog and budget reservations, review records, and the bounded
 temporary App uploads described above. They validate the shared schema and
-referenced assets. Bodies are limited to 32 KB and metadata to 16 KB. None can
-publish, approve, delete content, deploy, or execute arbitrary SQL. Local mode
+referenced assets. Bodies are limited to 32 KB and metadata to 16 KB. These
+model-facing operations cannot publish, approve, delete content, deploy, or execute
+arbitrary SQL. Only the human App control uses the app-only publication RPC. Local mode
 never falls back to remote storage or remote D1.
 
 The review console starts automatically on submission, or manually with `npm run content:review`. It binds only to `127.0.0.1:4330`. Review URLs are opaque capabilities; keep them private. Write requests require the matching review confirmation, exact same-origin browser metadata, and current revision/digest. A global local publication lock prevents two desk publications at once. Do not run manual or CI production deployments concurrently with a desk publication. A future hosted console needs its own authenticated publisher identity and authorization boundary.
@@ -147,7 +158,9 @@ These tests are part of `npm run test:ci`; reports and screenshots are retained 
 The App tests use the official MCP Apps `AppBridge`, the actual resource and a
 real stdio MCP server backed by isolated SQLite. Playwright edits projects,
 round-trips private media bytes, checks rendered previews and stale revisions,
-and verifies the human review handoff without invoking Publish. It also starts
+verifies the fallback local review handoff, and exercises the human Post control
+only against isolated SQLite. It rejects changed drafts and script-triggered
+clicks and confirms that previewing alone leaves a post as a draft. It also starts
 and pauses a real private MP4 through the embedded player's controls. Protocol tests
 also enforce resource metadata, app-only routing metadata, upload bounds,
 signature checks and traversal rejection. This tests the standard bridge;

@@ -66,7 +66,7 @@ test('official MCP App bridge edits a project, uploads and removes private media
     .getByRole('combobox', { name: 'Use upload as', exact: true })
     .selectOption('inline');
   await expect(
-    app.getByRole('button', { name: 'Open final review', exact: true }),
+    app.getByRole('button', { name: 'Open draft', exact: true }),
   ).toBeEnabled();
   await app
     .getByRole('combobox', { name: 'Use upload as', exact: true })
@@ -88,7 +88,7 @@ test('official MCP App bridge edits a project, uploads and removes private media
     .getByLabel('Cover image description', { exact: true })
     .fill('A private project cover');
   await expect(
-    app.getByRole('button', { name: 'Open final review', exact: true }),
+    app.getByRole('button', { name: 'Open draft', exact: true }),
   ).toBeDisabled();
   await app.getByRole('button', { name: 'Save draft', exact: true }).click();
   await expect(app.getByRole('status')).toContainText('Draft saved.');
@@ -111,10 +111,10 @@ test('official MCP App bridge edits a project, uploads and removes private media
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',
   });
-  await app
-    .getByRole('button', { name: 'Open final review', exact: true })
-    .click();
-  await expect(app.getByRole('status')).toContainText('Final review opened.');
+  await app.getByRole('button', { name: 'Open draft', exact: true }).click();
+  await expect(app.getByRole('status')).toContainText(
+    'Draft opened in the local publishing desk.',
+  );
   const opened = await page.evaluate(() => (window as any).testHost.opened);
   expect(opened).toHaveLength(1);
   expect(opened[0]).toMatch(
@@ -359,9 +359,7 @@ test('MCP App plays a private video after the post text without leaving the revi
           videoPoster: '/images/videos/go-plant.jpg',
           linkedinVideoCredit: 'An isolated local video fixture.',
         },
-        body:
-          '## A long article\n\n' +
-          'Watch the video below.\n\n'.repeat(20),
+        body: '## A long article\n\n' + 'Watch the video below.\n\n'.repeat(20),
       },
     },
   });
@@ -378,8 +376,11 @@ test('MCP App plays a private video after the post text without leaving the revi
   await expect(video).toHaveJSProperty('controls', true);
   await expect(video).toHaveJSProperty('autoplay', false);
   await expect(video).toHaveAttribute('playsinline', '');
-  await expect(video).toHaveAttribute('poster', /^blob:/);
-  await expect(video.locator('source')).toHaveAttribute('src', /^blob:/);
+  await expect(video).toHaveAttribute('poster', /^data:image\/jpeg;base64,/);
+  await expect(video.locator('source')).toHaveAttribute(
+    'src',
+    /^data:video\/mp4;base64,/,
+  );
   await expect
     .poll(() => video.evaluate((player: HTMLVideoElement) => player.readyState))
     .toBeGreaterThanOrEqual(1);
@@ -406,4 +407,118 @@ test('MCP App plays a private video after the post text without leaving the revi
     contentType: 'image/png',
   });
   expect(page.url()).toBe('http://127.0.0.1:4334/?slug=app-inline-video');
+});
+
+test('human Post click publishes the rendered local draft even when the host cannot open links', async ({
+  page,
+  request,
+}) => {
+  const slug = 'app-human-post';
+  const call = async (name: string, args: object) => {
+    const response = await request.post('http://127.0.0.1:4334/tool', {
+      data: { name, arguments: args },
+    });
+    const result = await response.json();
+    expect(result.isError).not.toBe(true);
+    return result.structuredContent;
+  };
+  await call('create_post_draft', {
+    slug,
+    metadata: {
+      title: 'A human-approved local post',
+      summary:
+        'An isolated draft that only becomes published after the human clicks Post.',
+      date: '2026-10-25',
+      category: 'Architecture',
+    },
+    body: 'This is an isolated local publication fixture.',
+  });
+  await page.goto(`http://127.0.0.1:4334/?slug=${slug}&denyOpen=1`);
+  const app = page.frameLocator('iframe[title="Website authoring app"]');
+  await expect(app.getByRole('status')).toContainText('Ready.');
+  expect((await call('get_post', { slug })).metadata.draft).toBe(true);
+  await app
+    .getByRole('button', { name: 'Refresh preview', exact: true })
+    .click();
+  await expect(
+    app.getByRole('button', { name: 'Post', exact: true }),
+  ).toBeEnabled();
+  expect((await call('get_post', { slug })).revision).toBe(1);
+  await app.getByRole('button', { name: 'Open draft', exact: true }).click();
+  await expect(app.getByRole('status')).toContainText('Use the draft link');
+  const link = app.getByRole('link', {
+    name: 'Open draft in publishing desk ↗',
+  });
+  await expect(link).toBeVisible();
+  await expect(app.getByLabel('Draft address', { exact: true })).toHaveValue(
+    /^http:\/\/127\.0\.0\.1:4331\/review\/[a-f0-9]{48}$/,
+  );
+  expect((await request.get((await link.getAttribute('href'))!)).ok()).toBe(
+    true,
+  );
+  // A programmatic click must not publish; Playwright's real pointer click below does.
+  await app
+    .getByRole('button', { name: 'Post', exact: true })
+    .evaluate((button: HTMLButtonElement) => button.click());
+  expect((await call('get_post', { slug })).metadata.draft).toBe(true);
+  await app.getByRole('button', { name: 'Post', exact: true }).click();
+  await expect(app.getByRole('status')).toContainText(
+    'Posted in the local test database.',
+  );
+  const posted = await call('get_post', { slug });
+  expect(posted.metadata.draft).toBe(false);
+  expect(posted.revision).toBe(2);
+  expect(posted.updatedBy).toBe('human-review');
+  await expect(
+    app.getByRole('button', { name: 'Post', exact: true }),
+  ).toBeDisabled();
+  const calls = await page.evaluate(
+    () => (window as any).testHost.calls as string[],
+  );
+  expect(
+    calls.filter((name) => name === 'publish_authoring_draft'),
+  ).toHaveLength(1);
+});
+
+test('Post rejects a saved draft changed after its rendered preview', async ({
+  page,
+  request,
+}) => {
+  const slug = 'app-stale-publication';
+  const call = async (name: string, args: object) => {
+    const result = await (
+      await request.post('http://127.0.0.1:4334/tool', {
+        data: { name, arguments: args },
+      })
+    ).json();
+    expect(result.isError).not.toBe(true);
+    return result.structuredContent;
+  };
+  await call('create_post_draft', {
+    slug,
+    metadata: {
+      title: 'A draft with a stale preview',
+      summary:
+        'An isolated draft that cannot publish a revision the reviewer has not seen.',
+      date: '2026-10-25',
+      category: 'Architecture',
+    },
+    body: 'The body originally rendered for review.',
+  });
+  await page.goto(`http://127.0.0.1:4334/?slug=${slug}`);
+  const app = page.frameLocator('iframe[title="Website authoring app"]');
+  await expect(app.getByRole('status')).toContainText('Ready.');
+  await call('update_post_draft', {
+    slug,
+    expectedRevision: 1,
+    body: 'A different saved revision that has not been reviewed.',
+  });
+  await app.getByRole('button', { name: 'Post', exact: true }).click();
+  await expect(app.getByRole('status')).toContainText('The draft changed.');
+  const current = await call('get_post', { slug });
+  expect(current.metadata.draft).toBe(true);
+  expect(current.revision).toBe(2);
+  await expect(
+    app.getByRole('button', { name: 'Post', exact: true }),
+  ).toBeDisabled();
 });

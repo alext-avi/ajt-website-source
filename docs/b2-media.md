@@ -22,7 +22,7 @@ The default remote media provider is B2. The website and D1 remain on Cloudflare
 4. Create a **separate read-only** application key for the same bucket and prefix. For local deployment, store the four `B2_MEDIA_*` bindings in ignored `.dev.vars` with mode `0600`. Run the setup script described in [secrets.md](secrets.md) to store `B2_MEDIA_KEY_ID` and `B2_MEDIA_APPLICATION_KEY` in the **private** repository's main-only `production` environment, with `B2_MEDIA_ENDPOINT` and `B2_MEDIA_BUCKET` as non-secret repository Actions variables. The normal staging-gated deploy supplies these as Worker secrets through `wrangler deploy --secrets-file`, alongside the code for each version. Do not run a separate `secret bulk` deployment around that gate. No B2 write key belongs in the Worker, CI, browser, or public repository.
 5. Apply additive `migrations/0002_media_budget.sql` before remote authoring. This only adds budget metadata. It neither approves nor publishes content. The local SQLite backend initializes it automatically.
 
-The stdio MCP retains exactly its draft/media tools. Alex reviews and presses Publish in the loopback editor; no agent can publish through the MCP.
+Model-facing stdio MCP tools remain draft/media operations. Alex reviews and presses Post in the App or Publish in the loopback editor. App-only publication RPCs are hidden from the model and must never be invoked by the agent.
 
 B2 authoring currently requires a POSIX host (macOS/Linux). Windows authoring is explicitly rejected until equivalent owner-only ACL verification is implemented; the credential check is never silently bypassed. Public Worker delivery is unaffected by the author's operating system.
 

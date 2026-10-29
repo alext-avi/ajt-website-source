@@ -66,14 +66,18 @@ test(
       'append_authoring_upload',
       'finish_authoring_upload',
       'read_authoring_media',
+      'publish_authoring_draft',
+      'get_authoring_publication_status',
     ])
       assert.deepEqual(
         tools.find((tool) => tool.name === name)._meta.ui.visibility,
         ['app'],
       );
     assert(
-      !tools.some((tool) =>
-        /publish|approve|deploy|sql|delete/.test(tool.name),
+      !tools.some(
+        (tool) =>
+          /publish|approve|deploy|sql|delete/.test(tool.name) &&
+          tool._meta?.ui?.visibility?.includes('model') !== false,
       ),
     );
     const { resources } = await client.listResources();

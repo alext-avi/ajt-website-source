@@ -9,6 +9,7 @@ import {
   RESOURCE_MIME_TYPE,
 } from '@modelcontextprotocol/ext-apps/server';
 import { renderPost, postMedia } from './reviews.mjs';
+import { authoringPublication } from './authoring-publication.mjs';
 import {
   resolveAsset,
   mediaType,
@@ -54,6 +55,7 @@ export async function authoringHtml() {
 
 export function registerAuthoringApp(server, tool, store, getPost) {
   const ui = { resourceUri: AUTHORING_URI, visibility: ['app'] };
+  const publication = authoringPublication(store, getPost);
   registerAppResource(
     server,
     'Website authoring',
@@ -85,7 +87,7 @@ export function registerAuthoringApp(server, tool, store, getPost) {
   );
   tool(
     'open_authoring_app',
-    'Open a prepared website post or project draft by slug for human review, editing, preview and media changes. Create and select the draft with the agent tools first. Saves drafts only; it does not post to LinkedIn. Final website publication remains on Alex’s local review page.',
+    'Open a prepared website post or project draft by slug for human review, editing, preview and media changes. Create and select the draft with the agent tools first. Only Alex may press Post in the rendered App or publish from the local desk. This tool never publishes or posts to LinkedIn.',
     identity
       .partial({ slug: true })
       .extend({ collection: z.enum(['posts', 'projects']).default('posts') })
@@ -131,10 +133,33 @@ export function registerAuthoringApp(server, tool, store, getPost) {
         : '';
       return {
         revision: item.revision,
+        previewToken: publication.prepare(item, collection),
         assets: [...new Set(await postMedia(item))],
         html: `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'"><style>${styles}\nbody{padding:24px}h1{font-size:clamp(28px,5vw,44px)}.article-grid{display:block}.project-facts{margin-top:24px}.app-video{margin:24px 0}.app-video video{display:block;width:100%;height:auto;border-radius:8px;background:#000}.app-video figcaption{font-size:12px;color:#a2adc0;margin-top:8px}a{pointer-events:none}</style></head><body><header><p class="eyebrow">${escape(collection === 'projects' ? data.tags.join(' / ') : data.category)}</p><h1>${escape(data.title)}</h1><p class="lede">${escape(data.summary)}</p>${data.date ? `<time>${escape(data.date.slice(0, 10))}</time>` : ''}</header>${picture}<article class="prose">${body}</article>${video}${outcomes}${facts}</body></html>`,
       };
     },
+    ui,
+  );
+
+  const previewIdentity = z
+    .object({
+      previewToken: z.string().regex(/^[a-f0-9]{48}$/),
+    })
+    .strict();
+  tool(
+    'publish_authoring_draft',
+    'Human Post button only: publish the exact rendered, unchanged draft through the existing staging release gate. Hidden from models. Never call this on Alex’s behalf.',
+    previewIdentity,
+    false,
+    ({ previewToken }) => publication.post(previewToken),
+    ui,
+  );
+  tool(
+    'get_authoring_publication_status',
+    'Read the status of a publication explicitly started by Alex in the rendered App. Never starts or retries publication.',
+    previewIdentity,
+    true,
+    ({ previewToken }) => publication.status(previewToken),
     ui,
   );
 

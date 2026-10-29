@@ -1,14 +1,14 @@
 import { App } from '@modelcontextprotocol/ext-apps';
 
 const app = new App(
-  { name: 'Website draft review', version: '1.1.0' },
+  { name: 'Website draft review', version: '1.2.0' },
   {},
   { autoResize: true },
 );
 const root = document.querySelector('#app');
 // This template is static. Draft content is assigned through text/value properties.
 root.innerHTML = `<header><div><p class="eyebrow">-AT · Website</p><h1>Review draft</h1></div></header>
-<p class="notice">Review the website draft your agent prepared, make any edits, then open final review to publish.</p>
+<p class="notice">Review the website draft your agent prepared, make any edits, then press Post to publish it on your website.</p>
 <p role="status" class="status" id="status">Connecting…</p>
 <p id="empty" class="notice" hidden>Ask your agent to prepare or open a website draft.</p>
 <div class="grid" hidden>
@@ -19,7 +19,7 @@ root.innerHTML = `<header><div><p class="eyebrow">-AT · Website</p><h1>Review d
 <label>Tags<input name="tags" placeholder="Separate tags with commas"></label><label><input name="featured" type="checkbox">Featured</label><label>Body (Markdown)<textarea name="body" rows="15" required></textarea></label>
 <details class="section"><summary>Media and uploads</summary><label>Cover image<input name="image" placeholder="Select from the library or upload"></label><label>Cover image description<input name="imageAlt"></label><div data-type="posts"><label>Video<input name="video"></label><label>Video poster<input name="videoPoster"></label></div><div class="two"><label>Use upload as<select id="upload-target"><option value="image">Cover image</option><option value="video">Video</option><option value="videoPoster">Video poster</option><option value="inline">Inline image or PDF</option></select></label><label>Upload / replace<input id="upload" type="file" accept="image/png,image/jpeg,image/gif,image/webp"></label></div><p class="notice">Uploads stay private. Browser uploads support files up to 25 MiB.</p><label>Find media<input id="media-search" type="search"></label><button type="button" id="browse">Browse media library</button><div class="library" id="media"></div></details>
 <div class="actions section"><button class="primary" id="save" type="button">Save draft</button><button id="discard" type="button">Reload saved draft</button></div></fieldset></form></section>
-<section class="panel preview-panel"><header><h2>Saved draft preview</h2><button id="preview">Refresh preview</button></header><p class="notice">Check content here. Your local review page provides the final website layout and publication control.</p><p id="preview-status" class="notice" aria-live="polite"></p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><button class="primary" id="review">Open final review</button></section></div>`;
+<section class="panel preview-panel"><header><h2>Saved draft preview</h2><button id="preview" type="button">Refresh preview</button></header><p class="notice">Post publishes the saved draft to your website. It does not post to LinkedIn.</p><p id="preview-status" class="notice" aria-live="polite"></p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><div class="actions section"><button class="primary" id="post" type="button">Post</button><button id="review" type="button">Open draft</button><a id="draft-link" hidden target="_blank" rel="noopener noreferrer">Open draft in publishing desk ↗</a><input id="draft-address" aria-label="Draft address" readonly hidden></div></section></div>`;
 const $ = (selector) => root.querySelector(selector);
 const field = (name) => $('#editor').elements.namedItem(name);
 const status = (message) => {
@@ -32,6 +32,9 @@ let busy = false;
 const blobs = new Map();
 let previewBytes = 0;
 let previewDocument;
+let previewToken;
+let publicationBlocked = false;
+let tornDown = false;
 const dataFields = [
   'title',
   'summary',
@@ -66,6 +69,13 @@ function controls() {
   $('#fields').disabled = busy || !editable;
   $('#save').disabled = busy || !editable;
   $('#review').disabled = busy || !saved || dirty || !current.metadata.draft;
+  $('#post').disabled =
+    busy ||
+    !saved ||
+    dirty ||
+    !current.metadata.draft ||
+    !previewToken ||
+    publicationBlocked;
   $('#preview').disabled = busy || !saved || dirty;
   $('#discard').disabled = busy || !saved;
 }
@@ -86,6 +96,10 @@ function configure() {
 function setItem(item, kind = item.collection || 'posts') {
   collection = kind;
   current = item;
+  previewToken = undefined;
+  publicationBlocked = false;
+  $('#draft-link').hidden = true;
+  $('#draft-address').hidden = true;
   $('#empty').hidden = true;
   $('.grid').hidden = false;
   $('#editor').reset();
@@ -126,10 +140,12 @@ function unsaved() {
 function changed() {
   dirty = true;
   controls();
-  status('Unsaved changes. Save to refresh the preview before final review.');
+  previewToken = undefined;
+  status('Unsaved changes. Save to refresh the preview before posting.');
 }
 function emptyState() {
   current = undefined;
+  previewToken = undefined;
   $('.grid').hidden = true;
   $('#empty').hidden = false;
   if (previewDocument) URL.revokeObjectURL(previewDocument);
@@ -147,7 +163,7 @@ async function mediaBlob(url) {
     const part = await tool('read_authoring_media', { url, offset: cursor });
     total = part.totalBytes;
     if (previewBytes + total > 32 * 1024 * 1024)
-      throw new Error('Use final review to view additional large media.');
+      throw new Error('Use Open draft to view additional large media.');
     const raw = atob(part.data);
     if (!raw.length || part.offset !== cursor)
       throw new Error('Incomplete media preview');
@@ -157,9 +173,15 @@ async function mediaBlob(url) {
       $('#preview-status').textContent =
         `Loading video preview ${Math.round((cursor / total) * 100)}%…`;
     if (cursor === total) {
-      const value = URL.createObjectURL(
-        new Blob(chunks, { type: part.mimeType }),
-      );
+      // MCP hosts allow data: media by default; blob: media is not implicit.
+      // The preview document itself stays in the explicitly allowed blob frame.
+      const value = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () =>
+          reject(new Error('Could not prepare private media.'));
+        reader.readAsDataURL(new Blob(chunks, { type: part.mimeType }));
+      });
       blobs.set(url, value);
       previewBytes += total;
       return value;
@@ -168,6 +190,7 @@ async function mediaBlob(url) {
 }
 async function preview() {
   if (!current || dirty) return;
+  previewToken = undefined;
   $('#preview-status').textContent = 'Loading saved content and media…';
   const result = await tool('render_authoring_preview', {
     collection,
@@ -203,7 +226,26 @@ async function preview() {
       type: 'text/html',
     }),
   );
-  $('.preview').src = previewDocument;
+  await new Promise((resolve, reject) => {
+    const timeout = setTimeout(
+      () =>
+        reject(
+          new Error('The preview could not load. Refresh it before posting.'),
+        ),
+      10_000,
+    );
+    $('.preview').onload = () => {
+      clearTimeout(timeout);
+      const player = $('.preview').contentDocument?.querySelector('video');
+      player?.addEventListener('error', () => {
+        $('#preview-status').textContent =
+          'Video playback failed in this host. Use Open draft to check it in your browser.';
+      });
+      previewToken = result.previewToken;
+      resolve();
+    };
+    $('.preview').src = previewDocument;
+  });
   $('#preview-status').textContent =
     warning ||
     (doc.querySelector('video')
@@ -261,9 +303,7 @@ async function save(event) {
     });
     setItem(await tool(`get_${singular}`, { slug: result.slug }), collection);
     await preview();
-    status(
-      'Draft saved. Check the preview, then open final review when ready.',
-    );
+    status('Draft saved. Check the preview, then press Post when ready.');
   });
 }
 async function run(action) {
@@ -384,6 +424,13 @@ $('#discard').onclick = () =>
     await preview();
     status('Reloaded the latest saved revision.');
   });
+function draftLink(url) {
+  if (!/^http:\/\/127\.0\.0\.1:\d+\/review\/[a-f0-9]{48}$/.test(url))
+    throw new Error('Invalid local draft link.');
+  $('#draft-link').href = url;
+  $('#draft-address').value = url;
+  $('#draft-link').hidden = false;
+}
 $('#review').onclick = () =>
   run(async () => {
     if (dirty || !current) return;
@@ -393,13 +440,62 @@ $('#review').onclick = () =>
         : 'submit_project_for_review',
       { slug: current.slug, expectedRevision: current.revision },
     );
-    const result = await app.openLink({ url: review.reviewUrl });
-    status(
-      result.isError
-        ? 'Your host could not open the local publishing desk. Open its review link from the content tools.'
-        : 'Final review opened. Publish there after inspecting the rendered draft.',
-    );
+    draftLink(review.reviewUrl);
+    try {
+      const result = await app.openLink({ url: review.reviewUrl });
+      if (result.isError) throw new Error('Link opening was declined.');
+      status('Draft opened in the local publishing desk.');
+    } catch {
+      $('#draft-address').hidden = false;
+      status(
+        'This host could not open the local desk. Use the draft link, or copy the draft address into your browser.',
+      );
+    }
   });
+$('#post').onclick = (event) => {
+  // Publication is never triggered by tool delivery, rendering, or a script click.
+  if (
+    !event.isTrusted ||
+    dirty ||
+    !current ||
+    !previewToken ||
+    publicationBlocked
+  )
+    return;
+  const token = previewToken;
+  publicationBlocked = true;
+  void run(async () => {
+    try {
+      let result = await tool('publish_authoring_draft', {
+        previewToken: token,
+      });
+      while (!tornDown) {
+        status(result.message || 'Posting…');
+        if (result.reviewUrl) draftLink(result.reviewUrl);
+        if (result.status !== 'publishing') break;
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        if (tornDown) return;
+        result = await tool('get_authoring_publication_status', {
+          previewToken: token,
+        });
+      }
+      if (result.status === 'posted') {
+        const message = result.message;
+        setItem(
+          await tool(collection === 'posts' ? 'get_post' : 'get_project', {
+            slug: current.slug,
+          }),
+          collection,
+        );
+        status(message);
+      }
+    } catch {
+      status(
+        'Posting status is unavailable. Open the draft to inspect its status before trying again.',
+      );
+    }
+  });
+};
 app.ontoolresult = (result) =>
   run(async () => {
     if (unsaved()) return;
@@ -412,13 +508,12 @@ app.ontoolresult = (result) =>
       emptyState();
       return;
     }
-    status(
-      'Ready. Draft changes stay private until you publish from final review.',
-    );
+    status('Ready. Draft changes stay private until you press Post.');
   });
 app.onteardown = async () => {
+  tornDown = true;
   if (previewDocument) URL.revokeObjectURL(previewDocument);
-  for (const value of blobs.values()) URL.revokeObjectURL(value);
+  blobs.clear();
   return {};
 };
 app

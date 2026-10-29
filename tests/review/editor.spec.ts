@@ -180,7 +180,13 @@ test('stale reviews and cross-origin requests cannot publish a changed draft', a
   ).toBeDisabled();
   const tools = await client.listTools();
   expect(
-    tools.tools.some((tool) => /publish|approve|deploy/.test(tool.name)),
+    tools.tools.some(
+      (tool) =>
+        /publish|approve|deploy/.test(tool.name) &&
+        (
+          tool._meta?.ui as { visibility?: string[] } | undefined
+        )?.visibility?.includes('model') !== false,
+    ),
   ).toBe(false);
   const post = await tool('get_post', { slug: 'stale-editor-test' });
   expect(post.metadata.draft).toBe(true);

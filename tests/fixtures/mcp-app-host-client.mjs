@@ -19,6 +19,8 @@ bridge.oncalltool = async (params) => {
   return response.json();
 };
 bridge.onopenlink = async ({ url }) => {
+  if (new URL(location.href).searchParams.has('denyOpen'))
+    return { isError: true };
   window.testHost.opened.push(url);
   return { isError: false };
 };
