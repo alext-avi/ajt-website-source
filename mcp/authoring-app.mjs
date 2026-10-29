@@ -1,25 +1,25 @@
 import { App } from '@modelcontextprotocol/ext-apps';
 
 const app = new App(
-  { name: 'Website authoring', version: '1.0.0' },
+  { name: 'Website draft review', version: '1.1.0' },
   {},
   { autoResize: true },
 );
 const root = document.querySelector('#app');
 // This template is static. Draft content is assigned through text/value properties.
-root.innerHTML = `<header><div><p class="eyebrow">-AT · Website</p><h1>Draft authoring</h1></div><button id="new">New draft</button></header>
-<p class="notice">Edit here, check the saved preview, then open your local publishing desk for final review and Publish.</p>
+root.innerHTML = `<header><div><p class="eyebrow">-AT · Website</p><h1>Review draft</h1></div></header>
+<p class="notice">Review the website draft your agent prepared, make any edits, then open final review to publish.</p>
 <p role="status" class="status" id="status">Connecting…</p>
-<div class="grid"><nav class="panel" aria-label="Draft library"><label>Content type<select id="collection"><option value="posts">Posts</option><option value="projects">Projects</option></select></label><label>Find drafts<input id="search" type="search"></label><button id="refresh">Refresh list</button><div id="drafts" class="draft-list"></div><div class="actions"><button id="previous">Previous</button><button id="next">Next</button></div></nav>
+<p id="empty" class="notice" hidden>Ask your agent to prepare or open a website draft.</p>
+<div class="grid" hidden>
 <section class="panel"><h2 id="editor-title">Editor</h2><p id="revision" class="meta"></p><div id="source" hidden><p class="notice">Original LinkedIn text and date are preserved. Website metadata and media remain editable.</p><details><summary>Original capture</summary><pre class="source" id="source-text"></pre></details></div><form id="editor"><fieldset id="fields">
-<label>URL name<input name="slug" required pattern="(?:[a-z0-9]|-){1,160}" maxlength="160" placeholder="a-clear-project-name"></label>
 <label>Title<input name="title" required minlength="5"></label><label>Summary<textarea name="summary" required minlength="20" maxlength="300" rows="3"></textarea></label>
 <div data-type="posts"><div class="two"><label>Publication date<input name="date" type="date"></label><label>Category<select name="category"><option>Applied AI</option><option>Engineering leadership</option><option>Architecture</option><option>Developer tools</option><option>Events &amp; reflections</option></select></label></div></div>
 <div data-type="projects"><label>My role<input name="role"></label><label>Tools &amp; disciplines<input name="technologies" placeholder="Separate items with commas"></label><label>Selected outcomes<textarea name="outcomes" rows="3" placeholder="One supported outcome per line"></textarea></label><label>Repository URL<input name="repository" type="url"></label><label>Related article slugs<textarea name="relatedArticles" rows="2"></textarea></label><div class="two"><label>Illustration<select name="kind"><option>systems</option><option>agents</option><option>mobile</option><option>platform</option></select></label><label>Display order<input name="order" type="number" step="any" value="0"></label></div></div>
 <label>Tags<input name="tags" placeholder="Separate tags with commas"></label><label><input name="featured" type="checkbox">Featured</label><label>Body (Markdown)<textarea name="body" rows="15" required></textarea></label>
 <details class="section"><summary>Media and uploads</summary><label>Cover image<input name="image" placeholder="Select from the library or upload"></label><label>Cover image description<input name="imageAlt"></label><div data-type="posts"><label>Video<input name="video"></label><label>Video poster<input name="videoPoster"></label></div><div class="two"><label>Use upload as<select id="upload-target"><option value="image">Cover image</option><option value="video">Video</option><option value="videoPoster">Video poster</option><option value="inline">Inline image or PDF</option></select></label><label>Upload / replace<input id="upload" type="file" accept="image/png,image/jpeg,image/gif,image/webp"></label></div><p class="notice">Uploads stay private. Browser uploads support files up to 25 MiB.</p><label>Find media<input id="media-search" type="search"></label><button type="button" id="browse">Browse media library</button><div class="library" id="media"></div></details>
 <div class="actions section"><button class="primary" id="save" type="button">Save draft</button><button id="discard" type="button">Reload saved draft</button></div></fieldset></form></section>
-<section class="panel preview-panel"><header><h2>Saved draft preview</h2><button id="preview">Refresh preview</button></header><p class="notice">Check content here. Your local review page provides the final website layout and publication control.</p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><button class="primary" id="review">Open final review</button></section></div>`;
+<section class="panel preview-panel"><header><h2>Saved draft preview</h2><button id="preview">Refresh preview</button></header><p class="notice">Check content here. Your local review page provides the final website layout and publication control.</p><p id="preview-status" class="notice" aria-live="polite"></p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><button class="primary" id="review">Open final review</button></section></div>`;
 const $ = (selector) => root.querySelector(selector);
 const field = (name) => $('#editor').elements.namedItem(name);
 const status = (message) => {
@@ -29,7 +29,6 @@ let collection = 'posts';
 let current;
 let dirty = false;
 let busy = false;
-let offset = 0;
 const blobs = new Map();
 let previewBytes = 0;
 let previewDocument;
@@ -63,16 +62,12 @@ async function tool(name, args) {
 }
 function controls() {
   const saved = !!current;
-  const editable = !saved || current.metadata.draft;
+  const editable = saved && current.metadata.draft;
   $('#fields').disabled = busy || !editable;
   $('#save').disabled = busy || !editable;
   $('#review').disabled = busy || !saved || dirty || !current.metadata.draft;
   $('#preview').disabled = busy || !saved || dirty;
-  $('#discard').disabled = busy || (!saved && !dirty);
-  field('slug').readOnly = saved;
-  $('#new').disabled = busy;
-  $('#refresh').disabled = busy;
-  $('#collection').disabled = busy;
+  $('#discard').disabled = busy || !saved;
 }
 function configure() {
   for (const section of root.querySelectorAll('[data-type]'))
@@ -90,10 +85,10 @@ function configure() {
 }
 function setItem(item, kind = item.collection || 'posts') {
   collection = kind;
-  $('#collection').value = kind;
   current = item;
+  $('#empty').hidden = true;
+  $('.grid').hidden = false;
   $('#editor').reset();
-  field('slug').value = item.slug;
   for (const name of [
     ...dataFields,
     ...(kind === 'posts' ? postFields : projectFields),
@@ -133,57 +128,15 @@ function changed() {
   controls();
   status('Unsaved changes. Save to refresh the preview before final review.');
 }
-function newDraft() {
-  if (unsaved()) return;
+function emptyState() {
   current = undefined;
-  $('#editor').reset();
-  field('slug').readOnly = false;
-  field('body').readOnly = false;
-  field('date').readOnly = false;
-  $('#source').hidden = true;
-  $('#revision').textContent = 'New draft';
-  $('#upload-target option[value="inline"]').disabled = false;
+  $('.grid').hidden = true;
+  $('#empty').hidden = false;
   if (previewDocument) URL.revokeObjectURL(previewDocument);
   $('.preview').removeAttribute('src');
   dirty = false;
-  configure();
   controls();
-  status('Create a draft. Nothing is published.');
-}
-async function listDrafts() {
-  const result = await tool(`list_${collection}`, {
-    status: 'draft',
-    query: $('#search').value,
-    limit: 25,
-    offset,
-  });
-  const entries = result[collection];
-  const list = $('#drafts');
-  list.replaceChildren();
-  for (const item of entries) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = item.metadata.title;
-    const meta = document.createElement('small');
-    meta.textContent = `Revision ${item.revision}`;
-    button.append(meta);
-    button.onclick = () =>
-      run(async () => {
-        if (unsaved()) return;
-        setItem(
-          await tool(collection === 'posts' ? 'get_post' : 'get_project', {
-            slug: item.slug,
-          }),
-          collection,
-        );
-        await preview();
-        status('Saved draft loaded.');
-      });
-    list.append(button);
-  }
-  if (!entries.length) list.textContent = 'No matching drafts.';
-  $('#previous').disabled = offset === 0;
-  $('#next').disabled = entries.length < 25;
+  status('Waiting for a draft from your agent.');
 }
 async function mediaBlob(url) {
   if (blobs.has(url)) return blobs.get(url);
@@ -200,6 +153,9 @@ async function mediaBlob(url) {
       throw new Error('Incomplete media preview');
     chunks.push(Uint8Array.from(raw, (ch) => ch.charCodeAt(0)));
     cursor += raw.length;
+    if (part.mimeType.startsWith('video/'))
+      $('#preview-status').textContent =
+        `Loading video preview ${Math.round((cursor / total) * 100)}%…`;
     if (cursor === total) {
       const value = URL.createObjectURL(
         new Blob(chunks, { type: part.mimeType }),
@@ -212,6 +168,7 @@ async function mediaBlob(url) {
 }
 async function preview() {
   if (!current || dirty) return;
+  $('#preview-status').textContent = 'Loading saved content and media…';
   const result = await tool('render_authoring_preview', {
     collection,
     slug: current.slug,
@@ -240,7 +197,11 @@ async function preview() {
     }),
   );
   $('.preview').src = previewDocument;
-  if (warning) status(warning);
+  $('#preview-status').textContent =
+    warning ||
+    (doc.querySelector('video')
+      ? 'Play the video here using its controls.'
+      : '');
 }
 function metadata() {
   const result = {};
@@ -281,20 +242,17 @@ function metadata() {
 }
 async function save(event) {
   event.preventDefault();
+  if (!current) return;
   if (!$('#editor').reportValidity()) return;
   await run(async () => {
     const singular = collection === 'posts' ? 'post' : 'project';
-    const result = await tool(
-      current ? `update_${singular}_draft` : `create_${singular}_draft`,
-      {
-        slug: field('slug').value,
-        ...(current ? { expectedRevision: current.revision } : {}),
-        metadata: metadata(),
-        body: field('body').value,
-      },
-    );
+    const result = await tool(`update_${singular}_draft`, {
+      slug: current.slug,
+      expectedRevision: current.revision,
+      metadata: metadata(),
+      body: field('body').value,
+    });
     setItem(await tool(`get_${singular}`, { slug: result.slug }), collection);
-    await listDrafts();
     await preview();
     status(
       'Draft saved. Check the preview, then open final review when ready.',
@@ -402,49 +360,22 @@ $('#editor').onsubmit = save;
 // MCP hosts may prohibit native form submission. Saves travel over tool RPC.
 $('#save').onclick = save;
 $('#editor').addEventListener('input', (event) => {
-  if (event.target.id !== 'upload' && event.target.id !== 'media-search')
+  if (!['upload', 'media-search', 'upload-target'].includes(event.target.id))
     changed();
 });
-$('#new').onclick = newDraft;
-$('#refresh').onclick = () => run(listDrafts);
 $('#browse').onclick = () => run(browse);
 $('#preview').onclick = () => run(preview);
 $('#discard').onclick = () =>
   run(async () => {
-    if (current) {
-      setItem(
-        await tool(collection === 'posts' ? 'get_post' : 'get_project', {
-          slug: current.slug,
-        }),
-        collection,
-      );
-      await preview();
-      status('Reloaded the latest saved revision.');
-    } else {
-      dirty = false;
-      newDraft();
-    }
-  });
-$('#collection').onchange = () =>
-  run(async () => {
-    if (unsaved()) {
-      $('#collection').value = collection;
-      return;
-    }
-    collection = $('#collection').value;
-    offset = 0;
-    newDraft();
-    await listDrafts();
-  });
-$('#previous').onclick = () =>
-  run(async () => {
-    offset = Math.max(0, offset - 25);
-    await listDrafts();
-  });
-$('#next').onclick = () =>
-  run(async () => {
-    offset += 25;
-    await listDrafts();
+    if (!current) return;
+    setItem(
+      await tool(collection === 'posts' ? 'get_post' : 'get_project', {
+        slug: current.slug,
+      }),
+      collection,
+    );
+    await preview();
+    status('Reloaded the latest saved revision.');
   });
 $('#review').onclick = () =>
   run(async () => {
@@ -471,11 +402,9 @@ app.ontoolresult = (result) =>
       setItem(item, value.collection || item.collection || 'posts');
       await preview();
     } else {
-      collection = value?.collection || 'posts';
-      $('#collection').value = collection;
-      newDraft();
+      emptyState();
+      return;
     }
-    await listDrafts();
     status(
       'Ready. Draft changes stay private until you publish from final review.',
     );

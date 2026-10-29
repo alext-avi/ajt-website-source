@@ -1,14 +1,36 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 test('official MCP App bridge edits a project, uploads and removes private media, renders saved revisions, and hands final review to the human desk', async ({
   page,
   request,
 }, testInfo) => {
-  await page.goto('http://127.0.0.1:4334/?collection=projects');
+  const prepared = await request.post('http://127.0.0.1:4334/tool', {
+    data: {
+      name: 'create_project_draft',
+      arguments: {
+        slug: 'mcp-app-project',
+        metadata: {
+          title: 'A project prepared by the agent',
+          summary:
+            'The agent has already supplied the project details before human review.',
+          role: 'Technical lead',
+        },
+        body: 'A prepared project body for review.',
+      },
+    },
+  });
+  expect((await prepared.json()).isError).not.toBe(true);
+  await page.goto(
+    'http://127.0.0.1:4334/?collection=projects&slug=mcp-app-project',
+  );
   const app = page.frameLocator('iframe[title="Website authoring app"]');
   await expect(app.getByRole('status')).toContainText('Ready.');
-  await app.getByLabel('URL name', { exact: true }).fill('mcp-app-project');
+  await expect(app.getByRole('navigation')).toHaveCount(0);
+  await expect(
+    app.getByRole('button', { name: 'New draft', exact: true }),
+  ).toHaveCount(0);
   await app
     .getByLabel('Title', { exact: true })
     .fill('A project authored inside the conversation');
@@ -40,6 +62,15 @@ test('official MCP App bridge edits a project, uploads and removes private media
     preview.getByText('Engineering lead', { exact: true }),
   ).toBeVisible();
   await app.getByText('Media and uploads', { exact: true }).click();
+  await app
+    .getByRole('combobox', { name: 'Use upload as', exact: true })
+    .selectOption('inline');
+  await expect(
+    app.getByRole('button', { name: 'Open final review', exact: true }),
+  ).toBeEnabled();
+  await app
+    .getByRole('combobox', { name: 'Use upload as', exact: true })
+    .selectOption('image');
   await app.locator('#upload').setInputFiles({
     name: 'app-cover.jpg',
     mimeType: 'image/jpeg',
@@ -74,7 +105,7 @@ test('official MCP App bridge edits a project, uploads and removes private media
   await expect(app.getByRole('status')).toContainText('Draft saved.');
   await expect(preview.locator('img')).toHaveCount(0);
   await app
-    .getByRole('heading', { name: 'Draft authoring', exact: true })
+    .getByRole('heading', { name: 'Review draft', exact: true })
     .scrollIntoViewIfNeeded();
   await testInfo.attach('mcp-app-project-editor', {
     body: await page.screenshot({ fullPage: true }),
@@ -99,6 +130,9 @@ test('official MCP App bridge edits a project, uploads and removes private media
   );
   expect(calls).toContain('append_authoring_upload');
   expect(calls).toContain('update_project_draft');
+  expect(
+    calls.some((name) => /^(create_|list_posts|list_projects)/.test(name)),
+  ).toBe(false);
   expect(calls.some((name) => /publish|approve|deploy/.test(name))).toBe(false);
   await expect(
     app.getByRole('button', { name: 'Publish', exact: true }),
@@ -126,20 +160,35 @@ test('MCP App preserves unsaved work and rejects a stale save without overwritin
     },
   });
   expect((await result.json()).isError).not.toBe(true);
-  await page.goto('http://127.0.0.1:4334/');
+  const other = await request.post('http://127.0.0.1:4334/tool', {
+    data: {
+      name: 'create_post_draft',
+      arguments: {
+        slug: 'app-other-prepared',
+        metadata: {
+          title: 'Another prepared website draft',
+          summary:
+            'A separate prepared post to verify agent handoffs preserve unsaved edits.',
+          date: '2026-10-29',
+          category: 'Architecture',
+        },
+        body: 'Another saved draft body.',
+      },
+    },
+  });
+  expect((await other.json()).isError).not.toBe(true);
+  await page.goto('http://127.0.0.1:4334/?slug=app-conflict');
   const app = page.frameLocator('iframe[title="Website authoring app"]');
   await expect(app.getByRole('status')).toContainText('Ready.');
   await app
-    .getByRole('button', {
-      name: 'An existing draft for conflict checks',
-      exact: false,
-    })
-    .click();
-  await expect(app.getByRole('status')).toContainText('Saved draft loaded.');
-  await app
     .getByLabel('Title', { exact: true })
     .fill('My unsaved editorial title');
-  await app.getByRole('button', { name: 'New draft', exact: true }).click();
+  await page.evaluate(() =>
+    (window as any).testHost.deliver({
+      name: 'get_post',
+      arguments: { slug: 'app-other-prepared' },
+    }),
+  );
   await expect(app.getByRole('status')).toContainText('Save or reload');
   await expect(app.getByLabel('Title', { exact: true })).toHaveValue(
     'My unsaved editorial title',
@@ -166,6 +215,54 @@ test('MCP App preserves unsaved work and rejects a stale save without overwritin
   await expect(app.getByRole('status')).toContainText('Reloaded the latest');
   await expect(app.getByLabel('Body (Markdown)', { exact: true })).toHaveValue(
     'A concurrent saved revision.',
+  );
+});
+
+test('MCP App waits for an agent-prepared draft instead of offering manual draft creation', async ({
+  page,
+  request,
+}) => {
+  await page.goto('http://127.0.0.1:4334/');
+  const app = page.frameLocator('iframe[title="Website authoring app"]');
+  await expect(app.getByRole('status')).toContainText(
+    'Waiting for a draft from your agent.',
+  );
+  await expect(
+    app.getByText('Ask your agent to prepare or open a website draft.', {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(app.getByLabel('Title', { exact: true })).toBeHidden();
+  await expect(app.getByRole('navigation')).toHaveCount(0);
+  await expect(
+    app.getByRole('button', { name: 'New draft', exact: true }),
+  ).toHaveCount(0);
+  const prepared = await request.post('http://127.0.0.1:4334/tool', {
+    data: {
+      name: 'create_post_draft',
+      arguments: {
+        slug: 'app-agent-delivery',
+        metadata: {
+          title: 'A draft delivered by the agent',
+          summary:
+            'The human review App loads the prepared draft without a manual creation workflow.',
+          date: '2026-10-29',
+          category: 'Architecture',
+        },
+        body: 'Prepared content waiting for human review.',
+      },
+    },
+  });
+  expect((await prepared.json()).isError).not.toBe(true);
+  await page.evaluate(() =>
+    (window as any).testHost.deliver({
+      name: 'get_post',
+      arguments: { slug: 'app-agent-delivery' },
+    }),
+  );
+  await expect(app.getByRole('status')).toContainText('Ready.');
+  await expect(app.getByLabel('Title', { exact: true })).toHaveValue(
+    'A draft delivered by the agent',
   );
 });
 
@@ -231,4 +328,82 @@ test('MCP App edits imported post metadata while locking the original text and p
   expect(saved.metadata.date.slice(0, 10)).toBe(capture.date);
   expect(saved.metadata.draft).toBe(true);
   expect(saved.revision).toBe(2);
+});
+
+test('MCP App plays a private video in situ above the article without leaving the review', async ({
+  page,
+  request,
+}, testInfo) => {
+  const uploadedResponse = await request.post('http://127.0.0.1:4334/tool', {
+    data: {
+      name: 'upload_media',
+      arguments: { path: path.resolve('public/videos/buttery.mp4') },
+    },
+  });
+  const uploaded = await uploadedResponse.json();
+  expect(uploaded.isError).not.toBe(true);
+  const videoUrl = uploaded.structuredContent.url;
+  expect(videoUrl).toMatch(/^\/media\/[a-f0-9]{64}\.mp4$/);
+  const preparedResponse = await request.post('http://127.0.0.1:4334/tool', {
+    data: {
+      name: 'create_post_draft',
+      arguments: {
+        slug: 'app-inline-video',
+        metadata: {
+          title: 'A prepared video post for review',
+          summary:
+            'A private video should play directly in the saved preview while the post stays a draft.',
+          date: '2026-10-29',
+          category: 'Developer tools',
+          video: videoUrl,
+          videoPoster: '/images/videos/go-plant.jpg',
+          linkedinVideoCredit: 'An isolated local video fixture.',
+        },
+        body:
+          '## A long article\n\n' +
+          'This prepared text appears below the video.\n\n'.repeat(20),
+      },
+    },
+  });
+  expect((await preparedResponse.json()).isError).not.toBe(true);
+  await page.goto('http://127.0.0.1:4334/?slug=app-inline-video');
+  const app = page.frameLocator('iframe[title="Website authoring app"]');
+  await expect(app.getByRole('status')).toContainText('Ready.');
+  await expect(app.locator('#preview-status')).toHaveText(
+    'Play the video here using its controls.',
+  );
+  const preview = app.frameLocator('iframe[title="Saved draft preview"]');
+  const video = preview.locator('video');
+  await expect(video).toBeVisible();
+  await expect(video).toHaveJSProperty('controls', true);
+  await expect(video).toHaveJSProperty('autoplay', false);
+  await expect(video).toHaveAttribute('playsinline', '');
+  await expect(video).toHaveAttribute('poster', /^blob:/);
+  await expect(video.locator('source')).toHaveAttribute('src', /^blob:/);
+  await expect
+    .poll(() => video.evaluate((player: HTMLVideoElement) => player.readyState))
+    .toBeGreaterThanOrEqual(1);
+  await expect(video).toHaveJSProperty('paused', true);
+  await expect(preview.locator('figcaption')).toHaveText(
+    'An isolated local video fixture.',
+  );
+  const videoBox = await video.boundingBox();
+  const articleBox = await preview.locator('article').boundingBox();
+  expect(videoBox!.y + videoBox!.height).toBeLessThanOrEqual(articleBox!.y);
+  await video.press('Space');
+  await expect
+    .poll(() =>
+      video.evaluate((player: HTMLVideoElement) => player.currentTime),
+    )
+    .toBeGreaterThan(0.25);
+  await video.press('Space');
+  await expect(video).toHaveJSProperty('paused', true);
+  await app
+    .getByRole('heading', { name: 'Review draft', exact: true })
+    .scrollIntoViewIfNeeded();
+  await testInfo.attach('mcp-app-inline-video', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+  expect(page.url()).toBe('http://127.0.0.1:4334/?slug=app-inline-video');
 });

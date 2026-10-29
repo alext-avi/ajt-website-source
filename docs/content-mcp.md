@@ -5,16 +5,20 @@ The `ajt-content` MCP creates website post and project drafts and submits specif
 ## Interactive MCP App
 
 Ask to open the website authoring App, or call `open_authoring_app` with
-`collection: "posts"` or `"projects"` and an optional draft `slug`. Hosts that
+`collection: "posts"` or `"projects"` and the prepared draft's `slug`. Hosts that
 support MCP Apps render its self-contained `ui://ajt-content/authoring.html`
 resource in the conversation. Reading, creating and updating a draft also
 advertises this resource. Reconnect the MCP after installing an updated server
 so the host refreshes its tools and resource metadata. Hosts without MCP Apps
 can continue using the same draft tools and local review desk.
 
-The App provides a searchable draft library, metadata and Markdown editor,
-private media picker/upload/replacement, saved content preview, and **Open final
-review**. These controls call the existing tools directly; editing does not
+The agent creates and selects drafts through the MCP tools. The App focuses on
+reviewing that prepared draft: a metadata and Markdown editor, private media
+picker/upload/replacement, saved content preview, and **Open final review**.
+It has no draft-library sidebar, URL-name setup or New draft control. Opening it
+without a slug shows a prompt to ask the agent to prepare or open a draft; no
+manual creation form or background draft-list request is offered.
+These controls call the existing tools directly; editing does not
 require a model turn. Revision conflicts preserve unsaved work. Published
 content is read-only, and imported LinkedIn text/date remain locked. Clear an
 optional media or repository field to remove it; omitted patch fields retain
@@ -24,6 +28,12 @@ The embedded preview is a compact content check. The local desk still supplies
 the final website layout and human Publish control. The App has no Publish
 button and cannot approve or deploy. **Open final review** submits the saved
 revision and asks the host to open its private loopback review link.
+
+Attached MP4 videos play directly in the App preview near the top, with a poster,
+native playback controls, inline playback and any saved source credit. They
+start paused. The App shows progress while loading private video bytes through
+MCP; no public draft-media endpoint or external video page is needed. The
+25 MiB preview limit still applies, with larger media reviewed at the local desk.
 
 App resources bundle their scripts/styles locally, permit no external network
 connections, and allow only a blob frame for the inert preview. Private media
@@ -137,7 +147,8 @@ These tests are part of `npm run test:ci`; reports and screenshots are retained 
 The App tests use the official MCP Apps `AppBridge`, the actual resource and a
 real stdio MCP server backed by isolated SQLite. Playwright edits projects,
 round-trips private media bytes, checks rendered previews and stale revisions,
-and verifies the human review handoff without invoking Publish. Protocol tests
+and verifies the human review handoff without invoking Publish. It also starts
+and pauses a real private MP4 through the embedded player's controls. Protocol tests
 also enforce resource metadata, app-only routing metadata, upload bounds,
 signature checks and traversal rejection. This tests the standard bridge;
 individual desktop hosts must also support MCP Apps and allow loopback links.

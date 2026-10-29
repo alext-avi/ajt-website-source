@@ -47,7 +47,7 @@ Environment overrides are optional. Empty email or LinkedIn overrides fall back 
 
 ## Content
 
-Website posts and projects can be drafted as D1 data through the local `ajt-content` MCP. Its interactive MCP App provides a draft library, editor, saved preview and private media uploads/replacements inside compatible hosts. Alex opens the local desk for final review and presses Publish; the MCP has no publishing tool. Repeatable LinkedIn imports preserve original text and dates and flag duplicates or source edits. See [draft, review, and publish](docs/content-mcp.md) and [LinkedIn synchronization](docs/linkedin-sync.md).
+Website posts and projects can be drafted as D1 data through the local `ajt-content` MCP. The agent prepares and selects a draft; its interactive MCP App provides a focused editor, saved preview and private media uploads/replacements inside compatible hosts. Alex opens the local desk for final review and presses Publish; the MCP has no publishing tool. Repeatable LinkedIn imports preserve original text and dates and flag duplicates or source edits. This workflow does not post to LinkedIn. See [draft, review, and publish](docs/content-mcp.md) and [LinkedIn synchronization](docs/linkedin-sync.md).
 
 | Collection | Authoring source | Public route |
 | --- | --- | --- |

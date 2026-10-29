@@ -88,7 +88,7 @@ export function registerAuthoringApp(server, tool, store, getPost) {
   );
   tool(
     'open_authoring_app',
-    'Open the interactive website draft editor, rendered preview and media library for posts or projects. Saves drafts only. Final publication remains on Alex’s local review page.',
+    'Open a prepared website post or project draft by slug for human review, editing, preview and media changes. Create and select the draft with the agent tools first. Saves drafts only; it does not post to LinkedIn. Final website publication remains on Alex’s local review page.',
     identity
       .partial({ slug: true })
       .extend({ collection: z.enum(['posts', 'projects']).default('posts') })
@@ -130,12 +130,12 @@ export function registerAuthoringApp(server, tool, store, getPost) {
           ? `<section><h2>Selected outcomes</h2>${list(data.outcomes)}</section>`
           : '';
       const video = data.video
-        ? `<video controls preload="none" poster="${escape(data.videoPoster || '')}" width="${data.videoWidth}" height="${data.videoHeight}"><source src="${escape(data.video)}" type="video/mp4"></video>`
+        ? `<figure class="app-video"><video controls playsinline preload="metadata" aria-label="Video for ${escape(data.title)}" poster="${escape(data.videoPoster || '')}" width="${data.videoWidth}" height="${data.videoHeight}"><source src="${escape(data.video)}" type="video/mp4"></video>${data.linkedinVideoCredit ? `<figcaption>${escape(data.linkedinVideoCredit)}</figcaption>` : ''}</figure>`
         : '';
       return {
         revision: item.revision,
         assets: [...new Set(await postMedia(item))],
-        html: `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'"><style>${styles}\nbody{padding:24px}h1{font-size:clamp(28px,5vw,44px)}.article-grid{display:block}.project-facts{margin-top:24px}video{max-width:100%;height:auto}a{pointer-events:none}</style></head><body><header><p class="eyebrow">${escape(collection === 'projects' ? data.tags.join(' / ') : data.category)}</p><h1>${escape(data.title)}</h1><p class="lede">${escape(data.summary)}</p>${data.date ? `<time>${escape(data.date.slice(0, 10))}</time>` : ''}</header>${picture}<article class="prose">${body}</article>${video}${outcomes}${facts}</body></html>`,
+        html: `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'"><style>${styles}\nbody{padding:24px}h1{font-size:clamp(28px,5vw,44px)}.article-grid{display:block}.project-facts{margin-top:24px}.app-video{margin:24px 0}.app-video video{display:block;width:100%;height:auto;border-radius:8px;background:#000}.app-video figcaption{font-size:12px;color:#a2adc0;margin-top:8px}a{pointer-events:none}</style></head><body><header><p class="eyebrow">${escape(collection === 'projects' ? data.tags.join(' / ') : data.category)}</p><h1>${escape(data.title)}</h1><p class="lede">${escape(data.summary)}</p>${data.date ? `<time>${escape(data.date.slice(0, 10))}</time>` : ''}</header>${video}${picture}<article class="prose">${body}</article>${outcomes}${facts}</body></html>`,
       };
     },
     ui,
