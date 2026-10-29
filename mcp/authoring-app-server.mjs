@@ -33,26 +33,23 @@ const escape = (value) =>
         ch
       ],
   );
-let htmlPromise;
-
 export async function authoringHtml() {
-  htmlPromise ||= (async () => {
-    const result = await build({
-      entryPoints: [path.join(root, 'mcp/authoring-app.mjs')],
-      bundle: true,
-      write: false,
-      platform: 'browser',
-      format: 'iife',
-      target: 'es2022',
-      minify: true,
-    });
-    const css = await fs.readFile(
-      path.join(root, 'mcp/authoring-app.css'),
-      'utf8',
-    );
-    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Website authoring</title><style>${css}</style></head><body><main id="app"><p role="status">Connecting to the publishing desk…</p></main><script>${result.outputFiles[0].text.replaceAll('</script', '<\\/script')}</script></body></html>`;
-  })();
-  return htmlPromise;
+  // Read current UI sources on each resource request, so reopening the App
+  // can pick up layout edits without retaining a process-lifetime bundle.
+  const result = await build({
+    entryPoints: [path.join(root, 'mcp/authoring-app.mjs')],
+    bundle: true,
+    write: false,
+    platform: 'browser',
+    format: 'iife',
+    target: 'es2022',
+    minify: true,
+  });
+  const css = await fs.readFile(
+    path.join(root, 'mcp/authoring-app.css'),
+    'utf8',
+  );
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Website authoring</title><style>${css}</style></head><body><main id="app"><p role="status">Connecting to the publishing desk…</p></main><script>${result.outputFiles[0].text.replaceAll('</script', '<\\/script')}</script></body></html>`;
 }
 
 export function registerAuthoringApp(server, tool, store, getPost) {
