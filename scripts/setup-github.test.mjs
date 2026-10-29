@@ -131,6 +131,20 @@ test('GitHub setup audits without writes, then migrates only after verified main
   );
 });
 
+test('a missing environment is created and restricted before the first secret write', async (t) => {
+  const { root, state, gh } = await fixture(t, { environment: null });
+  const applied = await setupGitHub({ root, env: {}, gh, apply: true });
+  const puts = state.calls.filter(({ args }) => args.includes('PUT'));
+  assert.equal(puts.length, 1);
+  const creation = state.calls.findIndex(({ args }) => args.includes('PUT'));
+  const policy = state.calls.findIndex(({ args }) => args.includes('POST'));
+  const secret = state.calls.findIndex(
+    ({ args }) => args[0] === 'secret' && args[1] === 'set',
+  );
+  assert(creation < policy && policy < secret);
+  assert.deepEqual(applied.allowedRefs, [{ name: 'main', type: 'branch' }]);
+});
+
 test('migration retains repository copies when target secret storage cannot be verified', async (t) => {
   const { root, state, gh } = await fixture(t, {
     omitSecret: 'B2_MEDIA_APPLICATION_KEY',
