@@ -27,7 +27,8 @@ Astro.response.headers.set('Content-Security-Policy', "frame-ancestors 'none'");
           <li class="review-item">
             <a href={`/review/${review.id}`}>{review.title}</a>
             <span>
-              Revision {review.revision} · {review.status.replace('-', ' ')}
+              {review.collection === 'projects' ? 'Project' : 'Post'} · Revision{' '}
+              {review.revision} · {review.status.replace('-', ' ')}
             </span>
           </li>
         ))}

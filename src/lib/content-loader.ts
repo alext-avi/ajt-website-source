@@ -1,13 +1,15 @@
 import fs from 'node:fs/promises';
 import { glob, type Loader } from 'astro/loaders';
 
-/** Production builds use an exported D1 snapshot; local editing keeps Keystatic. */
+/** Published content uses D1 snapshots; legacy post/talk file previews remain explicit. */
 export function contentLoader(
   collection: 'posts' | 'projects' | 'talks',
 ): Loader {
   if (
     process.env.CONTENT_SOURCE === 'files' ||
-    (import.meta.env.DEV && process.env.CONTENT_SOURCE !== 'd1')
+    (import.meta.env.DEV &&
+      process.env.CONTENT_SOURCE !== 'd1' &&
+      collection !== 'projects')
   ) {
     return glob({
       pattern: '**/*.{md,mdx}',

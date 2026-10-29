@@ -90,6 +90,7 @@ export function postDigest(post) {
   return createHash('sha256')
     .update(
       JSON.stringify({
+        ...(post.collection ? { collection: post.collection } : {}),
         slug: post.slug,
         metadata: post.metadata,
         body: post.body,
@@ -111,6 +112,7 @@ async function saveReview(review) {
 }
 
 export async function createReview(post, backend) {
+  reviewCollection(post);
   if (!post.metadata.draft)
     throw new Error('Only drafts can be submitted for review');
   await renderPost(post.body);
@@ -133,6 +135,13 @@ export async function createReview(post, backend) {
     reviewUrl: `${reviewOrigin().origin}/review/${review.id}`,
     status: 'awaiting-human-review',
   };
+}
+
+export function reviewCollection(post) {
+  const collection = post.collection || 'posts';
+  if (!['posts', 'projects'].includes(collection))
+    throw new Error('Invalid review collection');
+  return collection;
 }
 
 export function reviewOrigin() {
@@ -235,7 +244,7 @@ export async function readReview(id) {
   )
     throw new Error('Invalid review record');
   validateEntry({
-    collection: 'posts',
+    collection: reviewCollection(review.post),
     slug: review.post.slug,
     data: review.post.metadata,
     body: review.post.body,
@@ -252,6 +261,7 @@ export async function listReviews() {
     reviews.push({
       id: review.id,
       title: review.post.metadata.title,
+      collection: reviewCollection(review.post),
       revision: review.post.revision,
       status: review.status,
       createdAt: review.createdAt,
@@ -260,14 +270,16 @@ export async function listReviews() {
   return reviews.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-async function currentPost(store, slug) {
+async function currentPost(store, slug, collection = 'posts') {
+  reviewCollection({ collection });
   const row = (
     await store.query(
-      `SELECT slug,metadata_json,body_markdown,revision FROM content_items WHERE collection='posts' AND slug=${sqlText(slug)};`,
+      `SELECT slug,metadata_json,body_markdown,revision FROM content_items WHERE collection=${sqlText(collection)} AND slug=${sqlText(slug)};`,
     )
   )[0];
   if (!row) throw new Error('The draft no longer exists');
   return {
+    ...(collection === 'projects' ? { collection } : {}),
     slug: row.slug,
     metadata: JSON.parse(row.metadata_json),
     body: row.body_markdown,
@@ -279,7 +291,11 @@ export async function reviewState(store, id) {
   const review = interruptedReview(await readReview(id));
   if (review.backend !== store.identity)
     throw new Error('This review belongs to another database');
-  const current = await currentPost(store, review.post.slug);
+  const current = await currentPost(
+    store,
+    review.post.slug,
+    reviewCollection(review.post),
+  );
   let expected = review.post;
   if (review.approvedAt)
     expected = {
@@ -322,7 +338,10 @@ export async function publishReview(
     );
   if (review.status === 'published' || review.status === 'approved-local')
     return review;
-  if (new Date(review.post.metadata.date).getTime() > Date.now())
+  if (
+    reviewCollection(review.post) === 'posts' &&
+    new Date(review.post.metadata.date).getTime() > Date.now()
+  )
     throw new Error(
       'This post has a future date. Revise the date before publishing.',
     );
@@ -341,10 +360,14 @@ export async function publishReview(
       await materializeMedia(await postMedia(review.post), store);
     const metadata = { ...review.post.metadata, draft: false };
     const rows = await store.query(
-      `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-review',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection='posts' AND slug=${sqlText(review.post.slug)} AND revision=${review.post.revision} AND is_draft=1 RETURNING revision;`,
+      `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-review',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection=${sqlText(reviewCollection(review.post))} AND slug=${sqlText(review.post.slug)} AND revision=${review.post.revision} AND is_draft=1 RETURNING revision;`,
     );
     if (!rows.length) {
-      const retry = await currentPost(store, review.post.slug);
+      const retry = await currentPost(
+        store,
+        review.post.slug,
+        reviewCollection(review.post),
+      );
       const approved = {
         ...review.post,
         metadata,
@@ -399,12 +422,12 @@ export async function reopenReview(store, id, csrf) {
     );
   const metadata = { ...review.post.metadata, draft: true };
   const rows = await store.query(
-    `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-editor',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection='posts' AND slug=${sqlText(review.post.slug)} AND revision=${current.revision} AND is_draft=${current.metadata.draft ? 1 : 0} RETURNING revision;`,
+    `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-editor',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection=${sqlText(reviewCollection(review.post))} AND slug=${sqlText(review.post.slug)} AND revision=${current.revision} AND is_draft=${current.metadata.draft ? 1 : 0} RETURNING revision;`,
   );
   if (!rows.length)
     throw new Error('Revision conflict; refresh before editing');
   return createReview(
-    await currentPost(store, review.post.slug),
+    await currentPost(store, review.post.slug, reviewCollection(review.post)),
     store.identity,
   );
 }

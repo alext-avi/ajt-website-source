@@ -7,6 +7,7 @@ import {
   createReview,
   failReview,
   reopenReview,
+  reviewCollection,
 } from './reviews.mjs';
 import { updateDraft } from './content-server.mjs';
 import { saveMedia } from './media.mjs';
@@ -80,28 +81,52 @@ export const POST: APIRoute = async ({ request, params, redirect }) => {
           { status: 409 },
         );
       const text = (field: string) => String(form.get(field) || '').trim();
+      const lines = (field: string) =>
+        text(field)
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean);
+      const collection = reviewCollection(review.post);
       const post = await updateDraft(
         store,
         {
           slug: review.post.slug,
           expectedRevision: review.post.revision,
-          body: String(form.get('body') || ''),
+          body: String(form.get('body') || '').replace(/\r\n/g, '\n'),
           metadata: {
             title: text('title'),
             summary: text('summary'),
-            date: text('date'),
-            category: text('category'),
+            ...(collection === 'projects'
+              ? {
+                  role: text('role'),
+                  technologies: text('technologies')
+                    .split(',')
+                    .map((value) => value.trim())
+                    .filter(Boolean),
+                  outcomes: lines('outcomes'),
+                  relatedArticles: lines('relatedArticles'),
+                  repository: text('repository') || undefined,
+                  kind: text('kind'),
+                  order: Number(text('order')),
+                  featured: form.get('featured') === 'on',
+                }
+              : { date: text('date'), category: text('category') }),
             tags: text('tags')
               .split(',')
               .map((tag) => tag.trim())
               .filter(Boolean),
             image: text('image') || undefined,
             imageAlt: text('imageAlt') || undefined,
-            video: text('video') || undefined,
-            videoPoster: text('videoPoster') || undefined,
+            ...(collection === 'posts'
+              ? {
+                  video: text('video') || undefined,
+                  videoPoster: text('videoPoster') || undefined,
+                }
+              : {}),
           },
         },
         'human-editor',
+        collection,
       );
       const next = await createReview(post, store.identity);
       return redirect('/review/' + next.id, 303);

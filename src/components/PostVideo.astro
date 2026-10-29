@@ -21,6 +21,9 @@ const data = post.data;
       <source src={data.video} type="video/mp4" />
       <a href={data.video}>Download the video</a>
     </video>
+    {data.linkedinVideoCredit && (
+      <figcaption>Video credits: {data.linkedinVideoCredit}</figcaption>
+    )}
   </figure>
 )}
 {data.linkedinVideoEmbed && (

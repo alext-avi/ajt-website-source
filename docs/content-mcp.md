@@ -1,6 +1,6 @@
 # Draft, review, and publish
 
-The `ajt-content` MCP creates website post drafts and submits specific revisions to the local publishing desk. Alex edits and approves the rendered draft there. The MCP does not expose arbitrary SQL, approval, publication, deployment, or deletion tools. It does not post to LinkedIn.
+The `ajt-content` MCP creates website post and project drafts and submits specific revisions to the local publishing desk. Alex edits and approves the rendered draft there. The MCP does not expose arbitrary SQL, approval, publication, deployment, or deletion tools. It does not post to LinkedIn.
 
 ## Use the workflow
 
@@ -16,6 +16,35 @@ Saving or submitting a review never changes the live site. An edit made after a 
 An approval changes the D1 record to publication-ready before deployment. If staging or upload fails, that approval remains in D1 and the desk reports failure; it does not claim that the post is live. Inspect the local publishing log before retrying an uncertain upload. A failed staging test prevents production upload. Logs and review records stay in ignored `.wrangler/content-review/`.
 
 If the review server stops during publication, a private SQLite lock tracks its owner and the deployment child. On macOS/Linux it also tracks the child's process group; on Windows only the direct child PID is tracked, so recovery does not guarantee detection of surviving grandchildren. An active tracked process keeps the lock. Once the tracked processes have stopped, the desk shows an interrupted publication with an unknown outcome, allowing an explicit retry or return to draft after inspecting the log. Lock acquisition and stale-owner replacement are transactional; recovery never publishes automatically.
+
+## Projects as data
+
+Projects already use the same D1 `content_items` table and shared validated
+schema as posts. Use `list_projects`, `get_project`, `get_project_history`,
+`create_project_draft`, `update_project_draft`, and `submit_project_for_review`.
+Creating a project requires title, summary, role and Markdown body. Optional
+fields include technologies, supported outcomes, repository URL, related article
+slugs, display order, featured status, tags, cover image/description, and the
+existing illustration choices. Project dates are not required or inferred.
+
+The project desk supports editing these fields, private cover uploads and inline
+image/PDF links. Its preview and public detail route share the same component,
+including artwork, body, outcomes and role/tools sidebar. Revision checks, stale
+reviews, private media and human-only publication apply equally to both
+collections. Matching post/project slugs cannot cross-edit or cross-publish.
+Existing published projects remain protected; this workflow only changes drafts.
+
+## LinkedIn captures
+
+Use `check_linkedin_sync` and `import_linkedin_post` for repeatable imports of
+captured original posts. They preserve the source text and date, recognize
+existing source identifiers and report upstream edits without overwriting content.
+The publishing desk displays the original capture and keeps its text/date read-only
+while allowing website metadata and media edits. Neither tool reads LinkedIn or
+publishes. See [LinkedIn synchronization](linkedin-sync.md) for capture, source-date
+verification, API limitations, and ongoing checks. Apply additive migration
+`0003_linkedin_sources.sql` before remote use, then restart the MCP connection to
+refresh its tool list.
 
 ## Media
 
@@ -49,7 +78,7 @@ node mcp/content-server.mjs --local --database .wrangler/example.sqlite --local-
 
 Remote mode uses the existing protected Wrangler login, or a Cloudflare token supplied to the server process. Backblaze authoring credentials live in an ignored owner-only `.wrangler/content-media/b2.json`; no credentials are placed in source or returned by a tool. Local SQLite files and review records are private to the OS user. This is a local stdio integration, not a hosted public MCP endpoint. It is an interface restriction, not a sandbox against code already running with the same user's shell/credential access.
 
-The tools are `upload_media`, `list_media`, `list_posts`, `get_post`, `get_post_history`, `create_post_draft`, `update_post_draft`, and `submit_post_for_review`. `list_posts` defaults to drafts. Writes are limited to private uploads and post drafts, retain revision history, validate the shared content schema, and check referenced assets. Bodies are limited to 32 KB and metadata to 16 KB. None can publish, approve, delete, deploy, or execute arbitrary SQL. Local mode never falls back to remote storage or remote D1.
+The post tools are `upload_media`, `list_media`, `list_posts`, `get_post`, `get_post_history`, `create_post_draft`, `update_post_draft`, and `submit_post_for_review`. `list_posts` defaults to drafts. Writes are limited to private uploads and post drafts, retain revision history, validate the shared content schema, and check referenced assets. Bodies are limited to 32 KB and metadata to 16 KB. None can publish, approve, delete, deploy, or execute arbitrary SQL. Local mode never falls back to remote storage or remote D1.
 
 The review console starts automatically on submission, or manually with `npm run content:review`. It binds only to `127.0.0.1:4330`. Review URLs are opaque capabilities; keep them private. Write requests require the matching review confirmation, exact same-origin browser metadata, and current revision/digest. A global local publication lock prevents two desk publications at once. Do not run manual or CI production deployments concurrently with a desk publication. A future hosted console needs its own authenticated publisher identity and authorization boundary.
 

@@ -47,21 +47,21 @@ Environment overrides are optional. Empty email or LinkedIn overrides fall back 
 
 ## Content
 
-New website posts can be drafted through the local `ajt-content` MCP and edited in the publishing desk, with a rendered preview and private media uploads/replacements. Alex presses Publish; the MCP has no publishing tool. See [draft, review, and publish](docs/content-mcp.md).
+Website posts and projects can be drafted as D1 data through the local `ajt-content` MCP and edited in the publishing desk, with rendered previews and private media uploads/replacements. Alex presses Publish; the MCP has no publishing tool. Repeatable LinkedIn imports preserve original text and dates and flag duplicates or source edits. See [draft, review, and publish](docs/content-mcp.md) and [LinkedIn synchronization](docs/linkedin-sync.md).
 
-| Collection | Source                       | Public route        |
-| ---------- | ---------------------------- | ------------------- |
-| Writing    | `src/content/posts/*.mdx`    | `/writing/<slug>/`  |
-| Projects   | `src/content/projects/*.mdx` | `/projects/<slug>/` |
-| Speaking   | `src/content/talks/*.mdx`    | `/speaking/<slug>/` |
+| Collection | Authoring source | Public route |
+| --- | --- | --- |
+| Writing | D1 through the MCP and review desk | `/writing/<slug>/` |
+| Projects | D1 through the MCP and review desk | `/projects/<slug>/` |
+| Speaking | Existing local authoring files imported into D1 | `/speaking/<slug>/` |
 
-These are local authoring paths. Production builds use `data/content.json`, exported from D1. See [D1 storage and publication](docs/d1-content.md) and [the editing guide](docs/content.md). All three collections share the same validation schemas. New entries default to `draft: true`.
+Production builds use `data/content.json`, exported from published D1 records. Projects also use that data snapshot in local development; new drafts are previewed in the publishing desk. Legacy MDX files remain historical sources, not the new-content workflow. See [D1 storage and publication](docs/d1-content.md) and [the editing guide](docs/content.md). All three collections share validation schemas. New entries default to `draft: true`.
 
 The public material includes 33 dated LinkedIn posts with original author text and source links, three sourced project overviews, two past All Things Open sessions, a past Apex session, a delivered enterprise consulting session, and a proposed speaking topic. Sixteen attached images/GIFs and three original videos are hosted locally. Two shared videos use LinkedIn’s original video-only players. Unpublished drafts are excluded from this release.
 
 ## Browser editing and GitHub
 
-Keystatic runs locally by default. Its admin UI and API do not exist in production output. Its files are authoring inputs; publishing now requires pushing the specific record to D1 and exporting a fresh publication snapshot. No hosted CMS account or paid infrastructure is required.
+Keystatic runs locally by default. Its admin UI and API do not exist in production output. Its files are legacy authoring inputs. New posts and projects use the MCP and human review desk; editing a file does not change D1 or publish content. No hosted CMS account or paid infrastructure is required.
 
 An optional authenticated **GitHub mode** is implemented for the local editor. It requires an existing repository and a GitHub App; setup and the hosted-editor tradeoff are documented in [the CMS decision](docs/cms.md). GitHub-backed login cannot be verified until that repository and App are configured. The deployed static website does not offer an unauthenticated content editor.
 

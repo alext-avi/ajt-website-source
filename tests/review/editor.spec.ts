@@ -185,3 +185,178 @@ test('stale reviews and cross-origin requests cannot publish a changed draft', a
   const post = await tool('get_post', { slug: 'stale-editor-test' });
   expect(post.metadata.draft).toBe(true);
 });
+
+test('project data is edited, rendered and approved independently of a post with the same slug', async ({
+  page,
+  request,
+}, testInfo) => {
+  const slug = 'project-workflow';
+  await tool('create_post_draft', {
+    slug,
+    metadata,
+    body: 'Separate post must stay a draft.',
+  });
+  await tool('create_project_draft', {
+    slug,
+    metadata: {
+      title: 'A project ready for review',
+      summary:
+        'A project case study that demonstrates data-driven authoring and human approval.',
+      role: 'Architecture lead',
+      technologies: ['TypeScript', 'SQLite'],
+      outcomes: ['A verified initial outcome'],
+      kind: 'agents',
+      order: 2,
+    },
+    body: '## The problem\n\nA real **case study** rendered with the public project layout.',
+  });
+  const review = await tool('submit_project_for_review', {
+    slug,
+    expectedRevision: 1,
+  });
+  await page.goto('/review/' + review.id);
+  await expect(page.getByText('Project editor', { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel('Publication date', { exact: true }),
+  ).toHaveCount(0);
+  const preview = page.frameLocator('iframe[title="Rendered draft"]');
+  await expect(
+    preview.getByRole('heading', { name: 'My role', exact: true }),
+  ).toBeVisible();
+  await page
+    .getByLabel('My role', { exact: true })
+    .fill('Engineering and architecture lead');
+  await page
+    .getByLabel('Tools & disciplines', { exact: true })
+    .fill('TypeScript, SQLite, Playwright');
+  await page
+    .getByLabel('Selected outcomes', { exact: true })
+    .fill('A verified initial outcome\nA reviewed publishing workflow');
+  await page
+    .getByLabel('Repository URL', { exact: true })
+    .fill('https://github.com/example/project');
+  await page.getByLabel('Featured project', { exact: true }).check();
+  await expect(
+    page.getByRole('button', { name: 'Publish', exact: true }),
+  ).toBeDisabled();
+  await page.locator('[data-upload-field="image"]').setInputFiles({
+    name: 'project.jpg',
+    mimeType: 'image/jpeg',
+    buffer: Buffer.concat([
+      await fs.readFile('public/images/videos/go-plant.jpg'),
+      Buffer.from('project integration fixture'),
+    ]),
+  });
+  await expect(page.locator('#upload-status')).toContainText('Upload ready');
+  await page
+    .getByLabel('Cover image description')
+    .fill('Project workflow illustration');
+  await page
+    .getByRole('button', { name: 'Save changes and refresh preview' })
+    .click();
+  await expect(
+    preview.getByText('Engineering and architecture lead', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    preview.getByText('A reviewed publishing workflow', { exact: true }),
+  ).toBeVisible();
+  await expect(preview.getByText('Playwright', { exact: true })).toBeVisible();
+  await expect(
+    preview.getByAltText('Project workflow illustration'),
+  ).toBeVisible();
+  await expect(
+    preview.getByRole('link', { name: 'View repository' }),
+  ).toHaveAttribute('href', 'https://github.com/example/project');
+  const oldReview = await request.get('/review/' + review.id);
+  expect(await oldReview.text()).toContain('This draft has changed');
+  const saved = await tool('get_project', { slug });
+  expect(saved.revision).toBe(2);
+  expect(saved.metadata.featured).toBe(true);
+  expect(saved.metadata.kind).toBe('agents');
+  await testInfo.attach('project-editor-and-preview', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+  // Publication is deliberately isolated to this suite's local SQLite database.
+  await page.getByRole('button', { name: 'Publish', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText(
+    'Approved in the local test database',
+  );
+  expect((await tool('get_project', { slug })).metadata.draft).toBe(false);
+  expect((await tool('get_post', { slug })).metadata.draft).toBe(true);
+  expect(
+    (await tool('get_project_history', { slug })).revisions[0].changedBy,
+  ).toBe('human-review');
+});
+
+test('LinkedIn capture imports once, renders literal text, and preserves the original while allowing editorial metadata', async ({
+  page,
+}) => {
+  const capture = {
+    sourceUrl:
+      'https://www.linkedin.com/feed/update/urn:li:share:7521286317457084499/',
+    date: '2026-10-28',
+    text: 'Literal *words*, not italic.\n\nThe original LinkedIn author body.',
+    dateEvidence: 'Original date confirmed from the owner-provided export.',
+  };
+  const imported = await tool('import_linkedin_post', {
+    capture,
+    metadata: {
+      title: 'A LinkedIn capture for review',
+      summary: metadata.summary,
+      category: metadata.category,
+    },
+  });
+  const review = await tool('submit_post_for_review', {
+    slug: imported.slug,
+    expectedRevision: 1,
+  });
+  await page.goto('/review/' + review.id);
+  await expect(
+    page.getByRole('link', { name: 'Original LinkedIn post', exact: true }),
+  ).toHaveAttribute('href', capture.sourceUrl);
+  await expect(page.getByLabel('Publication date')).toHaveAttribute(
+    'readonly',
+    '',
+  );
+  await expect(page.getByLabel('Post body (Markdown)')).toHaveAttribute(
+    'readonly',
+    '',
+  );
+  const preview = page.frameLocator('iframe[title="Rendered draft"]');
+  await expect(preview.locator('article')).toContainText(
+    'Literal *words*, not italic.',
+  );
+  await expect(preview.locator('article em')).toHaveCount(0);
+  await page
+    .getByLabel('Title', { exact: true })
+    .fill('A reviewed LinkedIn article title');
+  await page
+    .getByRole('button', { name: 'Save changes and refresh preview' })
+    .click();
+  await expect(
+    preview.getByRole('heading', {
+      name: 'A reviewed LinkedIn article title',
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect(
+    (await tool('get_post', { slug: imported.slug })).linkedinSource.text,
+  ).toBe(capture.text);
+  const duplicate = await tool('import_linkedin_post', {
+    capture,
+    metadata: {
+      title: 'A second attempt',
+      summary: metadata.summary,
+      category: metadata.category,
+    },
+  });
+  expect(duplicate.state).toBe('already-imported');
+  expect(
+    (
+      await tool('check_linkedin_sync', {
+        captures: [{ ...capture, text: 'An upstream edit' }],
+      })
+    ).posts[0].state,
+  ).toBe('source-changed');
+});

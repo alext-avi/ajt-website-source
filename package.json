@@ -27,6 +27,7 @@
     "db:push": "node scripts/content-db.mjs push",
     "mcp:content:local": "node mcp/content-server.mjs --local --database .wrangler/content-mcp.sqlite",
     "mcp:content:remote": "node mcp/content-server.mjs --remote",
+    "linkedin:sync": "node scripts/linkedin-sync.mjs",
     "content:review": "AJT_REVIEW_ENABLED=1 astro dev --ignore-lock --host 127.0.0.1 --port 4330",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

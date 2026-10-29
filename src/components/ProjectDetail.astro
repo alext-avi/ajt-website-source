@@ -1,0 +1,89 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import ProjectArt from './ProjectArt.astro';
+import ContactBand from './ContactBand.astro';
+import PostRow from './PostRow.astro';
+interface Props {
+  project: Pick<CollectionEntry<'projects'>, 'id' | 'data'>;
+  related?: CollectionEntry<'posts'>[];
+  preview?: boolean;
+}
+const { project, related = [], preview = false } = Astro.props;
+---
+
+<header class="shell detail-head">
+  <a class="breadcrumb" href="/projects/">
+    ← All projects
+  </a>
+  <p class="eyebrow">{project.data.tags.join(' / ')}</p>
+  <h1>{project.data.title}</h1>
+  <p class="lede">{project.data.summary}</p>
+</header>
+<div class="shell project-detail-art">
+  {project.data.image ? (
+    <img
+      src={project.data.image}
+      alt={project.data.imageAlt ?? ''}
+      width="1200"
+      height="650"
+    />
+  ) : (
+    <ProjectArt kind={project.data.kind} />
+  )}
+</div>
+<div class="shell page-body article-grid">
+  <div class="article-body">
+    {project.data.draft && !preview && (
+      <p class="preview-note">
+        Draft case study for review. Details are unverified and excluded from
+        production.
+      </p>
+    )}
+    <article class="prose">
+      <slot />
+    </article>
+    {project.data.outcomes.length > 0 && (
+      <section class="project-outcomes mt-9 pt-7">
+        <p class="eyebrow mb-4">Selected outcomes</p>
+        <ul class="space-y-3 text-sm">
+          {project.data.outcomes.map((outcome) => (
+            <li class="flex items-start gap-3">
+              <span class="mt-1 shrink-0">
+                <Icon name="check" size={17} />
+              </span>
+              {outcome}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+    {related.length > 0 && (
+      <section class="related-section">
+        <h2>Related thinking.</h2>
+        {related.map((post) => (
+          <PostRow post={post} />
+        ))}
+      </section>
+    )}
+  </div>
+  <aside class="project-facts">
+    <h2>My role</h2>
+    <p>{project.data.role}</p>
+    <h2>Tools & disciplines</h2>
+    <div class="tech-list">
+      {project.data.technologies.map((t) => (
+        <span>{t}</span>
+      ))}
+    </div>
+    {project.data.repository && (
+      <a class="text-link" href={project.data.repository}>
+        View repository <Icon name="github" size={16} />
+      </a>
+    )}
+    <a class="text-link" href="/contact/">
+      Discuss similar work <Icon name="external" size={16} />
+    </a>
+  </aside>
+</div>
+<ContactBand />

@@ -70,6 +70,6 @@ Local state lives in ignored `.wrangler/` and is separate from the remote databa
 
 ## Draft authoring through MCP
 
-The local `ajt-content` MCP supports revision-checked post drafts and a rendered human review desk with editing, media upload/replacement, and a Publish button. See [the content workflow](content-mcp.md). New posts must use this approval workflow; the lower-level maintenance commands above are not a substitute for Alex's approval. No public SQL/write endpoint or autonomous publisher is exposed.
+The local `ajt-content` MCP supports revision-checked post and project drafts and a rendered human review desk with editing, media upload/replacement, and a Publish button. See [the content workflow](content-mcp.md). New content must use this approval workflow; the lower-level maintenance commands above are not a substitute for Alex's approval. LinkedIn captures have a separate private provenance table, populated transactionally with each imported draft after migration `0003_linkedin_sources.sql`. No public SQL/write endpoint or autonomous publisher is exposed.
 
 References: [D1 migrations](https://developers.cloudflare.com/d1/reference/migrations/), [imports and exports](https://developers.cloudflare.com/d1/best-practices/import-export-data/), [pricing](https://developers.cloudflare.com/d1/platform/pricing/).

@@ -54,13 +54,21 @@ test(
     await client.connect(transport);
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map((tool) => tool.name).sort(), [
+      'check_linkedin_sync',
       'create_post_draft',
+      'create_project_draft',
       'get_post',
       'get_post_history',
+      'get_project',
+      'get_project_history',
+      'import_linkedin_post',
       'list_media',
       'list_posts',
+      'list_projects',
       'submit_post_for_review',
+      'submit_project_for_review',
       'update_post_draft',
+      'update_project_draft',
       'upload_media',
     ]);
     const call = (name, args) => client.callTool({ name, arguments: args });
