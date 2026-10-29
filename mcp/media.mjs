@@ -112,7 +112,11 @@ export async function saveMedia(bytes, store, originalName = '') {
     pending: true,
   };
 }
-export async function uploadMediaFile(filename, store) {
+export async function uploadMediaFile(
+  filename,
+  store,
+  originalName = path.basename(filename),
+) {
   if (!path.isAbsolute(filename))
     throw new Error('Provide an absolute path to a media file');
   const file = await fs.open(
@@ -140,7 +144,9 @@ export async function uploadMediaFile(filename, store) {
       throw new Error(
         'The media file changed during upload; retry with a stable file',
       );
-    return saveMedia(bytes.subarray(0, length), store, path.basename(filename));
+    // Handle validation failures before awaiting cleanup, so a rejected media
+    // promise cannot escape as an unhandled rejection in the stdio server.
+    return await saveMedia(bytes.subarray(0, length), store, originalName);
   } finally {
     await file.close();
   }

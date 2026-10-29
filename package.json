@@ -58,11 +58,13 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
     "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/ext-apps": "2.0.4",
     "@modelcontextprotocol/server": "2.4.0",
     "@playwright/test": "1.64.1",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "esbuild": "0.28.2",
     "parse5": "8.0.1",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.2",

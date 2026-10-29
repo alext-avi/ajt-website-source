@@ -8,7 +8,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { createStore } from '../mcp/content-server.mjs';
 import { linkedinIdentity, linkedinMarkdown } from '../mcp/linkedin.mjs';
 import { renderPost } from '../mcp/reviews.mjs';
-import { writeEntrySQL } from './lib/d1-content.mjs';
+import { writeEntrySQL, sqlText } from './lib/d1-content.mjs';
 
 test('real MCP project drafts retain metadata, isolate collections, and protect published projects', async (t) => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ajt-projects-'));
@@ -93,6 +93,7 @@ test('real MCP project drafts retain metadata, isolate collections, and protect 
     { draft: false },
     { date: '2026-10-29' },
     { category: 'Architecture' },
+    { repository: 'javascript:alert(1)' },
   ])
     assert.equal(
       (
@@ -239,6 +240,21 @@ test('real MCP project drafts retain metadata, isolate collections, and protect 
   );
   const rows = await store.query('SELECT count(*) AS n FROM linkedin_sources;');
   assert.equal(rows[0].n, 1);
+  await assert.rejects(
+    store.query(
+      "UPDATE linkedin_sources SET original_text='Replacement' RETURNING source_id",
+    ),
+    /immutable/,
+  );
+  await assert.rejects(
+    store.query('DELETE FROM linkedin_sources RETURNING source_id'),
+    /immutable/,
+  );
+  assert.equal(
+    (await store.query('SELECT original_text FROM linkedin_sources'))[0]
+      .original_text,
+    capture.text,
+  );
   // Failed validation and a collision cannot leave a source record without a draft.
   const invalid = {
     ...capture,
@@ -275,6 +291,22 @@ test('real MCP project drafts retain metadata, isolate collections, and protect 
     (await store.query('SELECT count(*) AS n FROM linkedin_sources;'))[0].n,
     1,
   );
+  // A formatting upgrade must not lock previously imported source captures.
+  const oldText = 'Original first line\nOriginal second line';
+  const oldUrl =
+    'https://www.linkedin.com/feed/update/urn:li:share:7000000000000000001/';
+  await store.query(
+    `INSERT INTO linkedin_sources(source_id,source_url,slug,original_date,original_text,date_evidence,initial_metadata_json,initial_body_markdown) VALUES ('7000000000000000001',${sqlText(oldUrl)},'legacy-source-format',${sqlText(capture.date)},${sqlText(oldText)},'Isolated pre-hard-break capture fixture',${sqlText(JSON.stringify({ ...post.metadata, linkedinUrl: oldUrl }))},${sqlText(oldText)}) RETURNING slug;`,
+  );
+  const oldEdited = value(
+    await call('update_post_draft', {
+      slug: 'legacy-source-format',
+      expectedRevision: 1,
+      metadata: { tags: ['preserved'] },
+    }),
+  );
+  assert.equal(oldEdited.body, oldText);
+  assert.equal(oldEdited.revision, 2);
   assert(
     !(await client.listTools()).tools.some((tool) =>
       /approve|publish|deploy|sql|delete/i.test(tool.name),
@@ -302,4 +334,9 @@ test('LinkedIn permanent identifiers normalize tracking variants and reject unre
   assert(html.includes('*literal*'));
   assert(html.includes('&lt;script&gt;'));
   assert(!html.includes('<script>'));
+  const lines = await renderPost(
+    linkedinMarkdown('First line.\nSecond line.\n\nA new paragraph.'),
+  );
+  assert.match(lines, /First line\.<br\s*\/?>\s*Second line\./);
+  assert.match(lines, /<p>A new paragraph\.<\/p>/);
 });

@@ -16,3 +16,10 @@ CREATE TRIGGER IF NOT EXISTS linkedin_import_draft AFTER INSERT ON linkedin_sour
   INSERT INTO content_items(collection,slug,metadata_json,body_markdown,updated_by)
     VALUES ('posts', NEW.slug, NEW.initial_metadata_json, NEW.initial_body_markdown, 'linkedin-import');
 END;
+
+CREATE TRIGGER IF NOT EXISTS linkedin_sources_immutable BEFORE UPDATE ON linkedin_sources BEGIN
+  SELECT RAISE(ABORT, 'LinkedIn captures are immutable');
+END;
+CREATE TRIGGER IF NOT EXISTS linkedin_sources_no_delete BEFORE DELETE ON linkedin_sources BEGIN
+  SELECT RAISE(ABORT, 'LinkedIn captures are immutable');
+END;

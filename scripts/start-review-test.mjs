@@ -226,17 +226,44 @@ const child = spawn(
     },
   },
 );
+let appHost;
+const appHostDeadline = Date.now() + 60_000;
+while (Date.now() < appHostDeadline && child.exitCode === null) {
+  try {
+    if (
+      (
+        await fetch('http://127.0.0.1:4331/review-health', {
+          signal: AbortSignal.timeout(1_000),
+        })
+      ).ok
+    ) {
+      appHost = spawn(process.execPath, ['tests/fixtures/mcp-app-host.mjs'], {
+        stdio: 'inherit',
+        env: process.env,
+      });
+      break;
+    }
+  } catch {
+    /* Wait for the main isolated review store before connecting the app host. */
+  }
+  await new Promise((resolve) => setTimeout(resolve, 250));
+}
+if (!appHost)
+  throw new Error('The review server did not start for MCP App tests');
 process.on('SIGTERM', () => {
+  appHost.kill('SIGTERM');
   child.kill('SIGTERM');
   b2Desk.kill('SIGTERM');
   stopMedia();
 });
 process.on('SIGINT', () => {
+  appHost.kill('SIGINT');
   child.kill('SIGINT');
   b2Desk.kill('SIGINT');
   stopMedia();
 });
 child.on('exit', (code) => {
+  appHost?.kill('SIGTERM');
   b2Desk.kill('SIGTERM');
   process.exit(code || 0);
 });

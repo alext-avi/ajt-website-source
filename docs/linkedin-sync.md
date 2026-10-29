@@ -41,9 +41,12 @@ added to the public publication snapshot or source repository while in draft.
 ## Ongoing checks
 
 The MCP tools deliberately do not scrape LinkedIn, store LinkedIn cookies, or
-post there. An on-demand assistant check can use the existing signed-in browser
-and this workflow. A recurring assistant check can do the same after Alex chooses
-a cadence; report login/capture failures rather than claiming synchronization.
+post there. Prefer a deterministic capture integration where approved source
+access exists. The current fallback is a daily assistant check at 9 a.m. local
+using the existing signed-in author activity view and this workflow. Report
+login/capture failures rather than claiming synchronization. This discovery step
+uses an assistant; once a capture exists, duplicate checking and draft import
+are ordinary code and MCP calls.
 Keep notifications quiet when there are no new posts or actionable changes.
 Website publication always remains a separate human action.
 
@@ -55,7 +58,9 @@ in LinkedIn before posting.
 ## API limitations
 
 As checked October 29, 2026, the [official Posts API](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api)
-requires restricted `r_member_social` permission to retrieve a person's posts.
+requires `r_member_social` permission to retrieve a person's posts. LinkedIn's
+[Community Management FAQ](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/community-management-overview?view=li-lms-2026-08)
+says this permission is closed and is not accepting new access requests.
 Normal [self-service sign-in and sharing permissions](https://learn.microsoft.com/en-us/linkedin/shared/authentication/getting-access)
 do not grant it. Do not promise automatic personal-feed retrieval from a normal
 OAuth connection or a third-party MCP wrapper.

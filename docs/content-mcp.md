@@ -2,6 +2,40 @@
 
 The `ajt-content` MCP creates website post and project drafts and submits specific revisions to the local publishing desk. Alex edits and approves the rendered draft there. The MCP does not expose arbitrary SQL, approval, publication, deployment, or deletion tools. It does not post to LinkedIn.
 
+## Interactive MCP App
+
+Ask to open the website authoring App, or call `open_authoring_app` with
+`collection: "posts"` or `"projects"` and an optional draft `slug`. Hosts that
+support MCP Apps render its self-contained `ui://ajt-content/authoring.html`
+resource in the conversation. Reading, creating and updating a draft also
+advertises this resource. Reconnect the MCP after installing an updated server
+so the host refreshes its tools and resource metadata. Hosts without MCP Apps
+can continue using the same draft tools and local review desk.
+
+The App provides a searchable draft library, metadata and Markdown editor,
+private media picker/upload/replacement, saved content preview, and **Open final
+review**. These controls call the existing tools directly; editing does not
+require a model turn. Revision conflicts preserve unsaved work. Published
+content is read-only, and imported LinkedIn text/date remain locked. Clear an
+optional media or repository field to remove it; omitted patch fields retain
+their saved values.
+
+The embedded preview is a compact content check. The local desk still supplies
+the final website layout and human Publish control. The App has no Publish
+button and cannot approve or deploy. **Open final review** submits the saved
+revision and asks the host to open its private loopback review link.
+
+App resources bundle their scripts/styles locally, permit no external network
+connections, and allow only a blob frame for the inert preview. Private media
+arrives through bounded MCP reads, rather than public draft URLs. App-only tools
+`render_authoring_preview`, `read_authoring_media`, `begin_authoring_upload`,
+`append_authoring_upload` and `finish_authoring_upload` support this interface.
+Browser-selected files use 256 KiB chunks, a 25 MiB file limit, a ten-minute
+upload lifetime and at most four pending sessions per server. The usual file
+signature and storage budget checks still apply. These helpers expose no
+filesystem paths, credentials, publication or SQL capability. App-only visibility
+is a host routing rule, not an authentication boundary against a custom MCP client.
+
 ## Use the workflow
 
 1. Upload any new media with `upload_media`, supplying its absolute local file path. It returns a private, immutable `/media/<sha256>.<extension>` URL. Use `list_media` to find reusable assets. File bytes need not go through the conversation.
@@ -78,7 +112,17 @@ node mcp/content-server.mjs --local --database .wrangler/example.sqlite --local-
 
 Remote mode uses the existing protected Wrangler login, or a Cloudflare token supplied to the server process. Backblaze authoring credentials live in an ignored owner-only `.wrangler/content-media/b2.json`; no credentials are placed in source or returned by a tool. Local SQLite files and review records are private to the OS user. This is a local stdio integration, not a hosted public MCP endpoint. It is an interface restriction, not a sandbox against code already running with the same user's shell/credential access.
 
-The post tools are `upload_media`, `list_media`, `list_posts`, `get_post`, `get_post_history`, `create_post_draft`, `update_post_draft`, and `submit_post_for_review`. `list_posts` defaults to drafts. Writes are limited to private uploads and post drafts, retain revision history, validate the shared content schema, and check referenced assets. Bodies are limited to 32 KB and metadata to 16 KB. None can publish, approve, delete, deploy, or execute arbitrary SQL. Local mode never falls back to remote storage or remote D1.
+The tools include `open_authoring_app`, shared `upload_media`/`list_media`,
+`list_posts`, `get_post`, `get_post_history`, `create_post_draft`,
+`update_post_draft`, `submit_post_for_review`, and their six `project`/`projects`
+counterparts. `check_linkedin_sync` and `import_linkedin_post` add capture checks
+and provenance-preserving imports. Lists default to drafts. Writes are limited
+to post/project drafts and revision history, immutable LinkedIn provenance,
+private media/catalog and budget reservations, review records, and the bounded
+temporary App uploads described above. They validate the shared schema and
+referenced assets. Bodies are limited to 32 KB and metadata to 16 KB. None can
+publish, approve, delete content, deploy, or execute arbitrary SQL. Local mode
+never falls back to remote storage or remote D1.
 
 The review console starts automatically on submission, or manually with `npm run content:review`. It binds only to `127.0.0.1:4330`. Review URLs are opaque capabilities; keep them private. Write requests require the matching review confirmation, exact same-origin browser metadata, and current revision/digest. A global local publication lock prevents two desk publications at once. Do not run manual or CI production deployments concurrently with a desk publication. A future hosted console needs its own authenticated publisher identity and authorization boundary.
 
@@ -89,3 +133,11 @@ Routes are injected only in explicitly enabled local development. Production/sta
 `npm test` includes a real stdio MCP client/SQLite round trip plus approval, history, safe-rendering, manifest isolation, and private-media checks. `npm run test:review` starts real local Astro and Wrangler servers, separate SQLite, and isolated R2 emulation and a disk-backed S3 HTTP fixture that independently verifies B2 request signatures. Playwright uploads through MCP, deletes the cache and recovers bytes from each storage backend, renders images in the browser, verifies private URLs return 404 publicly, and exercises Publish only in local mode. Its isolated release then verifies exact image/PDF bytes, MP4 ranges, conditional requests, immutable caching, and rejected writes through the real Worker. Stale reviews and cross-origin requests cannot publish. No test publishes a remote draft or writes remote D1/B2/R2. These fixture tests do not attest that a real B2 account is connected.
 
 These tests are part of `npm run test:ci`; reports and screenshots are retained in `playwright-report-review/` and `test-results-review/`. Neither test content nor its media enters the public website.
+
+The App tests use the official MCP Apps `AppBridge`, the actual resource and a
+real stdio MCP server backed by isolated SQLite. Playwright edits projects,
+round-trips private media bytes, checks rendered previews and stale revisions,
+and verifies the human review handoff without invoking Publish. Protocol tests
+also enforce resource metadata, app-only routing metadata, upload bounds,
+signature checks and traversal rejection. This tests the standard bridge;
+individual desktop hosts must also support MCP Apps and allow loopback links.

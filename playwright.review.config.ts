@@ -20,7 +20,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'node scripts/start-review-test.mjs',
-    url: 'http://127.0.0.1:4331/review',
+    url: 'http://127.0.0.1:4334/health',
     reuseExistingServer: false,
     timeout: 120_000,
   },

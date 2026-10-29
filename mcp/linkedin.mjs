@@ -39,7 +39,8 @@ export const linkedinMarkdown = (text) =>
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
-    .replace(/([\\`*_{}\[\]()#+.!|~-])/g, '\\$1');
+    .replace(/([\\`*_{}\[\]()#+.!|~-])/g, '\\$1')
+    .replace(/(?<!\n)\n(?!\n)/g, '\\\n');
 export const sourceHash = (capture) =>
   createHash('sha256')
     .update(JSON.stringify({ date: capture.date, text: capture.text }))
@@ -55,7 +56,7 @@ export async function findLinkedinPost(store, sourceUrl) {
   if (source) return { identity, source, slug: source.slug };
   // Recognize the original archive too, without rewriting its text or metadata.
   const posts = await store.query(
-    "SELECT slug,metadata_json,body_markdown FROM content_items WHERE collection='posts' AND json_extract(metadata_json,'$.linkedinUrl') IS NOT NULL;",
+    `SELECT slug,metadata_json FROM content_items WHERE collection='posts' AND json_extract(metadata_json,'$.linkedinUrl') LIKE ${sqlText('%' + identity.id + '%')};`,
   );
   const match = posts.find((row) => {
     try {
@@ -164,10 +165,14 @@ export async function importLinkedinCapture(
   };
 }
 
-export async function getLinkedinSource(store, slug) {
+export async function getLinkedinSource(
+  store,
+  slug,
+  { includeBody = false } = {},
+) {
   const source = (
     await store.query(
-      `SELECT source_url,original_date,original_text,date_evidence,captured_at FROM linkedin_sources WHERE slug=${sqlText(slug)};`,
+      `SELECT source_url,original_date,original_text,date_evidence,captured_at${includeBody ? ',initial_body_markdown' : ''} FROM linkedin_sources WHERE slug=${sqlText(slug)};`,
     )
   )[0];
   if (!source) return undefined;
@@ -177,5 +182,6 @@ export async function getLinkedinSource(store, slug) {
     text: source.original_text,
     dateEvidence: source.date_evidence,
     capturedAt: source.captured_at,
+    ...(includeBody ? { bodyMarkdown: source.initial_body_markdown } : {}),
   };
 }

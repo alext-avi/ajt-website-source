@@ -116,21 +116,38 @@ export async function createReview(post, backend) {
   if (!post.metadata.draft)
     throw new Error('Only drafts can be submitted for review');
   await renderPost(post.body);
+  await fs.mkdir(directory(), { recursive: true, mode: 0o700 });
+  const digest = postDigest(post);
+  for (const file of await fs.readdir(directory())) {
+    if (!file.endsWith('.json') || !idPattern.test(file.slice(0, -5))) continue;
+    const existing = await readReview(file.slice(0, -5));
+    if (
+      existing.backend === backend &&
+      existing.digest === digest &&
+      existing.status === 'review' &&
+      !existing.approvedAt
+    )
+      return reviewResult(existing);
+  }
   const review = {
     version: 1,
     id: randomBytes(24).toString('hex'),
     csrf: randomBytes(24).toString('hex'),
     backend,
     post,
-    digest: postDigest(post),
+    digest,
     status: 'review',
     createdAt: new Date().toISOString(),
   };
   await saveReview(review);
+  return reviewResult(review);
+}
+
+function reviewResult(review) {
   return {
     id: review.id,
-    slug: post.slug,
-    revision: post.revision,
+    slug: review.post.slug,
+    revision: review.post.revision,
     digest: review.digest,
     reviewUrl: `${reviewOrigin().origin}/review/${review.id}`,
     status: 'awaiting-human-review',

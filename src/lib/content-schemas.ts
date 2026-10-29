@@ -60,7 +60,13 @@ export const projectSchema = z.object({
   role: z.string().min(3),
   technologies: z.array(z.string()).default([]),
   outcomes: z.array(z.string()).default([]),
-  repository: z.url().optional(),
+  repository: z
+    .url()
+    .refine(
+      (url) => /^https?:\/\//.test(url),
+      'Use an HTTP or HTTPS repository URL',
+    )
+    .optional(),
   relatedArticles: z.array(z.string()).default([]),
   order: z.number().default(0),
   kind: z.enum(['systems', 'agents', 'mobile', 'platform']).default('systems'),

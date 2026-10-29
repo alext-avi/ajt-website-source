@@ -54,9 +54,12 @@ test(
     await client.connect(transport);
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map((tool) => tool.name).sort(), [
+      'append_authoring_upload',
+      'begin_authoring_upload',
       'check_linkedin_sync',
       'create_post_draft',
       'create_project_draft',
+      'finish_authoring_upload',
       'get_post',
       'get_post_history',
       'get_project',
@@ -65,6 +68,9 @@ test(
       'list_media',
       'list_posts',
       'list_projects',
+      'open_authoring_app',
+      'read_authoring_media',
+      'render_authoring_preview',
       'submit_post_for_review',
       'submit_project_for_review',
       'update_post_draft',

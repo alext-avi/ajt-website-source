@@ -1,0 +1,50 @@
+import { AppBridge } from '@modelcontextprotocol/ext-apps/app-bridge';
+import { PostMessageTransport } from '@modelcontextprotocol/ext-apps';
+
+const frame = document.querySelector('iframe');
+const calls = [];
+window.testHost = { calls, opened: [] };
+const bridge = new AppBridge(
+  null,
+  { name: 'AJT integration host', version: '1.0.0' },
+  { serverTools: {}, openLinks: {} },
+);
+bridge.oncalltool = async (params) => {
+  calls.push(params.name);
+  const response = await fetch('/tool', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  return response.json();
+};
+bridge.onopenlink = async ({ url }) => {
+  window.testHost.opened.push(url);
+  return { isError: false };
+};
+bridge.addEventListener('sizechange', ({ height }) => {
+  if (Number.isFinite(height) && height > 0)
+    frame.style.height = `${Math.min(height, 10_000)}px`;
+});
+bridge.oninitialized = async () => {
+  const response = await fetch('/tool', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      name: 'open_authoring_app',
+      arguments: {
+        collection:
+          new URL(location.href).searchParams.get('collection') || 'posts',
+        ...(new URL(location.href).searchParams.get('slug')
+          ? { slug: new URL(location.href).searchParams.get('slug') }
+          : {}),
+      },
+    }),
+  });
+  await bridge.sendToolResult(await response.json());
+};
+await bridge.connect(
+  new PostMessageTransport(frame.contentWindow, frame.contentWindow),
+);
+const html = await (await fetch('/app')).text();
+frame.srcdoc = html;

@@ -71,6 +71,11 @@ test('human approval is bound to a reviewed revision, retains history, and suppo
   await store.query(writeEntrySQL(entry).replace(/;$/, ' RETURNING slug;'));
   const initial = await getPost(store, entry.slug);
   const submitted = await createReview(initial, store.identity);
+  assert.deepEqual(
+    await createReview(initial, store.identity),
+    submitted,
+    'resubmitting an unchanged draft reuses the existing unapproved review',
+  );
   const ticket = await readReview(submitted.id);
   let deployments = 0;
   await assert.rejects(
