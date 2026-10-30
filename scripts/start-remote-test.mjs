@@ -98,9 +98,12 @@ run([
   state,
 ]);
 const children = [];
+// Test-only TLS exception is confined to this loopback harness process. The
+// child environment was copied before this assignment and does not inherit it.
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 for (const [config, port, https] of [
-  [authoringConfig, 8800, true],
   [siteConfig, 8801, false],
+  [authoringConfig, 8800, true],
 ]) {
   const child = spawn(
     process.execPath,
@@ -125,6 +128,30 @@ for (const [config, port, https] of [
     { env, stdio: 'inherit' },
   );
   children.push(child);
+  // Start the two Workers sequentially so their shared local SQLite WAL is
+  // recovered by one process before the next opens it. Do not advertise host
+  // readiness while either real server is unavailable.
+  const health = https
+    ? 'https://127.0.0.1:8800/health'
+    : 'http://127.0.0.1:8801/.well-known/ajt-content';
+  const deadline = Date.now() + 30_000;
+  try {
+    for (;;) {
+      if (child.exitCode !== null)
+        throw new Error('Local Worker exited during startup');
+      try {
+        if ((await fetch(health, { signal: AbortSignal.timeout(1500) })).ok)
+          break;
+      } catch {}
+      if (Date.now() >= deadline)
+        throw new Error('Local Worker readiness timed out');
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  } catch (error) {
+    for (const running of children) running.kill('SIGTERM');
+    await b2.close();
+    throw error;
+  }
 }
 const bundle = await build({
   entryPoints: ['tests/fixtures/mcp-app-host-client.mjs'],
@@ -208,8 +235,6 @@ const server = http.createServer(async (req, res) => {
     );
   }
 });
-// Test-only TLS exception is confined to this loopback harness process.
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 server.listen(4340, '127.0.0.1');
 async function close() {
   await client?.close();

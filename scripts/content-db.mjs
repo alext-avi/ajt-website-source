@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
+import { publishedMediaSQL } from './lib/published-media.mjs';
 import {
   readPublishedFiles,
   readEntry,
@@ -100,9 +101,14 @@ async function executeFile(sql) {
 if (command === 'seed') {
   const entries = await readPublishedFiles(root);
   await executeFile(
-    entries
-      .map((entry) => `${writeEntrySQL(entry)}\n${mediaSQL(entry)}`)
-      .join('\n'),
+    (
+      await Promise.all(
+        entries.map(
+          async (entry) =>
+            `${writeEntrySQL(entry)}\n${mediaSQL(entry)}\n${await publishedMediaSQL(entry)}`,
+        ),
+      )
+    ).join('\n'),
   );
   console.log(
     `Seeded ${entries.length} approved content records; existing records were preserved.`,
@@ -122,6 +128,11 @@ if (command === 'seed') {
     );
   const media = mediaSQL(entry);
   if (media) executeSQL(media);
+  const publishedMedia = await publishedMediaSQL(
+    entry,
+    Number(values.revision) + 1,
+  );
+  if (publishedMedia) executeSQL(publishedMedia);
   console.log(
     `Saved ${entry.collection}/${entry.slug}, revision ${Number(values.revision) + 1}. Run db:pull and review the build before deployment.`,
   );

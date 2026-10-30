@@ -45,6 +45,9 @@ CREATE TABLE IF NOT EXISTS published_media (
  collection TEXT NOT NULL, slug TEXT NOT NULL, revision INTEGER NOT NULL, url TEXT NOT NULL,
  PRIMARY KEY(collection,slug,revision,url)
 );
+-- Before runtime rollout, run scripts/backfill-published-media.mjs --remote.
+-- Its shared Markdown parser registers references from already-approved bodies;
+-- SQL alone cannot safely parse Markdown. It never changes content approval.
 -- Short-lived upload chunks only; complete objects live in private B2.
 CREATE TABLE IF NOT EXISTS authoring_uploads (
  id TEXT PRIMARY KEY, owner_id TEXT NOT NULL, name TEXT NOT NULL,

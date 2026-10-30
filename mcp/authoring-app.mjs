@@ -205,7 +205,7 @@ async function preview() {
   const context = $('#publication-context');
   context.textContent =
     current.metadata.draft && !result.previewToken
-      ? 'Posting is unavailable because this authoring connection needs to reload. Fully quit Codex, reopen it, and open this draft again. Nothing has been posted.'
+      ? 'Posting is unavailable because this authoring connection needs to reload. Reconnect the MCP server or restart your app, then open this draft again. Nothing has been posted.'
       : result.publicationTarget === 'local-test'
         ? 'Local test mode. Post cannot publish to the live website.'
         : 'Post publishes this saved draft to the live website.';

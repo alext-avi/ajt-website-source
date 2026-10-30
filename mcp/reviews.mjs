@@ -7,6 +7,7 @@ import { createSatteriMarkdownProcessor } from '@astrojs/markdown-satteri';
 import { parseFragment } from 'parse5';
 import { sqlText, validateEntry } from '../scripts/lib/d1-content.mjs';
 import { materializeMedia } from './media.mjs';
+import { publishedMediaStatements } from '../scripts/lib/published-media.mjs';
 import {
   acquirePublication,
   releasePublication,
@@ -393,6 +394,16 @@ export async function publishReview(
       if (postDigest(retry) !== postDigest(approved))
         throw new Error('Revision conflict during approval');
     }
+    for (const statement of await publishedMediaStatements(
+      {
+        collection: reviewCollection(review.post),
+        slug: review.post.slug,
+        data: metadata,
+        body: review.post.body,
+      },
+      review.post.revision + 1,
+    ))
+      await store.query(statement);
     await publisher(review, store, lock);
     review.status = store.identity.startsWith('sqlite:')
       ? 'approved-local'

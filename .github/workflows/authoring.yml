@@ -10,7 +10,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    if: github.repository == 'alext-avi/ajt-website' && vars.REMOTE_CONTENT_ENABLED == 'true'
+    if: >-
+      github.repository == 'alext-avi/ajt-website' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      vars.REMOTE_CONTENT_ENABLED == 'true'
     environment: production
     runs-on: ubuntu-latest
     timeout-minutes: 15

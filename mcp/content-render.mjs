@@ -17,21 +17,27 @@ export const escapeHtml = (value) =>
 
 export function renderMarkdown(body) {
   const headings = [];
-  const ids = new Map();
+  const ids = new Set();
   const renderer = new Marked({
     gfm: true,
     renderer: {
       heading({ tokens, depth }) {
         const html = this.parser.parseInline(tokens);
-        const text = html.replace(/<[^>]*>/g, '');
+        function plainText(node) {
+          return node.nodeName === '#text'
+            ? node.value
+            : (node.childNodes || []).map(plainText).join('');
+        }
+        const text = plainText(parseFragment(html));
         const base =
           text
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-|-$/g, '') || 'section';
-        const count = ids.get(base) || 0;
-        ids.set(base, count + 1);
-        const slug = base + (count ? `-${count}` : '');
+        let slug = base;
+        let count = 0;
+        while (ids.has(slug)) slug = `${base}-${++count}`;
+        ids.add(slug);
         headings.push({ depth, text, slug });
         return `<h${depth} id="${slug}">${html}</h${depth}>\n`;
       },

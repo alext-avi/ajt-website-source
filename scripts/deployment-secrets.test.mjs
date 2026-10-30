@@ -182,3 +182,34 @@ test('Actions exposes delivery secrets only in the trusted private-main deployme
     undefined,
   );
 });
+
+test('authoring release gates main and allowed events before credential-bearing code executes', async () => {
+  const workflow = parse(
+    await fs.readFile('.github/workflows/authoring.yml', 'utf8'),
+  );
+  const job = workflow.jobs.release;
+  for (const pattern of [
+    /github.repository == 'alext-avi\/ajt-website'/,
+    /github.ref == 'refs\/heads\/main'/,
+    /github.event_name == 'push'/,
+    /github.event_name == 'workflow_dispatch'/,
+  ])
+    assert.match(job.if, pattern);
+  assert.equal(job.environment, 'production');
+  for (const event of ['pull_request', 'pull_request_target', 'schedule', '']) {
+    assert.throws(
+      () =>
+        execFileSync(process.execPath, ['scripts/deploy-authoring.mjs'], {
+          env: {
+            PATH: process.env.PATH,
+            GITHUB_ACTIONS: 'true',
+            GITHUB_REPOSITORY: 'alext-avi/ajt-website',
+            GITHUB_REF: 'refs/heads/main',
+            GITHUB_EVENT_NAME: event,
+          },
+          stdio: 'pipe',
+        }),
+      /private-main Actions/,
+    );
+  }
+});

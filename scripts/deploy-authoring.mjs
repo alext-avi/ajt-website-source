@@ -9,7 +9,8 @@ const env = process.env;
 if (
   env.GITHUB_ACTIONS !== 'true' ||
   env.GITHUB_REPOSITORY !== 'alext-avi/ajt-website' ||
-  env.GITHUB_REF !== 'refs/heads/main'
+  env.GITHUB_REF !== 'refs/heads/main' ||
+  !['push', 'workflow_dispatch'].includes(env.GITHUB_EVENT_NAME)
 )
   throw new Error('Authoring code releases run only in private-main Actions');
 const names = [

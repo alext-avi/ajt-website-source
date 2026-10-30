@@ -106,6 +106,12 @@ export async function createStore({
       'utf8',
     ),
   );
+  db.exec(
+    await fs.readFile(
+      path.join(root, 'migrations/0004_remote_authoring.sql'),
+      'utf8',
+    ),
+  );
   return {
     identity: 'sqlite:' + path.resolve(database),
     async resolveAsset(url) {
