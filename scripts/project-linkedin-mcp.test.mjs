@@ -307,11 +307,15 @@ test('real MCP project drafts retain metadata, isolate collections, and protect 
   );
   assert.equal(oldEdited.body, oldText);
   assert.equal(oldEdited.revision, 2);
-  assert(
-    !(await client.listTools()).tools.some((tool) =>
-      /approve|publish|deploy|sql|delete/i.test(tool.name),
-    ),
+  const publicationTools = (await client.listTools()).tools.filter((tool) =>
+    /approve|publish|deploy|sql|delete/i.test(tool.name),
   );
+  assert.deepEqual(
+    publicationTools.map((tool) => tool.name),
+    ['publish_authoring_draft'],
+  );
+  assert.deepEqual(publicationTools[0]._meta.ui.visibility, ['app']);
+  assert.equal(publicationTools[0].annotations.readOnlyHint, false);
 });
 
 test('LinkedIn permanent identifiers normalize tracking variants and reject unrelated destinations', async () => {
