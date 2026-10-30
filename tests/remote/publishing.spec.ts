@@ -291,6 +291,18 @@ test('an expired project preview can be refreshed and posted only after another 
   const app = page.frameLocator('iframe[title="Website authoring app"]');
   const post = app.getByRole('button', { name: 'Post', exact: true });
   await expect(post).toBeEnabled();
+  await app
+    .getByLabel('Title', { exact: true })
+    .fill('Recovering an expired saved project preview');
+  await expect(post).toBeDisabled();
+  await expect(app.getByTestId('publication-status')).toContainText(
+    'Unsaved changes.',
+  );
+  await app.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await expect(post).toBeEnabled();
+  await expect(app.getByTestId('publication-status')).toContainText(
+    'Saved preview ready.',
+  );
   expect(
     (await request.post(auth + '/__test/expire-project-preview')).status(),
   ).toBe(200);

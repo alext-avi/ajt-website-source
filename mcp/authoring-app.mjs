@@ -152,7 +152,9 @@ function changed() {
   dirty = true;
   controls();
   previewToken = undefined;
-  status('Unsaved changes. Save to refresh the preview before posting.');
+  publicationStatus(
+    'Unsaved changes. Save to refresh the preview before posting.',
+  );
 }
 function emptyState() {
   current = undefined;
