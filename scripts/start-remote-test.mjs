@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
+import { Readable } from 'node:stream';
 import { spawn, spawnSync } from 'node:child_process';
 import { build } from 'esbuild';
 import {
@@ -66,7 +67,6 @@ const authoring = {
   },
 };
 const authoringConfig = path.join(state, 'authoring.json');
-await fs.writeFile(authoringConfig, JSON.stringify(authoring));
 const runtime = JSON.parse(
   await fs.readFile('dist-runtime/server/wrangler.json', 'utf8'),
 );
@@ -83,6 +83,8 @@ runtime.vars = {
   B2_MEDIA_APPLICATION_KEY: b2.config.applicationKey,
 };
 const siteConfig = path.join(state, 'site.json');
+authoring.services = [{ binding: 'PUBLIC_SITE', service: runtime.name }];
+await fs.writeFile(authoringConfig, JSON.stringify(authoring));
 await fs.writeFile(siteConfig, JSON.stringify(runtime));
 const wrangler = 'node_modules/wrangler/bin/wrangler.js';
 run([
@@ -101,39 +103,70 @@ const children = [];
 // Test-only TLS exception is confined to this loopback harness process. The
 // child environment was copied before this assignment and does not inherit it.
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-for (const [config, port, https] of [
-  [siteConfig, 8801, false],
-  [authoringConfig, 8800, true],
+// Both Workers must live in one workerd process so a single D1 actor owns the
+// SQLite database, matching the real platform instead of racing file handles.
+const child = spawn(
+  process.execPath,
+  [
+    wrangler,
+    'dev',
+    '--config',
+    authoringConfig,
+    '--config',
+    siteConfig,
+    '--local',
+    '--ip',
+    '127.0.0.1',
+    '--port',
+    '8800',
+    '--inspector-port',
+    '9800',
+    '--persist-to',
+    state,
+    '--log-level',
+    'warn',
+    '--local-protocol',
+    'https',
+  ],
+  { env, stdio: 'inherit' },
+);
+children.push(child);
+const siteServer = http.createServer(async (req, res) => {
+  try {
+    if (!['GET', 'HEAD'].includes(req.method)) {
+      res.writeHead(405).end();
+      return;
+    }
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(req.headers))
+      if (value && !['host', 'connection'].includes(key))
+        headers.set(key, String(value));
+    headers.set('X-AJT-Test-Public-Site', '1');
+    headers.set('Accept-Encoding', 'identity');
+    const response = await fetch('https://127.0.0.1:8800' + req.url, {
+      method: req.method,
+      headers,
+      redirect: 'manual',
+      signal: AbortSignal.timeout(15_000),
+    });
+    // Node fetch decodes compressed responses; do not forward the old wire
+    // encoding or length with the decoded stream.
+    const responseHeaders = new Headers(response.headers);
+    responseHeaders.delete('content-encoding');
+    responseHeaders.delete('content-length');
+    responseHeaders.delete('transfer-encoding');
+    res.writeHead(response.status, Object.fromEntries(responseHeaders));
+    if (response.body) Readable.fromWeb(response.body).pipe(res);
+    else res.end();
+  } catch {
+    res.writeHead(503).end('Local runtime unavailable');
+  }
+});
+await new Promise((resolve) => siteServer.listen(8801, '127.0.0.1', resolve));
+for (const health of [
+  'https://127.0.0.1:8800/health',
+  'http://127.0.0.1:8801/.well-known/ajt-content',
 ]) {
-  const child = spawn(
-    process.execPath,
-    [
-      wrangler,
-      'dev',
-      '--config',
-      config,
-      '--local',
-      '--ip',
-      '127.0.0.1',
-      '--port',
-      String(port),
-      '--inspector-port',
-      String(port + 1000),
-      '--persist-to',
-      state,
-      '--log-level',
-      'warn',
-      ...(https ? ['--local-protocol', 'https'] : []),
-    ],
-    { env, stdio: 'inherit' },
-  );
-  children.push(child);
-  // Start the two Workers sequentially so their shared local SQLite WAL is
-  // recovered by one process before the next opens it. Do not advertise host
-  // readiness while either real server is unavailable.
-  const health = https
-    ? 'https://127.0.0.1:8800/health'
-    : 'http://127.0.0.1:8801/.well-known/ajt-content';
   const deadline = Date.now() + 30_000;
   try {
     for (;;) {
@@ -149,6 +182,7 @@ for (const [config, port, https] of [
     }
   } catch (error) {
     for (const running of children) running.kill('SIGTERM');
+    siteServer.close();
     await b2.close();
     throw error;
   }
@@ -239,6 +273,7 @@ server.listen(4340, '127.0.0.1');
 async function close() {
   await client?.close();
   server.close();
+  siteServer.close();
   for (const child of children) child.kill('SIGTERM');
   await b2.close();
   process.exit(0);

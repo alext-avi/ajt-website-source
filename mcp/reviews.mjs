@@ -377,24 +377,7 @@ export async function publishReview(
     if (store.media || !store.identity.startsWith('sqlite:'))
       await materializeMedia(await postMedia(review.post), store);
     const metadata = { ...review.post.metadata, draft: false };
-    const rows = await store.query(
-      `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-review',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection=${sqlText(reviewCollection(review.post))} AND slug=${sqlText(review.post.slug)} AND revision=${review.post.revision} AND is_draft=1 RETURNING revision;`,
-    );
-    if (!rows.length) {
-      const retry = await currentPost(
-        store,
-        review.post.slug,
-        reviewCollection(review.post),
-      );
-      const approved = {
-        ...review.post,
-        metadata,
-        revision: review.post.revision + 1,
-      };
-      if (postDigest(retry) !== postDigest(approved))
-        throw new Error('Revision conflict during approval');
-    }
-    for (const statement of await publishedMediaStatements(
+    const mediaStatements = await publishedMediaStatements(
       {
         collection: reviewCollection(review.post),
         slug: review.post.slug,
@@ -402,8 +385,23 @@ export async function publishReview(
         body: review.post.body,
       },
       review.post.revision + 1,
-    ))
-      await store.query(statement);
+    );
+    await store.transaction([
+      `UPDATE content_items SET metadata_json=${sqlText(JSON.stringify(metadata))},revision=revision+1,updated_by='human-review',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE collection=${sqlText(reviewCollection(review.post))} AND slug=${sqlText(review.post.slug)} AND revision=${review.post.revision} AND is_draft=1;`,
+      ...mediaStatements,
+    ]);
+    const approved = {
+      ...review.post,
+      metadata,
+      revision: review.post.revision + 1,
+    };
+    const saved = await currentPost(
+      store,
+      review.post.slug,
+      reviewCollection(review.post),
+    );
+    if (postDigest(saved) !== postDigest(approved))
+      throw new Error('Revision conflict during approval');
     await publisher(review, store, lock);
     review.status = store.identity.startsWith('sqlite:')
       ? 'approved-local'

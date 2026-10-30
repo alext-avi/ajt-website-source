@@ -5,6 +5,19 @@ import { githubAuthorize } from '../../worker/github-auth.mjs';
 // replaced; OAuth consent/cookies/PKCE/tokens, MCP, D1 and publication are real.
 export default {
   fetch(request, env, ctx) {
+    // Test-only loopback gateway: both real Workers share one workerd/D1 owner.
+    if (request.headers.get('X-AJT-Test-Public-Site') === '1') {
+      const url = new URL(request.url);
+      const target = new URL(
+        url.pathname + url.search,
+        'http://127.0.0.1:8801',
+      );
+      const headers = new Headers(request.headers);
+      headers.delete('X-AJT-Test-Public-Site');
+      return env.PUBLIC_SITE.fetch(
+        new Request(target, { method: request.method, headers }),
+      );
+    }
     return authoringServer(env, {
       githubAuthorize: (request, env, oauth) =>
         githubAuthorize(request, env, oauth, {

@@ -188,13 +188,10 @@ test('authoring release gates main and allowed events before credential-bearing 
     await fs.readFile('.github/workflows/authoring.yml', 'utf8'),
   );
   const job = workflow.jobs.release;
-  for (const pattern of [
-    /github.repository == 'alext-avi\/ajt-website'/,
-    /github.ref == 'refs\/heads\/main'/,
-    /github.event_name == 'push'/,
-    /github.event_name == 'workflow_dispatch'/,
-  ])
-    assert.match(job.if, pattern);
+  assert.equal(
+    job.if.replace(/\s+/g, ' ').trim(),
+    "github.repository == 'alext-avi/ajt-website' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.REMOTE_CONTENT_ENABLED == 'true'",
+  );
   assert.equal(job.environment, 'production');
   for (const event of ['pull_request', 'pull_request_target', 'schedule', '']) {
     assert.throws(

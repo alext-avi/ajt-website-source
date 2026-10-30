@@ -35,6 +35,51 @@ export async function createStore({
         process.env.AJT_MEDIA_PROVIDER === 'r2'
           ? r2MediaStorage()
           : b2MediaStorage(),
+      async transaction(statements) {
+        // Wrangler's remote file import rolls the entire file back on failure.
+        // Keep this legacy human-review adapter atomic without reading tokens
+        // out of Wrangler's protected credential store.
+        await fs.mkdir(path.join(root, '.wrangler'), { recursive: true });
+        const folder = await fs.mkdtemp(
+          path.join(root, '.wrangler/review-transaction-'),
+        );
+        await fs.chmod(folder, 0o700);
+        const file = path.join(folder, 'approval.sql');
+        try {
+          await fs.writeFile(file, statements.join('\n'), {
+            mode: 0o600,
+            flag: 'wx',
+          });
+          await execFileAsync(
+            process.execPath,
+            [
+              path.join(root, 'node_modules/wrangler/bin/wrangler.js'),
+              'd1',
+              'execute',
+              'CONTENT_DB',
+              '--config',
+              path.join(root, 'wrangler.jsonc'),
+              '--remote',
+              '--json',
+              '--yes',
+              '--file',
+              file,
+            ],
+            {
+              cwd: root,
+              timeout: 45_000,
+              maxBuffer: 10_000_000,
+              env: { ...process.env, WRANGLER_SEND_METRICS: 'false' },
+            },
+          );
+        } catch {
+          throw new Error(
+            'Atomic D1 approval failed. Read the current revision before retrying; credential diagnostics were not logged.',
+          );
+        } finally {
+          await fs.rm(folder, { recursive: true, force: true });
+        }
+      },
       async query(sql) {
         if (Buffer.byteLength(sql) > 100_000)
           throw new Error('Content exceeds the database command limit');
@@ -124,6 +169,16 @@ export async function createStore({
         : undefined,
     localR2,
     localB2,
+    async transaction(statements) {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        for (const statement of statements) db.prepare(statement).all();
+        db.exec('COMMIT');
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
+    },
     async query(sql) {
       return db.prepare(sql).all();
     },

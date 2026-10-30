@@ -32,7 +32,7 @@
     },
   ],
   "kv_namespaces": [
-    { "binding": "OAUTH_KV", "id": "00000000000000000000000000000000" },
+    { "binding": "OAUTH_KV", "id": "58ebda14610d49339eac62cae539fb9c" },
   ],
   "assets": {
     "directory": ".wrangler/authoring-assets",

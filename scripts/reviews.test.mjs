@@ -163,10 +163,8 @@ test('failed database approval retains a usable review and can return to an edit
   const ticket = await readReview(submitted.id);
   const unavailable = {
     ...store,
-    query: async (sql) => {
-      if (sql.startsWith('UPDATE '))
-        throw new Error('Database temporarily unavailable');
-      return store.query(sql);
+    transaction: async () => {
+      throw new Error('Database temporarily unavailable');
     },
   };
   await assert.rejects(
@@ -178,6 +176,70 @@ test('failed database approval retains a usable review and can return to an edit
   const reopened = await reopenReview(store, ticket.id, ticket.csrf);
   assert.equal((await readReview(reopened.id)).status, 'review');
   assert.equal((await getPost(store, 'approval-failure')).revision, 2);
+});
+
+test('media-registration failure rolls back approval, public snapshot and revision history together', async (t) => {
+  const temporary = await fs.mkdtemp(
+    path.join(os.tmpdir(), 'ajt-approval-atomic-'),
+  );
+  const previous = process.env.AJT_REVIEW_DIR;
+  process.env.AJT_REVIEW_DIR = path.join(temporary, 'tickets');
+  const store = await createStore({
+    database: path.join(temporary, 'content.sqlite'),
+  });
+  t.after(async () => {
+    store.close();
+    if (previous === undefined) delete process.env.AJT_REVIEW_DIR;
+    else process.env.AJT_REVIEW_DIR = previous;
+    await fs.rm(temporary, { recursive: true, force: true });
+  });
+  const entry = {
+    collection: 'posts',
+    slug: 'atomic-media-approval',
+    data: {
+      title: 'Atomic approval fixture',
+      summary:
+        'A synthetic local draft for checking media rollback and human approval.',
+      date: '2026-10-27',
+      category: 'Architecture',
+      draft: true,
+    },
+    body: '![Synthetic media](/media/' + 'a'.repeat(64) + '.png)',
+  };
+  await store.query(writeEntrySQL(entry).replace(/;$/, ' RETURNING slug;'));
+  const submitted = await createReview(
+    await getPost(store, entry.slug),
+    store.identity,
+  );
+  const ticket = await readReview(submitted.id);
+  await store.query(
+    "CREATE TRIGGER fail_media BEFORE INSERT ON published_media BEGIN SELECT RAISE(ABORT,'media fixture failure'); END;",
+  );
+  await assert.rejects(
+    publishReview(store, ticket.id, ticket.csrf),
+    /media fixture failure/,
+  );
+  assert.equal((await getPost(store, entry.slug)).metadata.draft, true);
+  assert.equal((await getPost(store, entry.slug)).revision, 1);
+  assert.equal(
+    (await store.query('SELECT count(*) n FROM published_content'))[0].n,
+    0,
+  );
+  assert.equal(
+    (await store.query('SELECT count(*) n FROM published_media'))[0].n,
+    0,
+  );
+  assert.equal(
+    (await store.query('SELECT count(*) n FROM content_revisions'))[0].n,
+    1,
+  );
+  await store.query('DROP TRIGGER fail_media');
+  await publishReview(store, ticket.id, ticket.csrf);
+  assert.equal((await getPost(store, entry.slug)).metadata.draft, false);
+  assert.equal(
+    (await store.query('SELECT count(*) n FROM published_media'))[0].n,
+    1,
+  );
 });
 
 test('uploaded media stays outside public assets and rejects executable uploads and traversal paths', async (t) => {
