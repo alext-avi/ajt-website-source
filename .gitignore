@@ -21,3 +21,8 @@ test-results-review/
 playwright-report-staging/
 test-results-staging/
 gha-creds-*.json
+
+dist-runtime/
+playwright-report-remote/
+test-results-remote/
+!.dev.vars.authoring.example

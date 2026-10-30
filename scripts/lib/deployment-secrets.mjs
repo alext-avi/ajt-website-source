@@ -59,7 +59,7 @@ export function deploymentEnvironments(env) {
   const safeEnv = Object.fromEntries(
     Object.entries(env).filter(
       ([name]) =>
-        !/^(?:CLOUDFLARE_|B2_|AJT_B2|AJT_REVIEW_|VITE_USER_NODE_ENV$|GH_TOKEN$|GITHUB_TOKEN$|GA4_ACCESS_TOKEN$)/.test(
+        !/^(?:CLOUDFLARE_|B2_|AJT_B2|AJT_REVIEW_|VITE_USER_NODE_ENV$|GH_TOKEN$|GITHUB_TOKEN$|GITHUB_CLIENT_|GA4_ACCESS_TOKEN$)/.test(
           name,
         ),
     ),

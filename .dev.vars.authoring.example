@@ -1,0 +1,8 @@
+# Copy to .dev.vars.authoring and chmod 600, or run setup:remote --configure.
+# This ignored file is used only by the private authoring setup script.
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+B2_MEDIA_ENDPOINT=
+B2_MEDIA_BUCKET=
+B2_AUTHORING_KEY_ID=
+B2_AUTHORING_APPLICATION_KEY=

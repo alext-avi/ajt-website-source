@@ -14,6 +14,12 @@ import {
   waitForStaging,
 } from './lib/release.mjs';
 
+// Content Post never enters this code-release pipeline.
+if (process.env.REMOTE_CONTENT_ENABLED === 'true') {
+  await import('./deploy-runtime.mjs');
+  process.exit(0);
+}
+
 const { values } = parseArgs({
   options: { 'staging-only': { type: 'boolean' } },
 });
@@ -108,6 +114,8 @@ await withWorkerSecrets(mediaSecrets, async (secretsFile) => {
     [
       wrangler,
       'deploy',
+      '--config',
+      'wrangler.jsonc',
       '--env',
       'staging',
       '--tag',
@@ -148,7 +156,16 @@ await withWorkerSecrets(mediaSecrets, async (secretsFile) => {
   await verifyRelease(root, release);
   run(
     process.execPath,
-    [wrangler, 'deploy', '--tag', revision, '--secrets-file', secretsFile],
+    [
+      wrangler,
+      'deploy',
+      '--config',
+      'wrangler.jsonc',
+      '--tag',
+      revision,
+      '--secrets-file',
+      secretsFile,
+    ],
     true,
   );
   output('deployed', 'true');

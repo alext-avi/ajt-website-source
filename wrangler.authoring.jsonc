@@ -1,0 +1,69 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ajt-content",
+  "account_id": "301c2c01d75b3c264d18ca39b2bfce5a",
+  "main": "worker/authoring.mjs",
+  "compatibility_date": "2026-10-24",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "AUTHORING_ORIGIN": "https://ajt-content.alexander-jt.workers.dev",
+    "SITE_URL": "https://alexander-thomas.alexander-jt.workers.dev",
+    "OWNER_GITHUB_ID": "13840761",
+    "ALLOWED_MCP_ORIGINS": "https://chatgpt.com",
+  },
+  "secrets": {
+    "required": [
+      "GITHUB_CLIENT_ID",
+      "GITHUB_CLIENT_SECRET",
+      "B2_MEDIA_ENDPOINT",
+      "B2_MEDIA_BUCKET",
+      "B2_AUTHORING_KEY_ID",
+      "B2_AUTHORING_APPLICATION_KEY",
+    ],
+  },
+  "d1_databases": [
+    {
+      "binding": "CONTENT_DB",
+      "database_name": "ajt-website-content",
+      "database_id": "7bfb4c08-b765-4393-b6d2-bd72f750de33",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "kv_namespaces": [
+    { "binding": "OAUTH_KV", "id": "00000000000000000000000000000000" },
+  ],
+  "assets": {
+    "directory": ".wrangler/authoring-assets",
+    "binding": "APP_ASSETS",
+    "run_worker_first": true,
+  },
+  "env": {
+    "staging": {
+      "name": "ajt-content-staging",
+      "vars": {
+        "AUTHORING_ORIGIN": "https://ajt-content-staging.alexander-jt.workers.dev",
+        "SITE_URL": "https://alexander-thomas-staging.alexander-jt.workers.dev",
+        "OWNER_GITHUB_ID": "13840761",
+        "ALLOWED_MCP_ORIGINS": "https://chatgpt.com",
+      },
+      "d1_databases": [
+        {
+          "binding": "CONTENT_DB",
+          "database_name": "ajt-website-content-staging",
+          "database_id": "344f377c-6f88-4a9d-a241-92b2c0231069",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "kv_namespaces": [
+        { "binding": "OAUTH_KV", "id": "00000000000000000000000000000000" },
+      ],
+      "assets": {
+        "directory": ".wrangler/authoring-assets",
+        "binding": "APP_ASSETS",
+        "run_worker_first": true,
+      },
+    },
+  },
+}

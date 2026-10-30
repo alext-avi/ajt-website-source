@@ -1,10 +1,10 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
-import { getCollection } from 'astro:content';
+import { getPosts } from '../lib/content';
 import { site } from '../lib/site';
 export async function GET(context: APIContext) {
   // Never syndicate local drafts or scheduled posts, including in development.
-  const posts = (await getCollection('posts'))
+  const posts = (await getPosts())
     .filter((p) => !p.data.draft && p.data.date <= new Date())
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
   return rss({

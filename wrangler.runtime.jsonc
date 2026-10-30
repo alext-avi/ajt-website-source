@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "alexander-thomas",
+  "account_id": "301c2c01d75b3c264d18ca39b2bfce5a",
+  "main": "./worker/runtime.ts",
+  "compatibility_date": "2026-10-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": { "MEDIA_PROVIDER": "b2" },
+  "d1_databases": [
+    {
+      "binding": "CONTENT_DB",
+      "database_name": "ajt-website-content",
+      "database_id": "7bfb4c08-b765-4393-b6d2-bd72f750de33",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "assets": { "binding": "ASSETS", "run_worker_first": true },
+  "env": {
+    "staging": {
+      "name": "alexander-thomas-staging",
+      "vars": { "MEDIA_PROVIDER": "b2", "DEPLOYMENT_ENVIRONMENT": "staging" },
+      "d1_databases": [
+        {
+          "binding": "CONTENT_DB",
+          "database_name": "ajt-website-content-staging",
+          "database_id": "344f377c-6f88-4a9d-a241-92b2c0231069",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "assets": { "binding": "ASSETS", "run_worker_first": true },
+    },
+  },
+}

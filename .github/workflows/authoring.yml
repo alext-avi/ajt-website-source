@@ -1,0 +1,48 @@
+name: Release remote authoring code
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: remote-authoring-production
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.repository == 'alext-avi/ajt-website' && vars.REMOTE_CONTENT_ENABLED == 'true'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Verify real OAuth, MCP App and isolated SQLite publishing
+        run: npm run test:remote && node --test scripts/remote-publication.test.mjs scripts/deployment-secrets.test.mjs
+      - name: Release the authenticated authoring Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GITHUB_CLIENT_ID: ${{ secrets.AUTHORING_GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.AUTHORING_GITHUB_CLIENT_SECRET }}
+          B2_MEDIA_ENDPOINT: ${{ vars.B2_MEDIA_ENDPOINT }}
+          B2_MEDIA_BUCKET: ${{ vars.B2_MEDIA_BUCKET }}
+          B2_AUTHORING_KEY_ID: ${{ secrets.B2_AUTHORING_KEY_ID }}
+          B2_AUTHORING_APPLICATION_KEY: ${{ secrets.B2_AUTHORING_APPLICATION_KEY }}
+        run: npm run deploy:authoring
+      - name: Save browser evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: remote-authoring-tests
+          path: |
+            playwright-report-remote/
+            test-results-remote/
+          retention-days: 7

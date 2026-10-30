@@ -1,5 +1,6 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
+import { renderMarkdown } from '../../../mcp/content-render.mjs';
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
 import PostRow from '../../components/PostRow.astro';
@@ -14,8 +15,14 @@ export async function getStaticPaths() {
 interface Props {
   talk: CollectionEntry<'talks'>;
 }
-const { talk } = Astro.props;
-const { Content } = await render(talk);
+const talk =
+  Astro.props.talk ||
+  (await getTalks()).find((item) => item.id === Astro.params.id);
+if (!talk) return Astro.rewrite('/404/');
+const runtimeBody = import.meta.env.AJT_RUNTIME
+  ? renderMarkdown(talk.body || '')
+  : undefined;
+const Content = runtimeBody ? undefined : (await render(talk)).Content;
 const related = (await getPosts()).filter((p) =>
   talk.data.relatedArticles.includes(p.id),
 );
@@ -79,7 +86,8 @@ const related = (await getPosts()).filter((p) =>
         </a>
       )}
       <article class="prose">
-        <Content />
+        <Fragment set:html={runtimeBody?.html} />
+        {Content && <Content />}
       </article>
       {(talk.data.slides ||
         talk.data.video ||

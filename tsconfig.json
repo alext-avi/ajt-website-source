@@ -3,7 +3,9 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": [
@@ -11,6 +13,9 @@
     "artifacts",
     ".wrangler",
     "playwright-report*/**",
-    "test-results*/**"
+    "test-results*/**",
+    "dist-runtime",
+    "playwright-report-remote/**",
+    "test-results-remote/**"
   ]
 }

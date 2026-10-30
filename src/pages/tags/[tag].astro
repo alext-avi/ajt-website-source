@@ -11,7 +11,14 @@ export async function getStaticPaths() {
     props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
   }));
 }
-const { tag, posts } = Astro.props;
+const all = await getPosts();
+const tag =
+  Astro.props.tag ||
+  all
+    .flatMap((p) => p.data.tags)
+    .find((tag) => tagSlug(tag) === Astro.params.tag);
+if (!tag) return Astro.rewrite('/404/');
+const posts = Astro.props.posts || all.filter((p) => p.data.tags.includes(tag));
 ---
 
 <Base

@@ -56,11 +56,14 @@ const projectFields = [
 
 async function tool(name, args) {
   const result = await app.callServerTool({ name, arguments: args });
-  if (result.isError)
-    throw new Error(
+  if (result.isError) {
+    const error = new Error(
       result.content?.find((block) => block.type === 'text')?.text ||
         'The operation failed',
     );
+    error.serverResponse = true;
+    throw error;
+  }
   return result.structuredContent;
 }
 function controls() {
@@ -198,6 +201,7 @@ async function preview() {
     slug: current.slug,
     expectedRevision: current.revision,
   });
+  $('#review').hidden = result.reviewAvailable === false;
   const context = $('#publication-context');
   context.textContent =
     current.metadata.draft && !result.previewToken
@@ -498,9 +502,11 @@ $('#post').onclick = (event) => {
         );
         status(message);
       }
-    } catch {
+    } catch (error) {
       status(
-        'Posting status is unavailable. Open the draft to inspect its status before trying again.',
+        error.serverResponse
+          ? error.message + ' Reload the saved draft before trying again.'
+          : 'Posting status is unavailable. Reload the saved draft to inspect its status before trying again.',
       );
     }
   });

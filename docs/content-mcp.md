@@ -1,5 +1,8 @@
 # Draft, review, and publish
 
+For the hosted GitHub-authenticated MCP and direct Worker publication path, see [remote authoring](remote-authoring.md). The local/static instructions below remain available during rollout.
+
+
 The `ajt-content` MCP creates website post and project drafts and submits specific revisions to the local publishing desk. Alex edits the rendered draft and presses Post directly in the App, or Publish in the local desk. Model-facing tools expose no approval, publication, deployment, arbitrary SQL or deletion operation. It does not post to LinkedIn.
 
 ## Interactive MCP App

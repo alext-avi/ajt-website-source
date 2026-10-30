@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod/v4';
-import { sqlText } from '../scripts/lib/d1-content.mjs';
+import { sqlText } from '../src/lib/content-records.mjs';
 
 export const linkedinCaptureSchema = z
   .object({

@@ -1,5 +1,5 @@
 import { mediaFilename } from '../src/lib/media.ts';
-import { sqlText } from '../scripts/lib/d1-content.mjs';
+import { sqlText } from '../src/lib/content-records.mjs';
 import { randomUUID } from 'node:crypto';
 
 export const mediaStorageCeiling = 8_000_000_000;

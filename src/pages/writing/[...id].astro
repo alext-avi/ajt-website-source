@@ -1,5 +1,6 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
+import { renderMarkdown } from '../../../mcp/content-render.mjs';
 import Base from '../../layouts/Base.astro';
 import SignatureMark from '../../components/SignatureMark.astro';
 import PostRow from '../../components/PostRow.astro';
@@ -21,8 +22,16 @@ export async function getStaticPaths() {
 interface Props {
   post: CollectionEntry<'posts'>;
 }
-const { post } = Astro.props;
-const { Content, headings } = await render(post);
+const post =
+  Astro.props.post ||
+  (await getPosts()).find((item) => item.id === Astro.params.id);
+if (!post) return Astro.rewrite('/404/');
+const runtimeBody = import.meta.env.AJT_RUNTIME
+  ? renderMarkdown(post.body || '')
+  : undefined;
+const rendered = runtimeBody ? undefined : await render(post);
+const Content = rendered?.Content;
+const headings = runtimeBody?.headings || rendered?.headings || [];
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 const related = relatedPosts(post, await getPosts());
 const structured = {
@@ -110,7 +119,8 @@ const structured = {
         />
       )}
       <article class="prose">
-        <Content />
+        <Fragment set:html={runtimeBody?.html} />
+        {Content && <Content />}
       </article>
       <PostVideo post={post} />
       <div class="article-tags" aria-label="Article tags">

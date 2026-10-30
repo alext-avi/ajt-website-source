@@ -33,7 +33,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      'npm run build && wrangler dev --local --local-protocol https --ip 127.0.0.1 --port 8794 --persist-to .wrangler/integration --log-level warn',
+      'npm run build && wrangler dev --config wrangler.jsonc --local --local-protocol https --ip 127.0.0.1 --port 8794 --persist-to .wrangler/integration --log-level warn',
     url: baseURL,
     ignoreHTTPSErrors: true,
     reuseExistingServer: false,

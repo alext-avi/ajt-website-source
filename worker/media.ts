@@ -17,6 +17,7 @@ export interface MediaBucket {
   ): Promise<(ObjectInfo & { body: ReadableStream }) | null>;
 }
 export interface MediaEnv extends B2Env {
+  isPublishedMedia?(url: string): Promise<boolean>;
   ASSETS: { fetch(request: Request): Promise<Response> };
   MEDIA_BUCKET?: MediaBucket;
   MEDIA_PROVIDER?: string;
@@ -61,26 +62,30 @@ export async function serveMedia(
         : {},
     );
   try {
-    const response = await env.ASSETS.fetch(
-      new Request(new URL(mediaManifestPath, url)),
-    );
-    if (!response.ok) return unavailable();
-    step = 'manifest-parse';
-    const manifest = (await response.json()) as {
-      version?: number;
-      files?: string[];
-    };
-    if (
-      manifest.version !== 1 ||
-      !Array.isArray(manifest.files) ||
-      manifest.files.some(
-        (name) => typeof name !== 'string' || !mediaFilename.test(name),
+    if (env.isPublishedMedia) {
+      if (!(await env.isPublishedMedia(url.pathname))) return error(404);
+    } else {
+      const response = await env.ASSETS.fetch(
+        new Request(new URL(mediaManifestPath, url)),
+      );
+      if (!response.ok) return unavailable();
+      step = 'manifest-parse';
+      const manifest = (await response.json()) as {
+        version?: number;
+        files?: string[];
+      };
+      if (
+        manifest.version !== 1 ||
+        !Array.isArray(manifest.files) ||
+        manifest.files.some(
+          (name) => typeof name !== 'string' || !mediaFilename.test(name),
+        )
       )
-    )
-      return unavailable();
-    // ALWAYS check this release before the edge cache: drafts and removed files
-    // cannot be exposed by an old cache entry or a guessed immutable URL.
-    if (!manifest.files.includes(filename)) return error(404);
+        return unavailable();
+      // ALWAYS check this release before the edge cache: drafts and removed files
+      // cannot be exposed by an old cache entry or a guessed immutable URL.
+      if (!manifest.files.includes(filename)) return error(404);
+    }
     const cache = context.cache;
     const cacheKey = new Request(new URL('/media/' + filename, url));
     const cacheableRequest =
