@@ -5,6 +5,18 @@ import { githubAuthorize } from '../../worker/github-auth.mjs';
 // replaced; OAuth consent/cookies/PKCE/tokens, MCP, D1 and publication are real.
 export default {
   fetch(request, env, ctx) {
+    // Test-only expiry control. This entrypoint is never deployed and the
+    // generated integration configuration binds an isolated local SQLite DB.
+    if (
+      env.DEPLOYMENT_ENVIRONMENT === 'local-test' &&
+      request.method === 'POST' &&
+      new URL(request.url).pathname === '/__test/expire-project-preview'
+    )
+      return env.CONTENT_DB.prepare(
+        "UPDATE authoring_previews SET expires_at=0 WHERE collection='projects' AND slug='expired-preview-project' AND status='ready'",
+      )
+        .run()
+        .then(() => Response.json({ expired: true }));
     // Test-only loopback gateway: both real Workers share one workerd/D1 owner.
     if (request.headers.get('X-AJT-Test-Public-Site') === '1') {
       const url = new URL(request.url);

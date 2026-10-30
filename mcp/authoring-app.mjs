@@ -1,7 +1,7 @@
 import { App } from '@modelcontextprotocol/ext-apps';
 
 const app = new App(
-  { name: 'Website draft review', version: '1.2.0' },
+  { name: 'Website draft review', version: '1.2.1' },
   {},
   { autoResize: true },
 );
@@ -19,11 +19,16 @@ root.innerHTML = `<header><div><p class="eyebrow">-AT · Website</p><h1>Review d
 <label>Tags<input name="tags" placeholder="Separate tags with commas"></label><label><input name="featured" type="checkbox">Featured</label><label>Body (Markdown)<textarea name="body" rows="15" required></textarea></label>
 <details class="section"><summary>Media and uploads</summary><label>Cover image<input name="image" placeholder="Select from the library or upload"></label><label>Cover image description<input name="imageAlt"></label><div data-type="posts"><label>Video<input name="video"></label><label>Video poster<input name="videoPoster"></label></div><div class="two"><label>Use upload as<select id="upload-target"><option value="image">Cover image</option><option value="video">Video</option><option value="videoPoster">Video poster</option><option value="inline">Inline image or PDF</option></select></label><label>Upload / replace<input id="upload" type="file" accept="image/png,image/jpeg,image/gif,image/webp"></label></div><p class="notice">Uploads stay private. Browser uploads support files up to 25 MiB.</p><label>Find media<input id="media-search" type="search"></label><button type="button" id="browse">Browse media library</button><div class="library" id="media"></div></details>
 <div class="actions section"><button class="primary" id="save" type="button">Save draft</button><button id="discard" type="button">Reload saved draft</button></div></fieldset></form></section>
-<section class="panel preview-panel"><header><h2>Saved draft preview</h2><button id="preview" type="button">Refresh preview</button></header><p class="notice">Post publishes the saved draft to your website. It does not post to LinkedIn.</p><p id="preview-status" class="notice" aria-live="polite"></p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><p id="publication-context" class="notice" role="alert" hidden></p><div class="actions section"><button class="primary" id="post" type="button">Post</button><button id="review" type="button">Open draft</button><a id="draft-link" hidden target="_blank" rel="noopener noreferrer">Open draft in publishing desk ↗</a><input id="draft-address" aria-label="Draft address" readonly hidden></div></section></div>`;
+<section class="panel preview-panel"><header><h2>Saved draft preview</h2></header><p class="notice">Post publishes the saved draft to your website. It does not post to LinkedIn.</p><p id="preview-status" class="notice" aria-live="polite"></p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><p id="publication-context" class="notice" role="alert" hidden></p><div class="actions section"><button class="primary" id="post" type="button" aria-describedby="post-status">Post</button><button id="preview" type="button">Refresh preview</button><button id="review" type="button">Open draft</button><a id="draft-link" hidden target="_blank" rel="noopener noreferrer">Open draft in publishing desk ↗</a><input id="draft-address" aria-label="Draft address" readonly hidden></div><p id="post-status" data-testid="publication-status" class="status" aria-live="polite" hidden></p></section></div>`;
 const $ = (selector) => root.querySelector(selector);
 const field = (name) => $('#editor').elements.namedItem(name);
 const status = (message) => {
   $('#status').textContent = message;
+};
+const publicationStatus = (message) => {
+  status(message);
+  $('#post-status').textContent = message;
+  $('#post-status').hidden = !message;
 };
 let collection = 'posts';
 let current;
@@ -101,6 +106,8 @@ function setItem(item, kind = item.collection || 'posts') {
   current = item;
   previewToken = undefined;
   publicationBlocked = false;
+  $('#post-status').textContent = '';
+  $('#post-status').hidden = true;
   $('#draft-link').hidden = true;
   $('#draft-address').hidden = true;
   $('#publication-context').hidden = true;
@@ -145,7 +152,9 @@ function changed() {
   dirty = true;
   controls();
   previewToken = undefined;
-  status('Unsaved changes. Save to refresh the preview before posting.');
+  publicationStatus(
+    'Unsaved changes. Save to refresh the preview before posting.',
+  );
 }
 function emptyState() {
   current = undefined;
@@ -195,6 +204,7 @@ async function mediaBlob(url) {
 async function preview() {
   if (!current || dirty) return;
   previewToken = undefined;
+  publicationStatus('Preparing the saved preview…');
   $('#preview-status').textContent = 'Loading saved content and media…';
   const result = await tool('render_authoring_preview', {
     collection,
@@ -264,6 +274,16 @@ async function preview() {
     (doc.querySelector('video')
       ? 'Play the video here using its controls.'
       : '');
+  // A failed Post remains blocked until a fresh saved preview has loaded.
+  // Refreshing only prepares another review capability; it never posts.
+  publicationBlocked = false;
+  publicationStatus(
+    !current.metadata.draft
+      ? 'This saved revision is already published.'
+      : previewToken
+        ? 'Saved preview ready. Review it, then press Post when ready.'
+        : context.textContent,
+  );
 }
 function metadata() {
   const result = {};
@@ -326,7 +346,7 @@ async function run(action) {
   try {
     await action();
   } catch (error) {
-    status(error.message || 'The operation failed.');
+    publicationStatus(error.message || 'The operation failed.');
   } finally {
     busy = false;
     controls();
@@ -477,13 +497,14 @@ $('#post').onclick = (event) => {
     return;
   const token = previewToken;
   publicationBlocked = true;
+  publicationStatus('Posting the saved draft…');
   void run(async () => {
     try {
       let result = await tool('publish_authoring_draft', {
         previewToken: token,
       });
       while (!tornDown) {
-        status(result.message || 'Posting…');
+        publicationStatus(result.message || 'Posting…');
         if (result.reviewUrl) draftLink(result.reviewUrl);
         if (result.status !== 'publishing') break;
         await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -500,12 +521,15 @@ $('#post').onclick = (event) => {
           }),
           collection,
         );
-        status(message);
+        publicationStatus(message);
       }
     } catch (error) {
-      status(
+      publicationStatus(
         error.serverResponse
-          ? error.message + ' Reload the saved draft before trying again.'
+          ? error.message +
+              (/preview expired/i.test(error.message)
+                ? ' Refresh preview before trying again.'
+                : ' Reload the saved draft before trying again.')
           : 'Posting status is unavailable. Reload the saved draft to inspect its status before trying again.',
       );
     }

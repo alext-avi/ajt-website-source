@@ -14,6 +14,8 @@ The owner's authenticated MCP connection supports draft/media tools and the rend
 
 App-only routing is enforced by the MCP host. It is not cryptographic human attestation, nor a sandbox against a malicious client holding the owner's token. The server still authenticates every request and validates the saved revision. There is one GitHub login and one Post click; no second publishing desk is required.
 
+Publishing progress and errors appear beside Post as well as at the top of the App. If a review preview expires, use the adjacent **Refresh preview** control to prepare a fresh saved preview and enable Post again. Refreshing never publishes or retries a failed Post automatically; Alex must review and click Post again. A changed draft or uncertain publication result should be checked with **Reload saved draft** first.
+
 OAuth grants are independent authoring sessions. Revoking the GitHub login app is not a substitute for revoking already-issued authoring grants. Use the provider's advertised revocation endpoint or clear the authoring OAuth namespace as an owner recovery action; do not expose that administrative operation as an agent tool.
 
 ## Public content and media

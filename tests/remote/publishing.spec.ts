@@ -164,16 +164,14 @@ test('real remote MCP App uploads private media and Post makes the approved revi
     app.getByRole('button', { name: 'Open draft', exact: true }),
   ).toBeHidden();
   await app.getByText('Media and uploads', { exact: true }).click();
-  await app
-    .locator('#upload')
-    .setInputFiles({
-      name: 'fixture.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=',
-        'base64',
-      ),
-    });
+  await app.locator('#upload').setInputFiles({
+    name: 'fixture.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  });
   await expect(app.getByRole('status')).toContainText('Upload ready.');
   const media = await app
     .getByLabel('Cover image', { exact: true })
@@ -271,4 +269,73 @@ test('a changed revision cannot be published from a stale App preview; projects 
   const response = await request.get(site + `/projects/${slug}/`);
   expect(response.status()).toBe(200);
   expect(await response.text()).toContain('The updated project revision');
+});
+
+test('an expired project preview can be refreshed and posted only after another human click', async ({
+  page,
+  request,
+}, testInfo) => {
+  await login(page, request);
+  const slug = 'expired-preview-project';
+  await call(request, 'create_project_draft', {
+    slug,
+    metadata: {
+      title: 'Recovering an expired review preview',
+      summary:
+        'A synthetic local project for checking expiry feedback and an explicit publication retry.',
+      role: 'Integration test',
+    },
+    body: '## Isolated project\n\nOnly test content may be published here.',
+  });
+  await page.goto(host + '/?collection=projects&slug=' + slug);
+  const app = page.frameLocator('iframe[title="Website authoring app"]');
+  const post = app.getByRole('button', { name: 'Post', exact: true });
+  await expect(post).toBeEnabled();
+  await app
+    .getByLabel('Title', { exact: true })
+    .fill('Recovering an expired saved project preview');
+  await expect(post).toBeDisabled();
+  await expect(app.getByTestId('publication-status')).toContainText(
+    'Unsaved changes.',
+  );
+  await app.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await expect(post).toBeEnabled();
+  await expect(app.getByTestId('publication-status')).toContainText(
+    'Saved preview ready.',
+  );
+  expect(
+    (await request.post(auth + '/__test/expire-project-preview')).status(),
+  ).toBe(200);
+  await post.click();
+  await expect(app.getByRole('status')).toContainText('This preview expired');
+  await expect(app.getByTestId('publication-status')).toBeVisible();
+  await expect(app.getByTestId('publication-status')).toContainText(
+    'Refresh preview before trying again.',
+  );
+  await expect(post).toBeDisabled();
+  expect((await call(request, 'get_project', { slug })).metadata.draft).toBe(
+    true,
+  );
+  expect((await request.get(site + `/projects/${slug}/`)).status()).toBe(404);
+
+  await app
+    .getByRole('button', { name: 'Refresh preview', exact: true })
+    .click();
+  await expect(post).toBeEnabled();
+  expect((await call(request, 'get_project', { slug })).metadata.draft).toBe(
+    true,
+  );
+  expect(
+    (
+      await page.evaluate(() => (window as any).testHost.calls as string[])
+    ).filter((name) => name === 'publish_authoring_draft'),
+  ).toHaveLength(1);
+  await post.click();
+  await expect(app.getByTestId('publication-status')).toContainText('Posted.');
+  await expect(app.getByRole('status')).toContainText('Posted.');
+  expect((await request.get(site + `/projects/${slug}/`)).status()).toBe(200);
+  await testInfo.attach('recovered-project-publication', {
+    body: await app.locator('.preview-panel').screenshot(),
+    contentType: 'image/png',
+  });
 });
