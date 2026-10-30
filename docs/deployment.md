@@ -4,6 +4,8 @@ The workflow in `.github/workflows/verify.yml` runs Astro diagnostics, a product
 
 The deployment job installs dependencies from the same lockfile and runs `npm run deploy`. It pulls published D1 records, validates and tests the snapshot build with the production variables, deploys a separate staging Worker, and requires real Playwright browser/HTTP tests against that server before uploading the same static artifact to production. Pull-request verification uses the committed snapshot and needs no Cloudflare access. No separate deployment action or unpinned Wrangler download is needed. GitHub actions are pinned to full commit SHAs. The GitHub token has read-only repository access and is not persisted in the checkout.
 
+Release subprocesses always use `NODE_ENV=production` and `CONTENT_SOURCE=d1`, including when publication starts inside the local Astro development review desk. Development review settings and `VITE_USER_NODE_ENV` are removed before builds, tests or Cloudflare commands run. This keeps legacy file previews and draft/example content out of releases while retaining the existing credential isolation.
+
 ## Staging and promotion
 
 Staging is `https://alexander-thomas-staging.alexander-jt.workers.dev`, configured in `wrangler.jsonc` under `env.staging`. It is a separate Worker with no D1 binding. It serves only the validated published content snapshot; drafts and private source files are excluded by the normal publication checks. It is publicly viewable, with noindex response headers; noindex is not access control. Production GA4 only initializes on the canonical production origin, including when staging has a saved consent choice.

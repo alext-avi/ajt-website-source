@@ -59,11 +59,15 @@ export function deploymentEnvironments(env) {
   const safeEnv = Object.fromEntries(
     Object.entries(env).filter(
       ([name]) =>
-        !/^(?:CLOUDFLARE_|B2_|AJT_B2|GH_TOKEN$|GITHUB_TOKEN$|GA4_ACCESS_TOKEN$)/.test(
+        !/^(?:CLOUDFLARE_|B2_|AJT_B2|AJT_REVIEW_|VITE_USER_NODE_ENV$|GH_TOKEN$|GITHUB_TOKEN$|GA4_ACCESS_TOKEN$)/.test(
           name,
         ),
     ),
   );
+  // The local review desk runs under Astro dev. Its environment must never
+  // turn a release build into a legacy-file/draft preview.
+  safeEnv.NODE_ENV = 'production';
+  safeEnv.CONTENT_SOURCE = 'd1';
   const cloudflareEnv = { ...safeEnv };
   if (env.CLOUDFLARE_API_TOKEN)
     cloudflareEnv.CLOUDFLARE_API_TOKEN = env.CLOUDFLARE_API_TOKEN;

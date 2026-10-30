@@ -49,6 +49,42 @@ test('deployment credentials reach neither build subprocesses nor unrelated Clou
   }
 });
 
+test('releases launched from the development review desk use production and the approved D1 snapshot', () => {
+  const { safeEnv, cloudflareEnv } = deploymentEnvironments({
+    NODE_ENV: 'development',
+    VITE_USER_NODE_ENV: 'development',
+    CONTENT_SOURCE: 'files',
+    AJT_REVIEW_ENABLED: '1',
+    AJT_REVIEW_TARGET: 'local',
+    AJT_REVIEW_DATABASE: '/private/draft-preview.sqlite',
+    AJT_REVIEW_R2_LOCAL_STATE: '/private/preview-media',
+    SITE_URL: 'https://site.test',
+  });
+  for (const env of [safeEnv, cloudflareEnv]) {
+    const child = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          '-e',
+          `
+      console.log(JSON.stringify({
+        nodeEnv: process.env.NODE_ENV,
+        content: process.env.CONTENT_SOURCE,
+        previewVariables: Object.keys(process.env).filter(name => /^(AJT_REVIEW_|VITE_USER_NODE_ENV$)/.test(name))
+      }));
+    `,
+        ],
+        { env, encoding: 'utf8' },
+      ),
+    );
+    assert.deepEqual(child, {
+      nodeEnv: 'production',
+      content: 'd1',
+      previewVariables: [],
+    });
+  }
+});
+
 test('version deployment receives an owner-only secret file that is removed after success or failure', async () => {
   for (const fail of [false, true]) {
     let temporary;
