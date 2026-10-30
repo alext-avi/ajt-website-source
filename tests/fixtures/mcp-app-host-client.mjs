@@ -16,7 +16,15 @@ bridge.oncalltool = async (params) => {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(params),
   });
-  return response.json();
+  const result = await response.json();
+  if (
+    params.name === 'render_authoring_preview' &&
+    new URL(location.href).searchParams.has('oldConnection')
+  ) {
+    delete result.structuredContent.previewToken;
+    delete result.structuredContent.publicationTarget;
+  }
+  return result;
 };
 bridge.onopenlink = async ({ url }) => {
   if (new URL(location.href).searchParams.has('denyOpen'))

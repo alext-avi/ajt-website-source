@@ -522,3 +522,48 @@ test('Post rejects a saved draft changed after its rendered preview', async ({
     app.getByRole('button', { name: 'Post', exact: true }),
   ).toBeDisabled();
 });
+
+test('an old connection explains why Post is unavailable and never starts publication', async ({
+  page,
+  request,
+}) => {
+  const slug = 'app-old-connection';
+  const call = async (name: string, args: object) => {
+    const result = await (
+      await request.post('http://127.0.0.1:4334/tool', {
+        data: { name, arguments: args },
+      })
+    ).json();
+    expect(result.isError).not.toBe(true);
+    return result.structuredContent;
+  };
+  await call('create_post_draft', {
+    slug,
+    metadata: {
+      title: 'An existing draft on an old connection',
+      summary:
+        'A draft whose preview cannot offer publication through an outdated server.',
+      date: '2026-10-25',
+      category: 'Architecture',
+    },
+    body: 'The saved draft must remain private.',
+  });
+  await page.goto(`http://127.0.0.1:4334/?slug=${slug}&oldConnection=1`);
+  const app = page.frameLocator('iframe[title="Website authoring app"]');
+  await expect(app.getByRole('status')).toContainText('Ready.');
+  await expect(app.getByRole('alert')).toContainText('Posting is unavailable');
+  await expect(app.getByRole('alert')).toContainText(
+    'Nothing has been posted.',
+  );
+  await expect(
+    app.getByRole('button', { name: 'Post', exact: true }),
+  ).toBeDisabled();
+  await expect(
+    app.getByRole('button', { name: 'Open draft', exact: true }),
+  ).toBeEnabled();
+  expect((await call('get_post', { slug })).metadata.draft).toBe(true);
+  const calls = await page.evaluate(
+    () => (window as any).testHost.calls as string[],
+  );
+  expect(calls).not.toContain('publish_authoring_draft');
+});

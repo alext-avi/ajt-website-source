@@ -19,7 +19,7 @@ root.innerHTML = `<header><div><p class="eyebrow">-AT · Website</p><h1>Review d
 <label>Tags<input name="tags" placeholder="Separate tags with commas"></label><label><input name="featured" type="checkbox">Featured</label><label>Body (Markdown)<textarea name="body" rows="15" required></textarea></label>
 <details class="section"><summary>Media and uploads</summary><label>Cover image<input name="image" placeholder="Select from the library or upload"></label><label>Cover image description<input name="imageAlt"></label><div data-type="posts"><label>Video<input name="video"></label><label>Video poster<input name="videoPoster"></label></div><div class="two"><label>Use upload as<select id="upload-target"><option value="image">Cover image</option><option value="video">Video</option><option value="videoPoster">Video poster</option><option value="inline">Inline image or PDF</option></select></label><label>Upload / replace<input id="upload" type="file" accept="image/png,image/jpeg,image/gif,image/webp"></label></div><p class="notice">Uploads stay private. Browser uploads support files up to 25 MiB.</p><label>Find media<input id="media-search" type="search"></label><button type="button" id="browse">Browse media library</button><div class="library" id="media"></div></details>
 <div class="actions section"><button class="primary" id="save" type="button">Save draft</button><button id="discard" type="button">Reload saved draft</button></div></fieldset></form></section>
-<section class="panel preview-panel"><header><h2>Saved draft preview</h2><button id="preview" type="button">Refresh preview</button></header><p class="notice">Post publishes the saved draft to your website. It does not post to LinkedIn.</p><p id="preview-status" class="notice" aria-live="polite"></p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><div class="actions section"><button class="primary" id="post" type="button">Post</button><button id="review" type="button">Open draft</button><a id="draft-link" hidden target="_blank" rel="noopener noreferrer">Open draft in publishing desk ↗</a><input id="draft-address" aria-label="Draft address" readonly hidden></div></section></div>`;
+<section class="panel preview-panel"><header><h2>Saved draft preview</h2><button id="preview" type="button">Refresh preview</button></header><p class="notice">Post publishes the saved draft to your website. It does not post to LinkedIn.</p><p id="preview-status" class="notice" aria-live="polite"></p><iframe class="preview" title="Saved draft preview" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe><p id="publication-context" class="notice" role="alert" hidden></p><div class="actions section"><button class="primary" id="post" type="button">Post</button><button id="review" type="button">Open draft</button><a id="draft-link" hidden target="_blank" rel="noopener noreferrer">Open draft in publishing desk ↗</a><input id="draft-address" aria-label="Draft address" readonly hidden></div></section></div>`;
 const $ = (selector) => root.querySelector(selector);
 const field = (name) => $('#editor').elements.namedItem(name);
 const status = (message) => {
@@ -100,6 +100,7 @@ function setItem(item, kind = item.collection || 'posts') {
   publicationBlocked = false;
   $('#draft-link').hidden = true;
   $('#draft-address').hidden = true;
+  $('#publication-context').hidden = true;
   $('#empty').hidden = true;
   $('.grid').hidden = false;
   $('#editor').reset();
@@ -197,6 +198,14 @@ async function preview() {
     slug: current.slug,
     expectedRevision: current.revision,
   });
+  const context = $('#publication-context');
+  context.textContent =
+    current.metadata.draft && !result.previewToken
+      ? 'Posting is unavailable because this authoring connection needs to reload. Fully quit Codex, reopen it, and open this draft again. Nothing has been posted.'
+      : result.publicationTarget === 'local-test'
+        ? 'Local test mode. Post cannot publish to the live website.'
+        : 'Post publishes this saved draft to the live website.';
+  context.hidden = false;
   const doc = new DOMParser().parseFromString(result.html, 'text/html');
   // Keep attached post videos after the text, as on the final review page.
   // Also normalize previews from an already-running older MCP renderer.

@@ -33,6 +33,11 @@ App; failed or uncertain jobs are never automatically retried. **Open draft** op
 the optional local desk. A visible loopback link remains available if the host
 rejects link opening. The model must never call the app-only publication RPC.
 
+An older running server may serve the new UI without supporting the Post action.
+In that case the App disables Post and displays a persistent reconnect warning.
+An isolated SQLite backend is explicitly labeled local test mode before posting;
+it cannot publish to the live website.
+
 Attached MP4 videos play directly in the App preview after the post text, with a poster,
 native playback controls, inline playback and any saved source credit. They
 start paused. The App shows progress while loading private video bytes through

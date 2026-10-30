@@ -134,6 +134,9 @@ export function registerAuthoringApp(server, tool, store, getPost) {
       return {
         revision: item.revision,
         previewToken: publication.prepare(item, collection),
+        publicationTarget: store.identity.startsWith('sqlite:')
+          ? 'local-test'
+          : 'website',
         assets: [...new Set(await postMedia(item))],
         html: `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; media-src data: blob:; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'"><style>${styles}\nbody{padding:24px}h1{font-size:clamp(28px,5vw,44px)}.article-grid{display:block}.project-facts{margin-top:24px}.app-video{margin:24px 0}.app-video video{display:block;width:100%;height:auto;border-radius:8px;background:#000}.app-video figcaption{font-size:12px;color:#a2adc0;margin-top:8px}a{pointer-events:none}</style></head><body><header><p class="eyebrow">${escape(collection === 'projects' ? data.tags.join(' / ') : data.category)}</p><h1>${escape(data.title)}</h1><p class="lede">${escape(data.summary)}</p>${data.date ? `<time>${escape(data.date.slice(0, 10))}</time>` : ''}</header>${picture}<article class="prose">${body}</article>${video}${outcomes}${facts}</body></html>`,
       };
