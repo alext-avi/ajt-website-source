@@ -30,16 +30,18 @@ test.beforeAll(async () => {
   ).join('\n');
   const image = await fs.readFile('public/images/videos/go-plant.jpg');
   const body = await renderPost(
-    '## Archived app screens\n\n' +
+    '## App screenshots\n\n' +
       [
-        'Activity summary',
-        'Exercise library',
-        'Activity logging',
-        'Club search',
+        ['Home — iOS', 'iOS phone frame'],
+        ['Workouts — iOS', 'iOS phone frame'],
+        ['Digital key tag — iOS', 'iOS phone frame'],
+        ['Home — Android', 'Android phone frame'],
+        ['Workouts — Android', 'Android phone frame'],
+        ['Earlier interface', 'iPhone 8-style frame'],
       ]
         .map(
-          (caption, i) =>
-            `[![Screen ${i + 1}](/screen.jpg "iPhone 8-style frame")](/screen.jpg)  \n${caption}`,
+          ([caption, frame], i) =>
+            `[![Screen ${i + 1}](/screen.jpg "${frame}")](/screen.jpg)  \n${caption}`,
         )
         .join('\n\n') +
       '\n\n## Project details\n\nOrdinary content stays outside the carousel.',
@@ -91,38 +93,38 @@ test('framed project screens support buttons, keys and native horizontal scrolli
   page.on('pageerror', (error) => errors.push(error.message));
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(origin);
-  const gallery = page.getByRole('region', { name: 'Archived app screens' });
+  const gallery = page.getByRole('region', { name: 'App screenshots' });
   await expect(gallery).toHaveCount(1); // Initialization is idempotent.
   const track = gallery.locator('.project-carousel-track');
   const previous = gallery.getByRole('button', { name: 'Previous screen' });
   const next = gallery.getByRole('button', { name: 'Next screen' });
   const status = gallery.locator('.project-carousel-status');
-  await expect(status).toHaveText('1 / 4');
+  await expect(status).toHaveText('1 / 6');
   await expect(previous).toBeDisabled();
   await expect(gallery.getByRole('img', { name: 'Screen 1' })).toBeVisible();
   await expect(gallery.getByRole('img', { name: 'Screen 2' })).toHaveCount(0);
   await next.click();
-  await expect(status).toHaveText('2 / 4');
+  await expect(status).toHaveText('2 / 6');
   await expect(
     gallery.getByRole('button', { name: 'Show screen 2' }),
   ).toHaveAttribute('aria-current', 'true');
-  await gallery.getByRole('button', { name: 'Show screen 4' }).click();
-  await expect(status).toHaveText('4 / 4');
+  await gallery.getByRole('button', { name: 'Show screen 6' }).click();
+  await expect(status).toHaveText('6 / 6');
   await expect(next).toBeDisabled();
   await previous.click();
-  await expect(status).toHaveText('3 / 4');
+  await expect(status).toHaveText('5 / 6');
   await track.focus();
   await page.keyboard.press('Home');
-  await expect(status).toHaveText('1 / 4');
+  await expect(status).toHaveText('1 / 6');
   await page.keyboard.press('ArrowRight');
-  await expect(status).toHaveText('2 / 4');
+  await expect(status).toHaveText('2 / 6');
   await page.keyboard.press('End');
-  await expect(status).toHaveText('4 / 4');
+  await expect(status).toHaveText('6 / 6');
   // Touch swipes and the scrollbar use this same native scroll path.
   await track.evaluate((element) =>
     element.scrollTo({ left: element.clientWidth, behavior: 'instant' }),
   );
-  await expect(status).toHaveText('2 / 4');
+  await expect(status).toHaveText('2 / 6');
   await expect(gallery.getByRole('link', { name: 'Screen 2' })).toHaveAttribute(
     'href',
     '/screen.jpg',
@@ -149,8 +151,8 @@ test('screens and original image links remain available without JavaScript', asy
   });
   try {
     await page.goto(origin);
-    await expect(page.getByRole('img')).toHaveCount(4);
-    await expect(page.getByRole('link')).toHaveCount(4);
+    await expect(page.getByRole('img')).toHaveCount(6);
+    await expect(page.getByRole('link')).toHaveCount(6);
     await expect(page.getByRole('button')).toHaveCount(0);
     expect(
       await page.evaluate(

@@ -1,6 +1,7 @@
 /** Enhance consecutive framed Markdown images without allowing scripts in content. */
 export function enhanceProjectCarousels(root: ParentNode = document) {
-  const selector = "p:has(> a > img[title='iPhone 8-style frame'])";
+  const selector =
+    "p:has(> a > img:is([title='iPhone 8-style frame'], [title='iOS phone frame'], [title='Android phone frame']))";
   for (const first of root.querySelectorAll<HTMLElement>(
     `.prose ${selector}`,
   )) {
@@ -17,7 +18,7 @@ export function enhanceProjectCarousels(root: ParentNode = document) {
     gallery.className = 'project-carousel';
     gallery.setAttribute('role', 'region');
     gallery.setAttribute('aria-roledescription', 'carousel');
-    gallery.setAttribute('aria-label', 'Archived app screens');
+    gallery.setAttribute('aria-label', 'App screenshots');
     const track = document.createElement('div');
     track.className = 'project-carousel-track';
     track.tabIndex = 0;

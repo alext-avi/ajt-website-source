@@ -115,9 +115,10 @@ refresh its tool list.
 
 ## Media
 
-Archived app images can use classic home-button phone chrome by linking an image
-with the title `"iPhone 8-style frame"` to its original asset URL. Put the caption
-on the next line after a Markdown hard break (two trailing spaces). The website
+App images can use phone chrome by linking an image to its original asset URL.
+Use the title `"iOS phone frame"` or `"Android phone frame"` for tall screenshots
+with slim bezels, or `"iPhone 8-style frame"` for classic home-button chrome. Put
+the caption on the next line after a Markdown hard break (two trailing spaces). The website
 styles these image paragraphs as a responsive gallery. On project pages, consecutive
 framed images become a manual carousel with arrows, position buttons, keyboard
 navigation, and native touch scrolling. No autoplay is used. Sandboxed draft previews

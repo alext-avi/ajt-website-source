@@ -1743,8 +1743,16 @@ summary:focus-visible {
 .related-section h3 {
   font-size: 20px;
 }
-/* Linked Markdown images with this title keep their pixels intact in phone chrome. */
-.prose p:has(> a > img[title='iPhone 8-style frame']) {
+/* These linked Markdown image titles add phone chrome without changing pixels. */
+.prose
+  p:has(
+    > a
+      > img:is(
+        [title='iPhone 8-style frame'],
+        [title='iOS phone frame'],
+        [title='Android phone frame']
+      )
+  ) {
   display: inline-block;
   width: calc(50% - 18px);
   margin: 0 6px 28px;
@@ -1754,7 +1762,14 @@ summary:focus-visible {
   font-size: 13px;
   line-height: 1.6;
 }
-.prose a:has(> img[title='iPhone 8-style frame']) {
+.prose
+  a:has(
+    > img:is(
+        [title='iPhone 8-style frame'],
+        [title='iOS phone frame'],
+        [title='Android phone frame']
+      )
+  ) {
   display: block;
   position: relative;
   box-sizing: border-box;
@@ -1803,7 +1818,12 @@ summary:focus-visible {
   transform: translateX(-50%);
   pointer-events: none;
 }
-.prose img[title='iPhone 8-style frame'] {
+.prose
+  img:is(
+    [title='iPhone 8-style frame'],
+    [title='iOS phone frame'],
+    [title='Android phone frame']
+  ) {
   display: block;
   width: 100%;
   height: auto;
@@ -1811,8 +1831,32 @@ summary:focus-visible {
   border: 0;
   border-radius: 2px;
 }
+/* Tall iOS and Android captures already include their system bars. Keep the
+   entire screenshot visible and use slim bezels without a fake home button. */
+.prose
+  a:has(> img:is([title='iOS phone frame'], [title='Android phone frame'])) {
+  padding: 10px;
+  background: linear-gradient(
+    110deg,
+    #303237,
+    #0b0c0f 16%,
+    #151619 76%,
+    #34363a
+  );
+}
+.prose a:has(> img[title='Android phone frame']) {
+  border-radius: 24px;
+}
 @media (max-width: 420px) {
-  .prose p:has(> a > img[title='iPhone 8-style frame']) {
+  .prose
+    p:has(
+      > a
+        > img:is(
+          [title='iPhone 8-style frame'],
+          [title='iOS phone frame'],
+          [title='Android phone frame']
+        )
+    ) {
     width: 100%;
     margin-inline: 0;
   }
