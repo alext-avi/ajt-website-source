@@ -24,11 +24,18 @@ export async function runtimeHash(root = process.cwd()) {
   }
   return hash.digest('hex');
 }
-export async function runtimeConfig(environment, releaseId) {
+export async function runtimeConfig(
+  environment,
+  releaseId,
+  root = process.cwd(),
+) {
   const original = JSON.parse(
-    await fs.readFile('dist-runtime/server/wrangler.json', 'utf8'),
+    await fs.readFile(
+      path.join(root, 'dist-runtime/server/wrangler.json'),
+      'utf8',
+    ),
   );
-  const source = await readJsonc('wrangler.runtime.jsonc');
+  const source = await readJsonc(path.join(root, 'wrangler.runtime.jsonc'));
   if (
     source.env.staging.d1_databases.some((stage) =>
       source.d1_databases.some(
@@ -43,15 +50,18 @@ export async function runtimeConfig(environment, releaseId) {
   return {
     ...original,
     name: target.name,
-    main: path.resolve('dist-runtime/server/entry.mjs'),
+    main: path.resolve(root, 'dist-runtime/server/entry.mjs'),
     assets: {
       ...original.assets,
-      directory: path.resolve('dist-runtime/client'),
+      directory: path.resolve(root, 'dist-runtime/client'),
     },
+    // The compiled base config can contain production domains. Select routes
+    // explicitly so staging can never take ownership of a production hostname.
+    routes: target.routes || [],
     vars: { ...target.vars, RELEASE_ID: releaseId },
     d1_databases: target.d1_databases.map((db) => ({
       ...db,
-      migrations_dir: path.resolve('migrations'),
+      migrations_dir: path.resolve(root, 'migrations'),
     })),
   };
 }

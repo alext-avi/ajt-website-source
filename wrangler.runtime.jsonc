@@ -7,6 +7,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": false,
+  "routes": [
+    { "pattern": "alexanderjthomas.com", "custom_domain": true },
+    { "pattern": "www.alexanderjthomas.com", "custom_domain": true },
+  ],
   "vars": { "MEDIA_PROVIDER": "b2" },
   "d1_databases": [
     {
@@ -20,6 +24,7 @@
   "env": {
     "staging": {
       "name": "alexander-thomas-staging",
+      "routes": [],
       "vars": { "MEDIA_PROVIDER": "b2", "DEPLOYMENT_ENVIRONMENT": "staging" },
       "d1_databases": [
         {

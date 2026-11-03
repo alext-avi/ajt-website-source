@@ -2,7 +2,7 @@
 
 A personal professional website built with Astro, TypeScript, Tailwind CSS, and Astro content collections. Production content lives in Cloudflare D1 and is exported to a validated, versioned snapshot for static builds. Local authoring uses MDX and Keystatic. A small Cloudflare Worker handles wildcard referral links under `/r/*`; other pages are served as static assets. React is hydrated only for the Writing page’s search and category filters.
 
-Production origin: https://alexander-thomas.alexander-jt.workers.dev
+Production origin: https://alexanderjthomas.com
 
 Staging origin: https://alexander-thomas-staging.alexander-jt.workers.dev
 

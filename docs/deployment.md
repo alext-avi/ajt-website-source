@@ -28,7 +28,7 @@ Wrangler's local OAuth login cannot authenticate a GitHub-hosted runner. Use a s
 2. Name the token `ajt-website-github-actions`. The custom form used during setup has **Account → Workers Scripts → Edit** and **Account → D1 → Read**, with Account Resources **Include → Specific account → the website account**. These are account-wide permissions; they do not limit the token to two Workers or one database. This broader scope was disclosed to Alex before token creation. A role-based interface may instead offer per-Worker Editor access; use it when available, but do not substitute role names into the custom form. CI itself deploys only the configured production/staging Workers and reads published D1 content; it does not apply migrations, seed records, or edit drafts. No R2, DNS, billing, or API-token management permissions are required.
 3. Save the token in **Settings → Environments → production → Environment secrets**, named **CLOUDFLARE_API_TOKEN**, or run `npm run setup:github -- --apply --prompt-cloudflare-token` in a terminal and use the hidden GitHub CLI prompt. Do not put it in an issue, chat, workflow file, command history, or `.env.example`.
 4. Set repository Actions variables:
-   - `SITE_URL`: `https://alexander-thomas.alexander-jt.workers.dev`
+   - `SITE_URL`: `https://alexanderjthomas.com`
    - `PUBLIC_GA4_MEASUREMENT_ID`: `G-JLX8RLTRH4`
    - `STAGING_URL`: `https://alexander-thomas-staging.alexander-jt.workers.dev` (also the deployment script's default)
 5. Run **Verify and deploy website** from the repository's Actions tab on `main`. Check both jobs and the production URL. Future pushes to `main` deploy automatically.
@@ -50,3 +50,12 @@ Deployment uses private environment secrets, a main-only `production` environmen
 - [Cloudflare: GitHub Actions deployment](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/)
 - [Cloudflare: granular Wrangler permissions](https://developers.cloudflare.com/workers/authorization/)
 - [Cloudflare: account-owned API tokens](https://developers.cloudflare.com/fundamentals/api/get-started/account-owned-tokens/)
+
+Production serves `https://alexanderjthomas.com` and `https://www.alexanderjthomas.com`
+through Worker Custom Domains, with the root domain as the canonical origin.
+Cloudflare manages its DNS record and certificate. The `workers.dev` address stays
+available. Keep production domain patterns in the production Wrangler routes,
+and staging routes empty; the runtime release builder selects them separately.
+The private repository's `SITE_URL` Actions variable and ignored local `.env`
+control canonical links, sitemap/feed URLs, and production browser-test targets.
+The authoring Worker's `SITE_URL` points to the same public site.

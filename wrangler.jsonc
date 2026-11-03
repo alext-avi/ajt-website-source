@@ -5,6 +5,10 @@
   "compatibility_date": "2026-10-24",
   "workers_dev": true,
   "preview_urls": false,
+  "routes": [
+    { "pattern": "alexanderjthomas.com", "custom_domain": true },
+    { "pattern": "www.alexanderjthomas.com", "custom_domain": true },
+  ],
   "main": "./worker/index.ts",
   "vars": { "MEDIA_PROVIDER": "b2" },
   "secrets": {
@@ -32,6 +36,7 @@
   "env": {
     "staging": {
       "name": "alexander-thomas-staging",
+      "routes": [],
       "d1_databases": [],
       "vars": { "DEPLOYMENT_ENVIRONMENT": "staging", "MEDIA_PROVIDER": "b2" },
       "secrets": {

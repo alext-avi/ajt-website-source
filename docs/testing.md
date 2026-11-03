@@ -53,7 +53,7 @@ The local suite verifies a build before publication. A separate production suite
 
 Run it explicitly with the target and expected measurement ID:
 
-    PLAYWRIGHT_PRODUCTION_URL=https://alexander-thomas.alexander-jt.workers.dev \
+    PLAYWRIGHT_PRODUCTION_URL=https://alexanderjthomas.com \
     PLAYWRIGHT_GA4_MEASUREMENT_ID=G-JLX8RLTRH4 \
     npm run test:live
 

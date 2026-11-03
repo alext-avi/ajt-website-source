@@ -9,7 +9,7 @@
   "preview_urls": false,
   "vars": {
     "AUTHORING_ORIGIN": "https://ajt-content.alexander-jt.workers.dev",
-    "SITE_URL": "https://alexander-thomas.alexander-jt.workers.dev",
+    "SITE_URL": "https://alexanderjthomas.com",
     "OWNER_GITHUB_ID": "13840761",
     "ALLOWED_MCP_ORIGINS": "https://chatgpt.com",
   },
