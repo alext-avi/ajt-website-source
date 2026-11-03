@@ -59,6 +59,7 @@ test(
       'check_linkedin_sync',
       'create_post_draft',
       'create_project_draft',
+      'create_project_revision_draft',
       'finish_authoring_upload',
       'get_authoring_publication_status',
       'get_post',

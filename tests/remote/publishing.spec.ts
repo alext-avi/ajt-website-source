@@ -269,6 +269,37 @@ test('a changed revision cannot be published from a stale App preview; projects 
   const response = await request.get(site + `/projects/${slug}/`);
   expect(response.status()).toBe(200);
   expect(await response.text()).toContain('The updated project revision');
+
+  // An approved page stays public while a replacement is prepared at the same URL.
+  const replacement = await call(request, 'create_project_revision_draft', {
+    slug,
+    expectedRevision: 3,
+  });
+  expect(replacement.revision).toBe(4);
+  expect(replacement.metadata.draft).toBe(true);
+  await call(request, 'update_project_draft', {
+    slug,
+    expectedRevision: 4,
+    metadata: { title: 'The reviewed replacement project' },
+    body: '## Replacement case\n\nNew detail held for owner review.',
+  });
+  const stillLive = await request.get(site + `/projects/${slug}/`);
+  expect(stillLive.status()).toBe(200);
+  const originalHtml = await stillLive.text();
+  expect(originalHtml).toContain('The updated project revision');
+  expect(originalHtml).not.toContain('New detail held for owner review.');
+  // Reopen the prepared replacement, as a fresh MCP App card does in the host.
+  await page.goto(host + '/?collection=projects&slug=' + slug);
+  await expect(app.getByRole('status')).toContainText('Ready.');
+  await expect(
+    app.getByRole('button', { name: 'Post', exact: true }),
+  ).toBeEnabled();
+  // This host and its SQLite database are isolated synthetic fixtures only.
+  await app.getByRole('button', { name: 'Post', exact: true }).click();
+  await expect(app.getByRole('status')).toContainText('Posted.');
+  const replaced = await request.get(site + `/projects/${slug}/`);
+  expect(replaced.status()).toBe(200);
+  expect(await replaced.text()).toContain('New detail held for owner review.');
 });
 
 test('an expired project preview can be refreshed and posted only after another human click', async ({

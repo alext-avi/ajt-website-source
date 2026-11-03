@@ -344,3 +344,160 @@ test('LinkedIn permanent identifiers normalize tracking variants and reject unre
   assert.match(lines, /First line\.<br\s*\/?>\s*Second line\./);
   assert.match(lines, /<p>A new paragraph\.<\/p>/);
 });
+
+test('MCP replacement drafts retain approved snapshots, reject stale or duplicate forks, and fail closed without a matching snapshot', async (t) => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ajt-project-revision-'));
+  const database = path.join(dir, 'content.sqlite');
+  const store = await createStore({ database });
+  const client = new Client({
+    name: 'project-revision-test',
+    version: '1.0.0',
+  });
+  t.after(async () => {
+    await client.close();
+    store.close();
+    await fs.rm(dir, { recursive: true, force: true });
+  });
+  await client.connect(
+    new StdioClientTransport({
+      command: process.execPath,
+      args: ['mcp/content-server.mjs', '--local', '--database', database],
+      stderr: 'pipe',
+    }),
+  );
+  const call = (name, args) => client.callTool({ name, arguments: args });
+  const value = (result) => {
+    assert.notEqual(result.isError, true, JSON.stringify(result));
+    return result.structuredContent;
+  };
+  const metadata = {
+    title: 'An already approved project',
+    summary: 'The original approved project must remain live during revision.',
+    role: 'Technical lead',
+    technologies: ['TypeScript'],
+    draft: false,
+  };
+  for (const collection of ['projects', 'posts']) {
+    await store.query(
+      writeEntrySQL({
+        collection,
+        slug: 'existing-case',
+        data:
+          collection === 'projects'
+            ? metadata
+            : {
+                title: metadata.title,
+                summary: metadata.summary,
+                category: 'Architecture',
+                date: '2026-10-29',
+                draft: false,
+              },
+        body: 'The approved original.',
+      }).replace(/;$/, ' RETURNING slug;'),
+    );
+  }
+  const publicBefore = await store.query(
+    'SELECT * FROM published_content ORDER BY collection',
+  );
+  await store.query(
+    "INSERT INTO published_media VALUES('projects','existing-case',1,'/media/original.png') RETURNING url;",
+  );
+  const mediaBefore = await store.query('SELECT * FROM published_media');
+  assert.equal(
+    (
+      await call('create_project_revision_draft', {
+        slug: 'existing-case',
+        expectedRevision: 9,
+      })
+    ).isError,
+    true,
+  );
+  const results = await Promise.all(
+    [1, 2].map(() =>
+      call('create_project_revision_draft', {
+        slug: 'existing-case',
+        expectedRevision: 1,
+      }),
+    ),
+  );
+  assert.equal(results.filter((result) => !result.isError).length, 1);
+  const draft = value(results.find((result) => !result.isError));
+  assert.equal(draft.revision, 2);
+  assert.equal(draft.metadata.draft, true);
+  assert.equal(draft.body, 'The approved original.');
+  assert.deepEqual(
+    { ...draft.metadata, draft: false },
+    publicBefore.find((row) => row.collection === 'projects') &&
+      JSON.parse(
+        publicBefore.find((row) => row.collection === 'projects').metadata_json,
+      ),
+  );
+  assert.equal(
+    (
+      await call('create_project_revision_draft', {
+        slug: 'existing-case',
+        expectedRevision: 2,
+      })
+    ).isError,
+    true,
+  );
+  const revised = value(
+    await call('update_project_draft', {
+      slug: 'existing-case',
+      expectedRevision: 2,
+      body: 'The replacement awaiting human review.',
+    }),
+  );
+  assert.equal(revised.revision, 3);
+  assert.equal(revised.metadata.draft, true);
+  assert.deepEqual(
+    await store.query('SELECT * FROM published_content ORDER BY collection'),
+    publicBefore,
+  );
+  assert.deepEqual(
+    await store.query('SELECT * FROM published_media'),
+    mediaBefore,
+  );
+  assert.equal(
+    value(await call('get_post', { slug: 'existing-case' })).metadata.draft,
+    false,
+  );
+  assert.deepEqual(
+    value(
+      await call('get_project_history', { slug: 'existing-case' }),
+    ).revisions.map((row) => row.revision),
+    [3, 2, 1],
+  );
+  for (const slug of ['missing-snapshot', 'different-snapshot']) {
+    await store.query(
+      writeEntrySQL({
+        collection: 'projects',
+        slug,
+        data: metadata,
+        body: 'Original.',
+      }).replace(/;$/, ' RETURNING slug;'),
+    );
+  }
+  await store.query(
+    "DELETE FROM published_content WHERE slug='missing-snapshot' RETURNING slug;",
+  );
+  await store.query(
+    "UPDATE published_content SET body_markdown='Different approved body' WHERE slug='different-snapshot' RETURNING slug;",
+  );
+  for (const slug of ['missing-snapshot', 'different-snapshot']) {
+    assert.equal(
+      (
+        await call('create_project_revision_draft', {
+          slug,
+          expectedRevision: 1,
+        })
+      ).isError,
+      true,
+    );
+    assert.equal(
+      value(await call('get_project', { slug })).metadata.draft,
+      false,
+    );
+    assert.equal(value(await call('get_project', { slug })).revision, 1);
+  }
+});

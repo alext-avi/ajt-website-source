@@ -138,7 +138,7 @@ if (command === 'seed') {
   );
 } else {
   const rows = executeSQL(
-    'SELECT collection,slug,metadata_json,body_markdown,revision FROM content_items WHERE is_draft=0 ORDER BY collection,slug;',
+    'SELECT collection,slug,metadata_json,body_markdown,revision FROM published_content ORDER BY collection,slug;',
   );
   const snapshot = snapshotFromRows(rows);
   const target = new URL('data/content.json', root);

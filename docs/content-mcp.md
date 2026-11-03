@@ -2,7 +2,6 @@
 
 For the hosted GitHub-authenticated MCP and direct Worker publication path, see [remote authoring](remote-authoring.md). The local/static instructions below remain available during rollout.
 
-
 The `ajt-content` MCP creates website post and project drafts and submits specific revisions to the local publishing desk. Alex edits the rendered draft and presses Post directly in the App, or Publish in the local desk. Model-facing tools expose no approval, publication, deployment, arbitrary SQL or deletion operation. It does not post to LinkedIn.
 
 ## Interactive MCP App
@@ -94,7 +93,13 @@ image/PDF links. Its preview and public detail route share the same component,
 including artwork, body, outcomes and role/tools sidebar. Revision checks, stale
 reviews, private media and human-only publication apply equally to both
 collections. Matching post/project slugs cannot cross-edit or cross-publish.
-Existing published projects remain protected; this workflow only changes drafts.
+Published projects can be revised with `create_project_revision_draft`, supplying
+`slug` and the current `expectedRevision`. It creates a working draft at the same
+slug only when an identical approved snapshot exists. The approved page and its
+media stay live while the replacement is edited and reviewed. Then use
+`update_project_draft` and open the App for Alex to press Post. Repeated or stale
+requests cannot replace an existing working draft. Direct updates to a published
+record remain rejected. Published posts remain read-only in this workflow.
 
 ## LinkedIn captures
 
