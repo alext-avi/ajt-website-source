@@ -87,3 +87,8 @@ const { project, related = [], preview = false } = Astro.props;
   </aside>
 </div>
 <ContactBand />
+
+<script>
+  import { enhanceProjectCarousels } from '../scripts/project-carousel';
+  enhanceProjectCarousels();
+</script>

@@ -1818,6 +1818,96 @@ summary:focus-visible {
   }
 }
 
+/* Progressive enhancement keeps a readable gallery when scripts are unavailable. */
+.project-carousel {
+  margin-block: 28px 36px;
+  min-width: 0;
+}
+.project-carousel-track {
+  position: relative;
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  border-radius: 6px;
+}
+.prose .project-carousel-track > p {
+  display: block;
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 12px 20px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.project-carousel-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+.project-carousel-controls > button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 20px;
+  cursor: pointer;
+}
+.project-carousel-controls > button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.project-carousel-dots {
+  display: flex;
+  align-items: center;
+}
+.project-carousel-dots button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.project-carousel-dots button::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.5;
+}
+.project-carousel-dots button[aria-current='true']::after {
+  background: var(--accent);
+  opacity: 1;
+  transform: scale(1.4);
+}
+.project-carousel-status {
+  width: 100%;
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.project-carousel :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
 .project-detail-art {
   margin-block: 30px 40px;
   border-radius: 4px;

@@ -118,9 +118,12 @@ refresh its tool list.
 Archived app images can use classic home-button phone chrome by linking an image
 with the title `"iPhone 8-style frame"` to its original asset URL. Put the caption
 on the next line after a Markdown hard break (two trailing spaces). The website
-styles these image paragraphs as a responsive gallery, without changing image
-bytes or permitting raw HTML. Device framing is presentation only and does not
-establish whether an archived image is a design comp or a production capture.
+styles these image paragraphs as a responsive gallery. On project pages, consecutive
+framed images become a manual carousel with arrows, position buttons, keyboard
+navigation, and native touch scrolling. No autoplay is used. Sandboxed draft previews
+and browsers without scripts retain the static gallery. Image bytes and full-size
+links stay unchanged; raw HTML remains disallowed. Device framing is presentation
+only and does not establish whether an archived image is a design comp or a production capture.
 
 Uploads accept PNG, JPEG, GIF, WebP, MP4, and PDF files, checked from file signatures. The MCP accepts files up to 100 MiB; the browser form remains limited to 25 MiB. SVG/executable uploads are rejected. Describe meaningful cover images in the image-description field.
 
