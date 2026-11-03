@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="632" viewBox="0 0 1200 632">
+<rect width="1200" height="632" fill="#e4f3fb"/>
+<path d="M-30 467h260q60 0 60-60V202q0-60 60-60h602q60 0 60 60v198q0 60 60 60h158" fill="none" stroke="#b6d9ee" stroke-width="55"/>
+<path d="M-30 467h260q60 0 60-60V202q0-60 60-60h602q60 0 60 60v198q0 60 60 60h158" fill="none" stroke="#2583c1" stroke-width="7"/>
+<g fill="#fff" stroke="#2583c1" stroke-width="7"><circle cx="290" cy="310" r="16"/><circle cx="570" cy="142" r="16"/><circle cx="1012" cy="320" r="16"/></g>
+<rect x="58" y="62" width="410" height="122" rx="20" fill="#e4f3fb"/>
+<text x="78" y="114" font-family="Arial,sans-serif" font-size="43" letter-spacing="-1" fill="#175580">Clever Devices</text>
+<text x="80" y="156" font-family="Arial,sans-serif" font-size="22" fill="#3276a3">Transit software</text>
+<g transform="translate(446 268)">
+<rect x="8" y="17" width="481" height="206" rx="32" fill="#b6d5e8"/>
+<rect width="481" height="206" rx="32" fill="#fff"/>
+<path d="M0 144h481v30H0z" fill="#2583c1"/>
+<rect x="24" y="26" width="78" height="83" rx="7" fill="#87c4e4"/>
+<rect x="115" y="26" width="78" height="83" rx="7" fill="#87c4e4"/>
+<rect x="206" y="26" width="78" height="83" rx="7" fill="#87c4e4"/>
+<rect x="297" y="26" width="78" height="83" rx="7" fill="#87c4e4"/>
+<rect x="391" y="26" width="61" height="147" rx="7" fill="#184e70"/>
+<path d="M422 30v140" stroke="#6da5c7" stroke-width="3"/>
+<g fill="#243d4c"><circle cx="96" cy="203" r="37"/><circle cx="362" cy="203" r="37"/></g>
+<g fill="#bad4df"><circle cx="96" cy="203" r="16"/><circle cx="362" cy="203" r="16"/></g>
+<rect x="20" y="119" width="80" height="8" rx="4" fill="#edbd4c"/>
+</g></svg>

@@ -4,28 +4,33 @@ import Icon from './Icon.astro';
 import { formatDate, readingTime } from '../lib/content';
 interface Props {
   post: CollectionEntry<'posts'>;
+  compact?: boolean;
 }
-const { post } = Astro.props;
+const { post, compact = false } = Astro.props;
 ---
 
-<article class="post-row">
+<article class:list={['post-row', { 'post-row-compact': compact }]}>
   <div class="post-date">
     <time datetime={post.data.date.toISOString()}>
       {formatDate(post.data.date)}
     </time>
-    <span>{readingTime(post.body)} min read</span>
+    {!compact && <span>{readingTime(post.body)} min read</span>}
   </div>
   <div class="post-row-main">
-    <div class="post-kicker">
-      {post.data.category}
-      {post.data.linkedinUrl && (
-        <span class="muted">
-          LinkedIn {post.data.linkedinRepost ? 'commentary' : 'post'}
-        </span>
-      )}
-      {post.data.example && <span class="example-label">Example article</span>}
-      {post.data.draft && <span class="status-label">Draft</span>}
-    </div>
+    {!compact && (
+      <div class="post-kicker">
+        {post.data.category}
+        {post.data.linkedinUrl && (
+          <span class="muted">
+            LinkedIn {post.data.linkedinRepost ? 'commentary' : 'post'}
+          </span>
+        )}
+        {post.data.example && (
+          <span class="example-label">Example article</span>
+        )}
+        {post.data.draft && <span class="status-label">Draft</span>}
+      </div>
+    )}
     <h3>
       <a href={`/writing/${post.id}/`}>{post.data.title}</a>
     </h3>
@@ -42,11 +47,13 @@ const { post } = Astro.props;
       />
     )}
   </div>
-  <a
-    class="circle-link"
-    href={`/writing/${post.id}/`}
-    aria-label={`Read ${post.data.title}`}
-  >
-    <Icon name="external" />
-  </a>
+  {!compact && (
+    <a
+      class="circle-link"
+      href={`/writing/${post.id}/`}
+      aria-label={`Read ${post.data.title}`}
+    >
+      <Icon name="external" />
+    </a>
+  )}
 </article>

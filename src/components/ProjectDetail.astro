@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import Icon from './Icon.astro';
-import ProjectArt from './ProjectArt.astro';
+import ProjectVisual from './ProjectVisual.astro';
 import ContactBand from './ContactBand.astro';
 import PostRow from './PostRow.astro';
 interface Props {
@@ -16,21 +16,11 @@ const { project, related = [], preview = false } = Astro.props;
   <a class="breadcrumb" href="/projects/">
     ← All projects
   </a>
-  <p class="eyebrow">{project.data.tags.join(' / ')}</p>
   <h1>{project.data.title}</h1>
   <p class="lede">{project.data.summary}</p>
 </header>
 <div class="shell project-detail-art">
-  {project.data.image ? (
-    <img
-      src={project.data.image}
-      alt={project.data.imageAlt ?? ''}
-      width="1200"
-      height="650"
-    />
-  ) : (
-    <ProjectArt kind={project.data.kind} />
-  )}
+  <ProjectVisual project={project} detail />
 </div>
 <div class="shell page-body article-grid">
   <div class="article-body">

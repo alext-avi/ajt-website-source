@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="632" viewBox="0 0 1200 632">
+<rect width="1200" height="632" fill="#e5f5d8"/>
+<circle cx="1034" cy="118" r="210" fill="#c8edb7"/>
+<text x="76" y="240" font-family="Arial,sans-serif" font-size="72" letter-spacing="-3" fill="#347d5d">meal<tspan fill="#6dbd4c">track</tspan></text>
+<path d="M80 288h118" stroke="#347d5d" stroke-width="5"/>
+<text x="78" y="342" font-family="Arial,sans-serif" font-size="24" fill="#347d5d">The business behind the meal.</text>
+<g transform="translate(646 124) rotate(8 214 190)">
+<rect x="18" y="22" width="410" height="380" rx="38" fill="#b6d9a7"/>
+<rect width="410" height="380" rx="38" fill="#fffef4"/>
+<rect x="22" y="22" width="218" height="336" rx="22" fill="#f2dfae"/>
+<rect x="258" y="22" width="130" height="160" rx="22" fill="#d5e9bd"/>
+<rect x="258" y="200" width="130" height="158" rx="22" fill="#f4d1a2"/>
+<g fill="#ee9361"><rect x="56" y="110" width="148" height="52" rx="22" transform="rotate(-16 130 136)"/><rect x="56" y="182" width="148" height="52" rx="22" transform="rotate(-16 130 208)"/></g>
+<g fill="#50935c"><ellipse cx="303" cy="74" rx="24" ry="35" transform="rotate(-32 303 74)"/><ellipse cx="342" cy="117" rx="24" ry="35" transform="rotate(34 342 117)"/><ellipse cx="304" cy="133" rx="24" ry="35" transform="rotate(-32 304 133)"/></g>
+<g fill="#dd7745"><circle cx="302" cy="244" r="18"/><circle cx="344" cy="270" r="18"/><circle cx="307" cy="307" r="18"/></g>
+<g fill="#f9edc9"><ellipse cx="88" cy="284" rx="23" ry="9" transform="rotate(30 88 284)"/><ellipse cx="144" cy="277" rx="23" ry="9" transform="rotate(-22 144 277)"/><ellipse cx="174" cy="310" rx="23" ry="9" transform="rotate(30 174 310)"/></g>
+</g></svg>

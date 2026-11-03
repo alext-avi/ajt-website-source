@@ -12,9 +12,9 @@ const projects = await getProjects();
   description="Selected work across applied AI, engineering leadership, mobile architecture, and platform modernization."
 >
   <PageIntro
-    eyebrow="Selected work"
-    title="The work, in context."
-    description="Software delivery is a series of choices. Here’s a closer look at the problems, the approach, and the responsibilities behind a few of mine."
+    eyebrow=""
+    title="Projects"
+    description="Selected projects in software, product development, and engineering leadership."
   />
   <section class="shell page-body">
     {isPreview && projects.some((p) => p.data.draft) && (
@@ -25,8 +25,8 @@ const projects = await getProjects();
     )}
     {projects.length ? (
       <div class="project-grid">
-        {projects.map((project, index) => (
-          <ProjectCard project={project} index={index} />
+        {projects.map((project) => (
+          <ProjectCard project={project} />
         ))}
       </div>
     ) : (

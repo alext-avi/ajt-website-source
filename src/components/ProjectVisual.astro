@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ProjectArt from './ProjectArt.astro';
+interface Props {
+  project: Pick<CollectionEntry<'projects'>, 'data'>;
+  detail?: boolean;
+}
+const { project, detail = false } = Astro.props;
+---
+
+<div
+  class:list={[
+    'project-visual',
+    `project-visual-${project.data.kind}`,
+    { 'has-image': !!project.data.image },
+  ]}
+>
+  {project.data.image ? (
+    <img
+      src={project.data.image}
+      alt={detail ? (project.data.imageAlt ?? '') : ''}
+      width={detail ? 1200 : 640}
+      height={detail ? 650 : 360}
+      loading={detail ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  ) : (
+    <ProjectArt kind={project.data.kind} />
+  )}
+</div>
