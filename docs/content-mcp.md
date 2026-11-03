@@ -115,6 +115,13 @@ refresh its tool list.
 
 ## Media
 
+Archived app images can use classic home-button phone chrome by linking an image
+with the title `"iPhone 8-style frame"` to its original asset URL. Put the caption
+on the next line after a Markdown hard break (two trailing spaces). The website
+styles these image paragraphs as a responsive gallery, without changing image
+bytes or permitting raw HTML. Device framing is presentation only and does not
+establish whether an archived image is a design comp or a production capture.
+
 Uploads accept PNG, JPEG, GIF, WebP, MP4, and PDF files, checked from file signatures. The MCP accepts files up to 100 MiB; the browser form remains limited to 25 MiB. SVG/executable uploads are rejected. Describe meaningful cover images in the image-description field.
 
 Remote mode defaults to a private Backblaze B2 bucket configured locally under `assets/<sha256>.<extension>`, then records type, byte length, and original basename in D1's existing `media_assets` table. A failed storage upload never returns success or creates a draft reference. Local `.wrangler/content-media/object-cache/` is an optional private cache, not the source of truth: another checkout can reconstruct it through B2 and the D1 catalog. Downloads verify byte length, file signature, and SHA-256. Human approval rechecks storage rather than trusting cached bytes.

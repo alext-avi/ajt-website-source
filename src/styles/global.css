@@ -1743,6 +1743,81 @@ summary:focus-visible {
 .related-section h3 {
   font-size: 20px;
 }
+/* Linked Markdown images with this title keep their pixels intact in phone chrome. */
+.prose p:has(> a > img[title='iPhone 8-style frame']) {
+  display: inline-block;
+  width: calc(50% - 18px);
+  margin: 0 6px 28px;
+  vertical-align: top;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.prose a:has(> img[title='iPhone 8-style frame']) {
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  width: min(100%, 280px);
+  margin: 0 auto 13px;
+  padding: 48px 11px 56px;
+  border: 2px solid #505359;
+  border-radius: 34px;
+  background:
+    radial-gradient(
+      circle at calc(50% - 35px) 24px,
+      #0c172a 0 2px,
+      #272b33 2px 4px,
+      transparent 4px
+    ),
+    linear-gradient(110deg, #303237, #0b0c0f 16%, #151619 76%, #34363a);
+  box-shadow:
+    inset 0 0 0 2px #050608,
+    0 10px 24px rgb(0 0 0 / 18%);
+  text-decoration: none;
+}
+.prose a:has(> img[title='iPhone 8-style frame'])::before {
+  content: '';
+  position: absolute;
+  top: 23px;
+  left: 50%;
+  width: 34px;
+  height: 4px;
+  border-radius: 3px;
+  background: #050608;
+  box-shadow: 0 1px 0 #36383d;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.prose a:has(> img[title='iPhone 8-style frame'])::after {
+  content: '';
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #45484e;
+  border-radius: 50%;
+  background: #0a0b0e;
+  box-shadow: inset 0 0 0 1px #050608;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.prose img[title='iPhone 8-style frame'] {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 2px;
+}
+@media (max-width: 420px) {
+  .prose p:has(> a > img[title='iPhone 8-style frame']) {
+    width: 100%;
+    margin-inline: 0;
+  }
+}
+
 .project-detail-art {
   margin-block: 30px 40px;
   border-radius: 4px;
