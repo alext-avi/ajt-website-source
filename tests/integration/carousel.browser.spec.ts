@@ -95,7 +95,9 @@ test('framed project screens support buttons, keys and native horizontal scrolli
   await page.goto(origin);
   const gallery = page.getByRole('region', { name: 'App screenshots' });
   await expect(gallery).toHaveCount(1); // Initialization is idempotent.
-  const track = gallery.locator('.project-carousel-track');
+  const track = gallery.getByRole('group', {
+    name: 'Screens; use Left and Right arrow keys',
+  });
   const previous = gallery.getByRole('button', { name: 'Previous screen' });
   const next = gallery.getByRole('button', { name: 'Next screen' });
   const status = gallery.locator('.project-carousel-status');
@@ -108,7 +110,13 @@ test('framed project screens support buttons, keys and native horizontal scrolli
   await expect(
     gallery.getByRole('button', { name: 'Show screen 2' }),
   ).toHaveAttribute('aria-current', 'true');
-  await gallery.getByRole('button', { name: 'Show screen 6' }).click();
+  await gallery.getByRole('button', { name: 'Show screen 5' }).click();
+  await expect(status).toHaveText('5 / 6');
+  await next.focus();
+  await page.keyboard.press('Enter');
+  await expect(status).toHaveText('6 / 6');
+  await expect(next).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(status).toHaveText('6 / 6');
   await expect(next).toBeDisabled();
   await previous.click();
@@ -124,6 +132,14 @@ test('framed project screens support buttons, keys and native horizontal scrolli
   await track.evaluate((element) =>
     element.scrollTo({ left: element.clientWidth, behavior: 'instant' }),
   );
+  await expect(status).toHaveText('2 / 6');
+  await gallery.getByRole('link', { name: 'Screen 2' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(status).toHaveText('3 / 6');
+  await expect(track).toBeFocused();
+  await page.keyboard.press('Shift+ArrowRight');
+  await expect(status).toHaveText('3 / 6');
+  await page.keyboard.press('ArrowLeft');
   await expect(status).toHaveText('2 / 6');
   await expect(gallery.getByRole('link', { name: 'Screen 2' })).toHaveAttribute(
     'href',
@@ -147,7 +163,7 @@ test('screens and original image links remain available without JavaScript', asy
 }) => {
   const page = await browser.newPage({
     javaScriptEnabled: false,
-    viewport: { width: 390, height: 844 },
+    viewport: { width: 430, height: 844 },
   });
   try {
     await page.goto(origin);

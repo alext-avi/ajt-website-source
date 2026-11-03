@@ -22,6 +22,7 @@ export function enhanceProjectCarousels(root: ParentNode = document) {
     const track = document.createElement('div');
     track.className = 'project-carousel-track';
     track.tabIndex = 0;
+    track.setAttribute('role', 'group');
     track.setAttribute('aria-label', 'Screens; use Left and Right arrow keys');
     const controls = document.createElement('div');
     controls.className = 'project-carousel-controls';
@@ -74,11 +75,20 @@ export function enhanceProjectCarousels(root: ParentNode = document) {
             : closest,
         0,
       );
-      previous.disabled = current === 0;
-      forward.disabled = current === slides.length - 1;
+      previous.setAttribute('aria-disabled', String(current === 0));
+      forward.setAttribute(
+        'aria-disabled',
+        String(current === slides.length - 1),
+      );
       status.textContent = `${current + 1} / ${slides.length}`;
       indicators.forEach((dot, index) => {
         dot.setAttribute('aria-current', String(index === current));
+        if (
+          index !== current &&
+          slides[index].contains(document.activeElement)
+        ) {
+          track.focus({ preventScroll: true });
+        }
         slides[index].inert = index !== current;
         slides[index].setAttribute('aria-hidden', String(index !== current));
       });
@@ -86,6 +96,8 @@ export function enhanceProjectCarousels(root: ParentNode = document) {
     previous.addEventListener('click', () => go(current - 1));
     forward.addEventListener('click', () => go(current + 1));
     track.addEventListener('keydown', (event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+        return;
       const index = {
         ArrowLeft: current - 1,
         ArrowRight: current + 1,

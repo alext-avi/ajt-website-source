@@ -1847,7 +1847,7 @@ summary:focus-visible {
 .prose a:has(> img[title='Android phone frame']) {
   border-radius: 24px;
 }
-@media (max-width: 420px) {
+@media (max-width: 640px) {
   .prose
     p:has(
       > a
@@ -1877,7 +1877,7 @@ summary:focus-visible {
   scrollbar-color: var(--line) transparent;
   border-radius: 6px;
 }
-.prose .project-carousel-track > p {
+.prose .project-carousel .project-carousel-track > p {
   display: block;
   flex: 0 0 100%;
   width: 100%;
@@ -1908,7 +1908,7 @@ summary:focus-visible {
   font-size: 20px;
   cursor: pointer;
 }
-.project-carousel-controls > button:disabled {
+.project-carousel-controls > button[aria-disabled='true'] {
   opacity: 0.3;
   cursor: default;
 }
