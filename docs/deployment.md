@@ -8,7 +8,7 @@ Release subprocesses always use `NODE_ENV=production` and `CONTENT_SOURCE=d1`, i
 
 ## Staging and promotion
 
-Staging is `https://alexander-thomas-staging.alexander-jt.workers.dev`, configured in `wrangler.jsonc` under `env.staging`. It is a separate Worker with no D1 binding. It serves only the validated published content snapshot; drafts and private source files are excluded by the normal publication checks. It is publicly viewable, with noindex response headers; noindex is not access control. Production GA4 only initializes on the canonical production origin, including when staging has a saved consent choice.
+Staging is `https://alexander-thomas-staging.alexander-jt.workers.dev`, configured in `wrangler.jsonc` under `env.staging`. It is a separate Worker with no D1 binding. It serves only the validated published content snapshot; drafts and private source files are excluded by the normal publication checks. It is publicly viewable, with noindex response headers; noindex is not access control. Production GA4 only initializes on the canonical production origin and its explicitly connected HTTPS `www` alias; staging and the legacy `workers.dev` origin remain excluded even with a saved consent choice.
 
 Use `npm run stage` to prepare, deploy, and test a candidate without changing production. Use `npm run deploy` to perform that staging gate and then promote the tested static assets. Both commands use existing local Wrangler authorization or the configured CI token. Install the matching Playwright Chromium/WebKit browsers before running locally.
 
@@ -57,7 +57,9 @@ Cloudflare manages its DNS record and certificate. The `workers.dev` address sta
 available. Keep production domain patterns in the production Wrangler routes,
 and staging routes empty; the runtime release builder selects them separately.
 The private repository's `SITE_URL` Actions variable and ignored local `.env`
-control canonical links, sitemap/feed URLs, and production browser-test targets.
+control canonical links and sitemap/feed URLs. CI uses its `SITE_URL` variable
+as the production browser-test target. Local live tests instead require an
+explicit `PLAYWRIGHT_PRODUCTION_URL`, as shown in [testing.md](testing.md).
 The authoring Worker's `SITE_URL` points to the same public site.
 
 Analytics accepts the canonical root origin and the explicitly connected `www`

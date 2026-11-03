@@ -53,9 +53,11 @@ The local suite verifies a build before publication. A separate production suite
 
 Run it explicitly with the target and expected measurement ID:
 
-    PLAYWRIGHT_PRODUCTION_URL=https://alexanderjthomas.com \
-    PLAYWRIGHT_GA4_MEASUREMENT_ID=G-JLX8RLTRH4 \
-    npm run test:live
+```sh
+PLAYWRIGHT_PRODUCTION_URL=https://alexanderjthomas.com \
+PLAYWRIGHT_GA4_MEASUREMENT_ID=G-JLX8RLTRH4 \
+npm run test:live
+```
 
 Each browser starts at /r/playwright-ci/production-checks with medium testing and a unique utm_content browser marker: the workflow run ID followed by -d for desktop Chromium or -m for mobile Safari. Browsers retain their standard Playwright device-profile user agents; the HTTP asset checks use AJT-Playwright/1.0. No GA4 exclusion filter is enabled by this setup. Raw user agent is not a general GA4 data-filter dimension; use the campaign source and browser markers to identify these visits. Google collection accepting a request is transport evidence; GA4's reporting UI or API is the separate evidence of ingestion.
 
