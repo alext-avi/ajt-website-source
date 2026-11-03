@@ -1,3 +1,15 @@
+/** Allow the canonical origin and its explicitly connected production alias. */
+export function analyticsOriginAllowed(
+  canonicalOrigin: string | undefined,
+  currentOrigin: string,
+): boolean {
+  return (
+    canonicalOrigin === currentOrigin ||
+    (canonicalOrigin === 'https://alexanderjthomas.com' &&
+      currentOrigin === 'https://www.alexanderjthomas.com')
+  );
+}
+
 const campaignNames = [
   'utm_source',
   'utm_medium',

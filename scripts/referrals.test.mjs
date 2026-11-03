@@ -4,6 +4,7 @@ import worker from '../worker/index.ts';
 import { referralDestination } from '../src/lib/referrals.ts';
 import {
   analyticsLocation,
+  analyticsOriginAllowed,
   analyticsReferrer,
   analyticsRunId,
   validAnalyticsRunId,
@@ -144,5 +145,30 @@ test('analytics keeps campaign attribution while excluding unrelated URL data', 
       'https://site.test',
     ),
     'https://site.test/writing/',
+  );
+});
+
+test('production analytics accepts the connected www alias while blocking staging and unrelated hosts', () => {
+  const canonical = 'https://alexanderjthomas.com';
+  assert.equal(analyticsOriginAllowed(canonical, canonical), true);
+  assert.equal(
+    analyticsOriginAllowed(canonical, 'https://www.alexanderjthomas.com'),
+    true,
+  );
+  for (const origin of [
+    'https://alexander-thomas-staging.alexander-jt.workers.dev',
+    'https://alexander-thomas.alexander-jt.workers.dev',
+    'http://www.alexanderjthomas.com',
+    'https://www.alexanderjthomas.com.evil.test',
+    'http://127.0.0.1:4321',
+  ])
+    assert.equal(analyticsOriginAllowed(canonical, origin), false, origin);
+  assert.equal(analyticsOriginAllowed(undefined, canonical), false);
+  assert.equal(
+    analyticsOriginAllowed(
+      'https://example.test',
+      'https://www.alexanderjthomas.com',
+    ),
+    false,
   );
 });

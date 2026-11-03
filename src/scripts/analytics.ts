@@ -1,5 +1,6 @@
 import {
   analyticsLocation,
+  analyticsOriginAllowed,
   analyticsReferrer,
   analyticsRunId,
   validAnalyticsRunId,
@@ -7,9 +8,12 @@ import {
 
 const notice = document.querySelector<HTMLElement>('#analytics-notice');
 const measurementId = notice?.dataset.measurementId;
-// A production artifact may be served on staging; keep its GA4 tag on the
-// canonical origin even when consent was previously granted on that browser.
-const originAllowed = notice?.dataset.analyticsOrigin === location.origin;
+// A production artifact may be served on staging. Only the canonical origin
+// and its connected production alias may initialize GA4 after consent.
+const originAllowed = analyticsOriginAllowed(
+  notice?.dataset.analyticsOrigin,
+  location.origin,
+);
 const choiceKey = 'ajt.analytics-consent.v1';
 const runKey = 'ajt.analytics-ci-run.v1';
 let active = false;

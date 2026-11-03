@@ -25,7 +25,7 @@ New uploads live in the private bucket rather than in Git; the staging gate veri
 Wrangler's local OAuth login cannot authenticate a GitHub-hosted runner. Use a separate account-owned Cloudflare API token for CI:
 
 1. In the Cloudflare account containing `alexander-thomas`, open **Manage account → Account API tokens → Create Token**.
-2. Name the token `ajt-website-github-actions`. The custom form used during setup has **Account → Workers Scripts → Edit** and **Account → D1 → Read**, with Account Resources **Include → Specific account → the website account**. These are account-wide permissions; they do not limit the token to two Workers or one database. This broader scope was disclosed to Alex before token creation. A role-based interface may instead offer per-Worker Editor access; use it when available, but do not substitute role names into the custom form. CI itself deploys only the configured production/staging Workers and reads published D1 content; it does not apply migrations, seed records, or edit drafts. No R2, DNS, billing, or API-token management permissions are required.
+2. Name the token `ajt-website-github-actions`. The custom form used during setup has **Account → Workers Scripts → Edit** and **Account → D1 → Read**, with Account Resources **Include → Specific account → the website account**. These are account-wide permissions; they do not limit the token to two Workers or one database. This broader scope was disclosed to Alex before token creation. A role-based interface may instead offer per-Worker Editor access; use it when available, but do not substitute role names into the custom form. CI itself deploys only the configured production/staging Workers and reads published D1 content; it does not apply migrations, seed records, or edit drafts. No R2, DNS, billing, or API-token management permissions are required for routine releases. Adding, changing, or removing a Custom Domain additionally requires **Zone → Workers Routes → Write** on the affected zone. An authorized operator can attach the Custom Domains manually first, as done for this site, so CI can keep its existing permissions when deploying unchanged connections.
 3. Save the token in **Settings → Environments → production → Environment secrets**, named **CLOUDFLARE_API_TOKEN**, or run `npm run setup:github -- --apply --prompt-cloudflare-token` in a terminal and use the hidden GitHub CLI prompt. Do not put it in an issue, chat, workflow file, command history, or `.env.example`.
 4. Set repository Actions variables:
    - `SITE_URL`: `https://alexanderjthomas.com`
@@ -59,3 +59,7 @@ and staging routes empty; the runtime release builder selects them separately.
 The private repository's `SITE_URL` Actions variable and ignored local `.env`
 control canonical links, sitemap/feed URLs, and production browser-test targets.
 The authoring Worker's `SITE_URL` points to the same public site.
+
+Analytics accepts the canonical root origin and the explicitly connected `www`
+alias after visitor consent. Staging and the legacy `workers.dev` origin do not
+initialize the production tag from this artifact.
