@@ -17,10 +17,10 @@ const { post, compact = false } = Astro.props;
     {!compact && <span>{readingTime(post.body)} min read</span>}
   </div>
   <div class="post-row-main">
-    {!compact && (
+    {(!compact || post.data.draft || post.data.example) && (
       <div class="post-kicker">
-        {post.data.category}
-        {post.data.linkedinUrl && (
+        {!compact && post.data.category}
+        {!compact && post.data.linkedinUrl && (
           <span class="muted">
             LinkedIn {post.data.linkedinRepost ? 'commentary' : 'post'}
           </span>
