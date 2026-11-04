@@ -1,7 +1,7 @@
-/** Enhance consecutive framed Markdown images without allowing scripts in content. */
+/** Enhance consecutive Markdown screenshot images without allowing scripts in content. */
 export function enhanceProjectCarousels(root: ParentNode = document) {
   const selector =
-    "p:has(> a > img:is([title='iPhone 8-style frame'], [title='iOS phone frame'], [title='Android phone frame']))";
+    "p:has(> a > img:is([title='iPhone 8-style frame'], [title='iOS phone frame'], [title='Android phone frame'], [title='App screenshot']))";
   for (const first of root.querySelectorAll<HTMLElement>(
     `.prose ${selector}`,
   )) {

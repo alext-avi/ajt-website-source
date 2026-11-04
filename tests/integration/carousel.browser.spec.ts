@@ -46,14 +46,25 @@ test.beforeAll(async () => {
         .join('\n\n') +
       '\n\n## Project details\n\nOrdinary content stays outside the carousel.',
   );
-  const html = `<!doctype html><html lang="en" data-theme="dark"><meta charset="utf-8">
+  const unframedBody = await renderPost(
+    ['Home', 'Workouts', 'Digital key tag']
+      .map(
+        (caption) =>
+          `[![${caption}](/screen.jpg "App screenshot")](/screen.jpg)  \n${caption}`,
+      )
+      .join('\n\n'),
+  );
+  const html = (
+    content: string,
+  ) => `<!doctype html><html lang="en" data-theme="dark"><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Isolated project gallery</title><link rel="stylesheet" href="/style.css">
     <main class="shell page-body article-grid"><div class="article-body">
-    <article class="prose">${body}</article></div></main>
+    <article class="prose">${content}</article></div></main>
     <script type="module" src="/carousel.js"></script></html>`;
   const routes = new Map([
-    ['/', ['text/html', Buffer.from(html)]],
+    ['/', ['text/html', Buffer.from(html(body))]],
+    ['/unframed/', ['text/html', Buffer.from(html(unframedBody))]],
     ['/style.css', ['text/css', Buffer.from(styles)]],
     [
       '/carousel.js',
@@ -178,4 +189,49 @@ test('screens and original image links remain available without JavaScript', asy
   } finally {
     await page.close();
   }
+});
+
+test('plain screenshots retain carousel navigation without device chrome', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(origin + '/unframed/');
+  const gallery = page.getByRole('region', { name: 'App screenshots' });
+  const status = gallery.locator('.project-carousel-status');
+  await expect(gallery).toHaveCount(1);
+  await expect(gallery.locator('img')).toHaveCount(3);
+  await expect(status).toHaveText('1 / 3');
+  const original = gallery.getByRole('link', { name: 'Home', exact: true });
+  await expect(original).toHaveAttribute('href', '/screen.jpg');
+  const appearance = await original.evaluate((el) => {
+    const css = getComputedStyle(el);
+    const img = el.querySelector('img')!;
+    return {
+      padding: css.padding,
+      border: css.borderWidth,
+      shadow: css.boxShadow,
+      background: css.backgroundColor,
+      width: img.getBoundingClientRect().width,
+    };
+  });
+  expect(appearance.padding).toBe('0px');
+  expect(appearance.border).toBe('0px');
+  expect(appearance.shadow).toBe('none');
+  expect(appearance.background).toBe('rgba(0, 0, 0, 0)');
+  expect(appearance.width).toBeLessThanOrEqual(320);
+  await gallery.getByRole('button', { name: 'Next screen' }).click();
+  await expect(status).toHaveText('2 / 3');
+  await expect(
+    gallery.getByRole('img', { name: 'Workouts', exact: true }),
+  ).toBeVisible();
+  await gallery.getByRole('button', { name: 'Show screen 3' }).click();
+  await expect(status).toHaveText('3 / 3');
+  await expect(
+    gallery.getByRole('button', { name: 'Next screen' }),
+  ).toBeDisabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - innerWidth,
+    ),
+  ).toBeLessThanOrEqual(1);
 });

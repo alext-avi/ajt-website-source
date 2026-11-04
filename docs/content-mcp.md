@@ -115,12 +115,13 @@ refresh its tool list.
 
 ## Media
 
-App images can use phone chrome by linking an image to its original asset URL.
+Link each screenshot to its original asset URL and use the title `"App screenshot"`
+for a plain image without device chrome. Phone framing is optional.
 Use the title `"iOS phone frame"` or `"Android phone frame"` for tall screenshots
 with slim bezels, or `"iPhone 8-style frame"` for classic home-button chrome. Put
 the caption on the next line after a Markdown hard break (two trailing spaces). The website
 styles these image paragraphs as a responsive gallery. On project pages, consecutive
-framed images become a manual carousel with arrows, position buttons, keyboard
+marked screenshots become a manual carousel with arrows, position buttons, keyboard
 navigation, and native touch scrolling. No autoplay is used. Sandboxed draft previews
 and browsers without scripts retain the static gallery. Image bytes and full-size
 links stay unchanged; raw HTML remains disallowed. Device framing is presentation

@@ -1538,7 +1538,7 @@ summary:focus-visible {
 .related-section h3 {
   font-size: 20px;
 }
-/* These linked Markdown image titles add phone chrome without changing pixels. */
+/* Linked Markdown screenshot titles opt into a gallery; framing is optional. */
 .prose
   p:has(
     > a
@@ -1547,7 +1547,8 @@ summary:focus-visible {
         [title='iOS phone frame'],
         [title='Android phone frame']
       )
-  ) {
+  ),
+.prose p:has(> a > img[title='App screenshot']) {
   display: inline-block;
   width: calc(50% - 18px);
   margin: 0 6px 28px;
@@ -1617,7 +1618,8 @@ summary:focus-visible {
   img:is(
     [title='iPhone 8-style frame'],
     [title='iOS phone frame'],
-    [title='Android phone frame']
+    [title='Android phone frame'],
+    [title='App screenshot']
   ) {
   display: block;
   width: 100%;
@@ -1625,6 +1627,12 @@ summary:focus-visible {
   margin: 0;
   border: 0;
   border-radius: 2px;
+}
+.prose a:has(> img[title='App screenshot']) {
+  display: block;
+  width: min(100%, 320px);
+  margin: 0 auto 13px;
+  text-decoration: none;
 }
 /* Tall iOS and Android captures already include their system bars. Keep the
    entire screenshot visible and use slim bezels without a fake home button. */
@@ -1651,7 +1659,8 @@ summary:focus-visible {
           [title='iOS phone frame'],
           [title='Android phone frame']
         )
-    ) {
+    ),
+  .prose p:has(> a > img[title='App screenshot']) {
     width: 100%;
     margin-inline: 0;
   }
