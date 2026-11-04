@@ -54,6 +54,12 @@ test.beforeAll(async () => {
       )
       .join('\n\n'),
   );
+  const xsMaxBody = unframedBody
+    .replaceAll('App screenshot', 'iPhone XS Max frame')
+    .replaceAll('/screen.jpg', '/portrait.svg');
+  const portrait = Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="414" height="896"><rect width="414" height="896" fill="#57298b"/></svg>',
+  );
   const html = (
     content: string,
   ) => `<!doctype html><html lang="en" data-theme="dark"><meta charset="utf-8">
@@ -65,6 +71,8 @@ test.beforeAll(async () => {
   const routes = new Map([
     ['/', ['text/html', Buffer.from(html(body))]],
     ['/unframed/', ['text/html', Buffer.from(html(unframedBody))]],
+    ['/xs-max/', ['text/html', Buffer.from(html(xsMaxBody))]],
+    ['/portrait.svg', ['image/svg+xml', portrait]],
     ['/style.css', ['text/css', Buffer.from(styles)]],
     [
       '/carousel.js',
@@ -224,6 +232,53 @@ test('plain screenshots retain carousel navigation without device chrome', async
   await expect(
     gallery.getByRole('img', { name: 'Workouts', exact: true }),
   ).toBeVisible();
+  await gallery.getByRole('button', { name: 'Show screen 3' }).click();
+  await expect(status).toHaveText('3 / 3');
+  await expect(
+    gallery.getByRole('button', { name: 'Next screen' }),
+  ).toBeDisabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - innerWidth,
+    ),
+  ).toBeLessThanOrEqual(1);
+});
+
+test('XS Max chrome preserves portrait proportions and three-screen navigation', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(origin + '/xs-max/');
+  const gallery = page.getByRole('region', { name: 'App screenshots' });
+  const status = gallery.locator('.project-carousel-status');
+  await expect(status).toHaveText('1 / 3');
+  const original = gallery.getByRole('link', { name: 'Home', exact: true });
+  await expect(original).toHaveAttribute('href', '/portrait.svg');
+  const geometry = await original.evaluate((el) => {
+    const device = el.getBoundingClientRect();
+    const img = el.querySelector('img')!;
+    const screen = img.getBoundingClientRect();
+    const notch = getComputedStyle(el, '::before');
+    return {
+      bodyRatio: device.width / device.height,
+      screenRatio: screen.width / screen.height,
+      screenInside:
+        screen.left > device.left &&
+        screen.right < device.right &&
+        screen.top > device.top &&
+        screen.bottom < device.bottom,
+      notchVisible:
+        notch.content !== 'none' &&
+        parseFloat(notch.width) > 0 &&
+        parseFloat(notch.height) > 0,
+    };
+  });
+  expect(geometry.bodyRatio).toBeCloseTo(77.4 / 157.5, 2);
+  expect(geometry.screenRatio).toBeCloseTo(414 / 896, 3);
+  expect(geometry.screenInside).toBe(true);
+  expect(geometry.notchVisible).toBe(true);
+  await gallery.getByRole('button', { name: 'Next screen' }).click();
+  await expect(status).toHaveText('2 / 3');
   await gallery.getByRole('button', { name: 'Show screen 3' }).click();
   await expect(status).toHaveText('3 / 3');
   await expect(

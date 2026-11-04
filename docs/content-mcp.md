@@ -116,7 +116,10 @@ refresh its tool list.
 ## Media
 
 Link each screenshot to its original asset URL and use the title `"App screenshot"`
-for a plain image without device chrome. Phone framing is optional.
+for a plain image without device chrome. Phone framing is optional. Use `"iPhone XS Max frame"` for the 2018 notched
+XS Max design with rounded display glass and side controls. Its CSS follows
+[Apple’s 2018 front-view reference](https://www.apple.com/newsroom/2018/09/iphone-xs-and-iphone-xs-max-bring-the-best-and-biggest-displays-to-iphone/).
+The screenshot retains its own status bar and home indicator; no duplicate bars are added.
 Use the title `"iOS phone frame"` or `"Android phone frame"` for tall screenshots
 with slim bezels, or `"iPhone 8-style frame"` for classic home-button chrome. Put
 the caption on the next line after a Markdown hard break (two trailing spaces). The website

@@ -1544,6 +1544,7 @@ summary:focus-visible {
     > a
       > img:is(
         [title='iPhone 8-style frame'],
+        [title='iPhone XS Max frame'],
         [title='iOS phone frame'],
         [title='Android phone frame']
       )
@@ -1562,6 +1563,7 @@ summary:focus-visible {
   a:has(
     > img:is(
         [title='iPhone 8-style frame'],
+        [title='iPhone XS Max frame'],
         [title='iOS phone frame'],
         [title='Android phone frame']
       )
@@ -1617,6 +1619,7 @@ summary:focus-visible {
 .prose
   img:is(
     [title='iPhone 8-style frame'],
+    [title='iPhone XS Max frame'],
     [title='iOS phone frame'],
     [title='Android phone frame'],
     [title='App screenshot']
@@ -1650,12 +1653,78 @@ summary:focus-visible {
 .prose a:has(> img[title='Android phone frame']) {
   border-radius: 24px;
 }
+/* XS Max front geometry follows Apple's 2018 reference, including the wide
+   TrueDepth notch. The original capture supplies its own status/home bars. */
+.prose a:has(> img[title='iPhone XS Max frame']) {
+  width: min(100%, 300px);
+  aspect-ratio: 77.4 / 157.5;
+  padding: 0;
+  border: 1px solid #73767a;
+  border-radius: 15% / 7.37%;
+  background: linear-gradient(
+    90deg,
+    #a3a5a8,
+    #45474b 0.6%,
+    #08090b 2.5%,
+    #050506 5%,
+    #050506 95%,
+    #35373c 97.5%,
+    #9b9da0 99.4%,
+    #292b30
+  );
+  box-shadow:
+    inset 0 0 0 1px rgb(217 219 224 / 24%),
+    inset 0 0 0 3px #101114,
+    0 12px 26px rgb(0 0 0 / 24%);
+}
+.prose a > img[title='iPhone XS Max frame'] {
+  position: absolute;
+  top: 2.65%;
+  left: 5.5%;
+  width: 89%;
+  height: auto;
+  border-radius: 10.5% / 4.85%;
+}
+.prose a:has(> img[title='iPhone XS Max frame'])::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 2.3%;
+  left: 50%;
+  width: 46%;
+  height: 3.5%;
+  transform: translateX(-50%);
+  border-radius: 0 0 11px 11px;
+  background:
+    radial-gradient(
+      circle at 77% 40%,
+      #152b3a 0 1.5px,
+      #080c12 2px 3px,
+      transparent 3.5px
+    ),
+    linear-gradient(#26272b, #141518) 45% 40% / 31% 2px no-repeat,
+    #050506;
+  pointer-events: none;
+}
+.prose a:has(> img[title='iPhone XS Max frame'])::after {
+  content: '';
+  position: absolute;
+  inset: 0 -1%;
+  background:
+    linear-gradient(90deg, #2d2f33, #85878b, #292b2f) left 13% / 1% 4% no-repeat,
+    linear-gradient(90deg, #2d2f33, #85878b, #292b2f) left 22% / 1% 7% no-repeat,
+    linear-gradient(90deg, #2d2f33, #85878b, #292b2f) left 32% / 1% 7% no-repeat,
+    linear-gradient(90deg, #44464a, #85878b, #17191d) right 24% / 1% 12%
+      no-repeat;
+  pointer-events: none;
+}
 @media (max-width: 640px) {
   .prose
     p:has(
       > a
         > img:is(
           [title='iPhone 8-style frame'],
+          [title='iPhone XS Max frame'],
           [title='iOS phone frame'],
           [title='Android phone frame']
         )
