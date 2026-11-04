@@ -2279,7 +2279,6 @@ summary:focus-visible {
   .project-facts .tech-list {
     margin-bottom: 10px;
   }
-
   .speaking-aside {
     padding-top: 8px;
   }
@@ -2465,6 +2464,10 @@ summary:focus-visible {
 }
 .project-detail-art .project-visual {
   max-height: 420px;
+}
+.project-detail-art .project-visual:not(.has-image) {
+  width: 100%;
+  min-height: 240px;
 }
 .section-heading > h2 {
   margin: 0;
