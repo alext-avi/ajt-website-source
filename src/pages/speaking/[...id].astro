@@ -4,6 +4,8 @@ import { renderMarkdown } from '../../../mcp/content-render.mjs';
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
 import PostRow from '../../components/PostRow.astro';
+import SpeakingPhoto from '../../components/SpeakingPhoto.astro';
+import { talkPhotoGalleries } from '../../data/speaking-photos';
 import { getTalks, getPosts, formatDate } from '../../lib/content';
 import { contactHref } from '../../lib/site';
 export async function getStaticPaths() {
@@ -26,6 +28,7 @@ const Content = runtimeBody ? undefined : (await render(talk)).Content;
 const related = (await getPosts()).filter((p) =>
   talk.data.relatedArticles.includes(p.id),
 );
+const photos = talkPhotoGalleries[talk.id] || [];
 ---
 
 <Base
@@ -123,6 +126,18 @@ const related = (await getPosts()).filter((p) =>
           </ul>
         </section>
       )}
+      {photos.length > 0 && (
+        <section class="talk-photos" aria-labelledby="talk-photos-title">
+          <h2 id="talk-photos-title" class="text-2xl mb-5">
+            At All Things Open 2026
+          </h2>
+          <div class="talk-photo-grid">
+            {photos.map((photo) => (
+              <SpeakingPhoto photo={photo} />
+            ))}
+          </div>
+        </section>
+      )}
       {related.length > 0 && (
         <section class="related-section">
           <h2>Related thinking.</h2>
@@ -150,3 +165,17 @@ const related = (await getPosts()).filter((p) =>
     </aside>
   </div>
 </Base>
+
+<style>
+  .talk-photos {
+    margin-top: 40px;
+  }
+  .talk-photo-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .talk-photo-grid :global(.speaking-photo) {
+    margin-top: 0;
+  }
+</style>

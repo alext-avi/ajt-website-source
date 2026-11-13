@@ -1,5 +1,42 @@
 import { test, expect } from './fixtures';
 
+test('the Speaking hero loads its stage photo in both themes and links to the lightning talk', async ({
+  page,
+}) => {
+  await page.goto('/speaking/');
+  const hero = page.getByRole('region', {
+    name: 'Ideas with something to stand on.',
+  });
+  const photoName =
+    'Alexander Thomas presenting the lightning talk Your Next Power User Won’t Learn Your UI at All Things Open 2026.';
+  const photo = hero.getByRole('img', { name: photoName, exact: true });
+  const heading = hero.getByRole('heading', { level: 1 });
+  for (const toggle of ['Switch to light mode', 'Switch to dark mode']) {
+    await expect(photo).toBeVisible();
+    await expect(photo).toHaveJSProperty('naturalWidth', 1280);
+    await expect(heading).toBeVisible();
+    await expect(heading).toHaveCSS('color', 'rgb(255, 255, 255)');
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - innerWidth,
+      ),
+      'Speaking fits the viewport',
+    ).toBeLessThanOrEqual(1);
+    await page.getByRole('button', { name: toggle }).click();
+  }
+  await hero
+    .getByRole('link', { name: 'Your Next Power User Won’t Learn Your UI' })
+    .click();
+  await expect(page).toHaveURL(/\/speaking\/your-next-power-user\/$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Your Next Power User Won’t Learn Your UI',
+  );
+  const talkPhoto = page.getByRole('img', { name: photoName, exact: true });
+  await talkPhoto.scrollIntoViewIfNeeded();
+  await expect(talkPhoto).toBeVisible();
+  await expect(talkPhoto).toHaveJSProperty('naturalWidth', 1280);
+});
+
 test('visitors can navigate the main sections on desktop and mobile', async ({
   page,
   isMobile,
