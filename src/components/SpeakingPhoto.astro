@@ -1,0 +1,51 @@
+---
+import type { SpeakingPhoto } from '../data/speaking-photos';
+
+interface Props {
+  photo: SpeakingPhoto;
+  lead?: boolean;
+}
+const { photo, lead = false } = Astro.props;
+---
+
+<figure class:list={['speaking-photo', { 'speaking-photo--lead': lead }]}>
+  <a href={photo.src} aria-label={`View full photo: ${photo.alt}`}>
+    <img
+      src={photo.src}
+      alt={photo.alt}
+      width={photo.width}
+      height={photo.height}
+      loading={lead ? 'eager' : 'lazy'}
+      fetchpriority={lead ? 'high' : undefined}
+      decoding="async"
+    />
+  </a>
+  <figcaption>{photo.caption}</figcaption>
+</figure>
+
+<style>
+  .speaking-photo {
+    margin: 28px 0 0;
+  }
+  .speaking-photo a {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 3 / 2;
+    border-radius: 6px;
+  }
+  .speaking-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .speaking-photo figcaption {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .speaking-photo--lead {
+    margin: 0;
+  }
+</style>

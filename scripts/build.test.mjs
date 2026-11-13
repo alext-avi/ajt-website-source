@@ -172,15 +172,16 @@ test('sitemap contains published routes, no drafts or editor, and contact uses v
 
 test('delivered consulting sessions publish without private dates or proposed-topic labels', () => {
   const detail = read('speaking/the-agentic-sdlc/index.html');
+  // Scoped component styles add data-astro attributes to these elements.
   const header = detail.match(
-    /<header class="shell detail-head">[\s\S]*?<\/header>/,
+    /<header\b[^>]*\bclass="shell detail-head"[^>]*>[\s\S]*?<\/header>/,
   )?.[0];
   assert.ok(header, 'consulting session has a detail header');
   assert.match(header, /Enterprise consulting/);
   assert.match(header, /Past session/);
   assert.doesNotMatch(header, /<time\b|Proposed topic|Available session topic/);
   const consultingBody = detail.match(
-    /<article class="prose">([\s\S]*?)<\/article>/,
+    /<article\b[^>]*\bclass="prose"[^>]*>([\s\S]*?)<\/article>/,
   )?.[1];
   assert.ok(consultingBody, 'consulting session body');
   assert.doesNotMatch(

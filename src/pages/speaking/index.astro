@@ -1,8 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
-import PageIntro from '../../components/PageIntro.astro';
 import Icon from '../../components/Icon.astro';
 import ContactBand from '../../components/ContactBand.astro';
+import { speakingPhotos } from '../../data/speaking-photos';
 import { getTalks, formatDate } from '../../lib/content';
 import { contactHref } from '../../lib/site';
 const talks = await getTalks();
@@ -14,11 +14,36 @@ const proposals = talks.filter((t) => t.data.status === 'proposed');
   title="Speaking"
   description="Talks and practical conversations on applied AI, agentic development, MCP, engineering leadership, and building software people can rely on."
 >
-  <PageIntro
-    eyebrow="On stage, in practice"
-    title="Ideas with something to stand on."
-    description="Practical talks for people who build software, lead teams, and have to make technology work in the real world."
-  />
+  <section class="shell speaking-hero" aria-labelledby="speaking-title">
+    <div class="speaking-hero-scene">
+      <img
+        class="speaking-hero-image"
+        src={speakingPhotos.stage.src}
+        alt={speakingPhotos.stage.alt}
+        width={speakingPhotos.stage.width}
+        height={speakingPhotos.stage.height}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+      <div class="speaking-intro">
+        <p class="eyebrow">
+          <span class="small-line"></span>Speaking
+        </p>
+        <h1 id="speaking-title">Ideas with something to stand on.</h1>
+        <p class="page-description">
+          Practical talks for people who build software, lead teams, and have to
+          make technology work in the real world.
+        </p>
+      </div>
+    </div>
+    <p class="speaking-photo-credit">
+      All Things Open 2026 ·{' '}
+      <a href="/speaking/your-next-power-user/">
+        Your Next Power User Won’t Learn Your UI
+      </a>
+    </p>
+  </section>
   <section class="shell page-body speaking-grid">
     <div>
       <p class="eyebrow mb-6">Talks & appearances</p>
@@ -123,3 +148,120 @@ const proposals = talks.filter((t) => t.data.status === 'proposed');
     description="Have an audience and a question worth exploring? Let’s work out the right format."
   />
 </Base>
+
+<style>
+  .speaking-hero {
+    padding-top: 36px;
+    padding-bottom: 52px;
+  }
+  .speaking-hero-scene {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    min-height: 560px;
+    border-radius: 6px;
+    background: #05080d;
+  }
+  .speaking-hero-image,
+  .speaking-hero-scene::after {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .speaking-hero-image {
+    z-index: -2;
+    object-fit: cover;
+    object-position: center top;
+  }
+  .speaking-hero-scene::after {
+    content: '';
+    z-index: -1;
+    background: linear-gradient(
+      90deg,
+      transparent 28%,
+      #05080d30 43%,
+      #05080dcf 59%,
+      #05080deb 100%
+    );
+    pointer-events: none;
+  }
+  .speaking-intro {
+    grid-column: 2;
+    padding: 56px 48px 56px 28px;
+  }
+  .speaking-intro .eyebrow {
+    color: #dfbd79;
+  }
+  .speaking-intro h1 {
+    margin-top: 21px;
+    color: #ffffff;
+    font-size: clamp(40px, 4.3vw, 58px);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  .speaking-intro .page-description {
+    color: #d1d8e4;
+    font-size: 17px;
+    line-height: 1.8;
+    max-width: 410px;
+  }
+  .speaking-photo-credit {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .speaking-photo-credit a {
+    text-underline-offset: 3px;
+  }
+  .speaking-photo-credit a:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 900px) {
+    .speaking-hero {
+      padding-top: 24px;
+      padding-bottom: 40px;
+    }
+    .speaking-hero-scene {
+      display: block;
+      min-height: 0;
+    }
+    .speaking-hero-image {
+      position: relative;
+      display: block;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-position: center top;
+      mask-image: linear-gradient(#000000 80%, transparent);
+    }
+    .speaking-hero-scene::after {
+      display: none;
+    }
+    .speaking-intro {
+      padding: 12px 32px 36px;
+    }
+    .speaking-intro h1 {
+      font-size: clamp(36px, 5.5vw, 48px);
+      margin-top: 16px;
+    }
+    .speaking-intro .page-description {
+      max-width: 600px;
+      font-size: 16px;
+      margin-top: 18px;
+    }
+  }
+  @media (max-width: 600px) {
+    .speaking-hero-image {
+      aspect-ratio: 4 / 3;
+      height: auto;
+      object-position: 27% top;
+    }
+    .speaking-intro {
+      padding: 8px 24px 30px;
+    }
+  }
+</style>
