@@ -57,7 +57,7 @@
     "@keystatic/core": "^0.6.9",
     "@tailwindcss/vite": "^4.3.3",
     "agents": "0.32.0",
-    "astro": "^7.4.2",
+    "astro": "^7.4.12",
     "aws4fetch": "1.0.20",
     "marked": "17.0.6",
     "react": "^19.3.1",
